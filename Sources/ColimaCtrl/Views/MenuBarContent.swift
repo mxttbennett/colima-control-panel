@@ -19,6 +19,12 @@ struct MenuBarContent: View {
             if store.connection == .up { containerList }
             Divider()
             HStack {
+                Text("Colima Ctrl").foregroundStyle(.secondary)
+                Spacer()
+                Text("\(Format.bytes(Int64(store.selfMetrics.memory))) · \(store.selfMetrics.cpu, format: .number.precision(.fractionLength(1)))%").monospacedDigit()
+            }
+            .font(.caption)
+            HStack {
                 Button("Open Colima Ctrl") { show(.containers) }.buttonStyle(.glassProminent)
                 Spacer()
                 Button("Settings", systemImage: "gearshape") { NSApp.activate(); openSettings() }.labelStyle(.iconOnly).buttonStyle(.glass)

@@ -143,6 +143,7 @@ struct SystemView: View {
             if let disk = store.disk {
                 let columns = [GridItem(.adaptive(minimum: 220), spacing: 14)]
                 LazyVGrid(columns: columns, spacing: 14) {
+                    SelfCard()
                     Summary(title: "Docker disk", value: disk.total, detail: "images, containers, volumes, build cache")
                     Summary(title: "Images", value: disk.images.size, detail: detail(disk.images), action: ("Prune unused", .imagesUnused), prune: $prune)
                     Summary(title: "Containers", value: disk.containers.size, detail: detail(disk.containers), action: ("Prune stopped", .containers), prune: $prune)
@@ -158,6 +159,23 @@ struct SystemView: View {
     }
 
     private func detail(_ bucket: DiskBucket) -> String { "\(bucket.count) total · \(Format.bytes(bucket.reclaimable)) reclaimable" }
+}
+
+private struct SelfCard: View {
+    @Environment(FleetStore.self) private var store
+
+    var body: some View {
+        let metrics = store.selfMetrics
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Colima Ctrl").font(.caption).foregroundStyle(.secondary)
+            Text(Format.bytes(Int64(metrics.memory))).font(.title2.weight(.semibold))
+            Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU · this app").font(.caption).foregroundStyle(.secondary)
+            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10)).frame(height: 30).padding(.top, 6)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
+        .contentCard(cornerRadius: 18)
+    }
 }
 
 private struct Summary: View {
@@ -185,7 +203,7 @@ private struct Summary: View {
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
         .contentCard(cornerRadius: 18)
     }
 }

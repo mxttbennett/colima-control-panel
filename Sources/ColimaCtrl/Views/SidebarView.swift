@@ -46,6 +46,8 @@ private struct VMCard: View {
             }
             VMControls()
             if store.connection == .up { Totals() }
+            Divider()
+            SelfRow()
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,6 +78,21 @@ private struct Totals: View {
             Sparkline(values: totals.memory, maximum: memory).frame(height: 28)
         }
         .font(.caption)
+    }
+}
+
+private struct SelfRow: View {
+    @Environment(FleetStore.self) private var store
+
+    var body: some View {
+        let metrics = store.selfMetrics
+        HStack {
+            Text("Colima Ctrl").foregroundStyle(.secondary)
+            Spacer()
+            Text("\(Format.bytes(Int64(metrics.memory))) · \(metrics.cpu, format: .number.precision(.fractionLength(1)))%").monospacedDigit()
+        }
+        .font(.caption)
+        .help("This app's own memory footprint and CPU use")
     }
 }
 
