@@ -29,6 +29,7 @@ The script builds a release binary, compiles the layered icon with `actool`, and
 - Each container's graph data is its own observable object, so a stats tick redraws only the rows that changed.
 - Log lines are demuxed off the main thread and applied in 80 ms batches.
 - Glass is used for controls and navigation; content cards are flat fills.
+- The container detail panel overlays the list rather than resizing it, slides in over 80 ms (none with Reduce Motion), and stays mounted for a few seconds after closing. Selection redraws only the two rows involved.
 
 ## Test
 

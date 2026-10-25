@@ -15,10 +15,10 @@ struct ContainersView: View {
                     ForEach(groups, id: \.project) { group in
                         SwiftUI.Section {
                             ForEach(group.rows) { row in
-                                ContainerRowView(row: row, selected: ui.selectedContainerID == row.id)
+                                ContainerRowView(row: row)
                                     .contentShape(Rectangle())
                                     .onTapGesture { ui.toggleSelection(row.id) }
-                                    .listRowBackground(ui.selectedContainerID == row.id ? Color.accentColor.opacity(0.16) : Color.clear)
+                                    .listRowBackground(SelectionBackground(id: row.id))
                                     .contextMenu { ContainerMenu(row: row) }
                             }
                         } header: {
@@ -103,9 +103,18 @@ struct ContainerMenu: View {
     }
 }
 
+/// Reads the selection itself, so changing it redraws two rows instead of the whole list.
+private struct SelectionBackground: View {
+    @Environment(UIState.self) private var ui
+    let id: String
+
+    var body: some View {
+        (ui.selectedContainerID == id ? Color.accentColor.opacity(0.16) : Color.clear)
+    }
+}
+
 private struct ContainerRowView: View {
     let row: ContainerRow
-    let selected: Bool
 
     var body: some View {
         HStack(spacing: 12) {
