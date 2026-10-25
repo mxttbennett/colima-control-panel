@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs><clipPath id="opening"><polygon points="512,560 706,660 512,760 318,660"/></clipPath></defs>
-  <g transform="translate(0 20) rotate(-5 512 640)">
-    <polygon points="318,660 512,560 436,462 258,552" fill="#f0f1ff"/>
-    <polygon points="512,560 706,660 770,574 592,474" fill="#cdd3fb"/>
-    <g clip-path="url(#opening)">
-      <rect x="300" y="540" width="420" height="240" fill="#2c2d9a"/>
-      <polygon points="318,660 512,560 512,640 318,740" fill="#4041b8"/>
-      <polygon points="512,560 706,660 706,740 512,640" fill="#3536aa"/>
-    </g>
+  <g transform="translate(51 51) scale(0.9) rotate(-4 512 530)">
+    <polygon points="312,400 356,366 756,366 712,400" fill="#ffffff"/>
+    <polygon points="712,400 756,366 756,626 712,660" fill="#9fabf0"/>
   </g>
 </svg>

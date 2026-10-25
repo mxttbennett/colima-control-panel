@@ -5,8 +5,8 @@
   "groups" : [
     {
       "layers" : [
-        { "glass" : true, "image-name" : "front.svg", "name" : "front" },
         { "glass" : false, "image-name" : "wires.svg", "name" : "wires" },
+        { "glass" : true, "image-name" : "front.svg", "name" : "front" },
         { "glass" : false, "image-name" : "back.svg", "name" : "back" }
       ],
       "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
