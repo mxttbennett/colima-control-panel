@@ -20,7 +20,7 @@ scripts/build-app.sh
 open "build/Colima Ctrl.app"
 ```
 
-The script builds a release binary, compiles the layered icon with `actool`, and ad-hoc signs the bundle.
+The script builds a release binary, compiles the layered icon with `actool`, and ad-hoc signs the bundle. The icon artwork is rendered from a SceneKit scene; regenerate it with `swift scripts/render-icon.swift Resources/AppIcon.icon/Assets/art.png`.
 
 ## Performance
 
