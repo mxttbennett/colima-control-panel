@@ -55,7 +55,7 @@ private struct DetailHeader: View {
                     } else {
                         Button("Start") { store.perform(.start, on: [row.id]) }
                     }
-                    Button("Remove", role: .destructive) { confirmRemove = true }
+                    Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red)
                 }
                 .buttonStyle(.bordered)
             }

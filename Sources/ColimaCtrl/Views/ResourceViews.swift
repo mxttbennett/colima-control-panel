@@ -66,10 +66,10 @@ struct VolumesView: View {
             }
             TableColumn("Status") { Tag($0.refs > 0 ? "in use · \($0.refs)" : "unused") }.width(100)
             TableColumn("Size", value: \.size) { Text(Format.bytes($0.size)).monospacedDigit() }.width(90)
-            TableColumn("") { volume in Button("Remove", systemImage: "trash") { removal = volume }.labelStyle(.iconOnly).buttonStyle(.borderless) }.width(36)
+            TableColumn("") { volume in Button("Remove", systemImage: "trash") { removal = volume }.labelStyle(.iconOnly).buttonStyle(.borderless).foregroundStyle(.red) }.width(36)
         }
         .scrollContentBackground(.hidden)
-        .toolbar { ToolbarItem { Button("Prune unused", systemImage: "trash") { prune = .volumes }.help("Delete all unused volumes") } }
+        .toolbar { ToolbarItem { Button("Prune unused", systemImage: "trash") { prune = .volumes }.tint(.red).help("Delete all unused volumes") } }
         .pruneConfirmation($prune)
         .confirmationDialog("Delete volume \(removal?.name ?? "")?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
             Button("Delete", role: .destructive) { if let removal { store.remove(volume: removal.name) } }
@@ -95,7 +95,7 @@ struct ImagesView: View {
             TableColumn("Status") { Tag($0.containers > 0 ? "in use · \($0.containers)" : "unused") }.width(100)
             TableColumn("Size", value: \.size) { Text(Format.bytes($0.size)).monospacedDigit() }.width(90)
             TableColumn("Created", value: \.created) { Text(Format.ago($0.created)).foregroundStyle(.secondary) }.width(110)
-            TableColumn("") { image in Button("Remove", systemImage: "trash") { removal = image }.labelStyle(.iconOnly).buttonStyle(.borderless) }.width(36)
+            TableColumn("") { image in Button("Remove", systemImage: "trash") { removal = image }.labelStyle(.iconOnly).buttonStyle(.borderless).foregroundStyle(.red) }.width(36)
         }
         .scrollContentBackground(.hidden)
         .toolbar {
@@ -103,7 +103,7 @@ struct ImagesView: View {
                 Menu("Prune", systemImage: "trash") {
                     Button("Dangling images") { prune = .imagesDangling }
                     Button("All unused images") { prune = .imagesUnused }
-                }
+                }.tint(.red)
             }
         }
         .pruneConfirmation($prune)
@@ -205,7 +205,7 @@ private struct Summary: View {
             Text(Format.bytes(value)).font(.title2.weight(.semibold))
             Text(detail).font(.caption).foregroundStyle(.secondary)
             if let action, let prune {
-                Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.glass).controlSize(.small).padding(.top, 8)
+                Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.glass).controlSize(.small).tint(.red).padding(.top, 8)
             }
         }
         .padding(16)
