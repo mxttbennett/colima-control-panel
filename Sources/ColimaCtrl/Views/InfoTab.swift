@@ -9,7 +9,7 @@ struct InfoTab: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 Graphs(id: row.id, running: row.state == "running")
                 if let inspect {
                     Card("Overview") {
@@ -138,7 +138,7 @@ private struct Field: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(label).foregroundStyle(.secondary).frame(width: 78, alignment: .leading)
-            Text(value).font(.system(size: 12, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+            Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             if let copy { CopyButton(text: copy) }
         }
     }
@@ -159,7 +159,7 @@ private struct EnvRow: View {
                 Button("••••••••") { revealed.insert(key) }.buttonStyle(.plain).foregroundStyle(.tertiary).help("Reveal")
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Text(value).font(.system(size: 12, design: .monospaced)).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             }
             CopyButton(text: value)
         }

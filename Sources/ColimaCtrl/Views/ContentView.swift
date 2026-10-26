@@ -11,7 +11,7 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView()
         } detail: {
-            Group {
+            PaneHost {
                 if store.connection == .connecting {
                     ProgressView().controlSize(.large).frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if store.connection == .down || store.vm.isBusy && store.connection != .up {
@@ -35,9 +35,6 @@ struct ContentView: View {
                 }
                 ToolbarItem { Button("Command Palette", systemImage: "command") { ui.showPalette = true }.help("Command palette (⌘K)") }
             }
-            .inspector(isPresented: inspectorBinding) {
-                if let id = ui.selectedContainerID { ContainerDetailView(id: id).inspectorColumnWidth(min: 340, ideal: 420, max: 620) }
-            }
             .onKeyPress("/") {
                 searchFocused = true
                 return .handled
@@ -56,12 +53,6 @@ struct ContentView: View {
         .frame(minWidth: 940, minHeight: 580)
     }
 
-    private var inspectorBinding: Binding<Bool> {
-        Binding(
-            get: { ui.section == .containers && ui.selectedContainerID.map { id in store.containers.contains { $0.id == id } } == true },
-            set: { if !$0 { ui.selectedContainerID = nil } }
-        )
-    }
 }
 
 private struct ErrorBanner: View {

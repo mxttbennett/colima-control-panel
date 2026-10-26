@@ -33,7 +33,7 @@ private struct DetailHeader: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 StatusDot(color: row.display.color)
-                Text(row.name).font(.title3.weight(.semibold)).lineLimit(1).textSelection(.enabled)
+                Text(row.name).font(.title3.weight(.semibold)).lineLimit(1)
                 CopyButton(text: row.name)
             }
             Group {
@@ -44,8 +44,8 @@ private struct DetailHeader: View {
                 }
             }
             .font(.callout).foregroundStyle(.secondary)
-            GlassEffectContainer(spacing: 8) {
-                HStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Group {
                     if row.isRunning {
                         Button("Restart") { store.perform(.restart, on: [row.id]) }
                         Button("Stop") { store.perform(.stop, on: [row.id]) }
@@ -54,7 +54,7 @@ private struct DetailHeader: View {
                     }
                     Button("Remove", role: .destructive) { confirmRemove = true }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
