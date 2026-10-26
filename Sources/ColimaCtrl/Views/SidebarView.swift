@@ -14,7 +14,7 @@ struct SidebarView: View {
                 if section == .containers, let color = store.health.color {
                     StatusDot(color: color, size: 8).help(store.health.label)
                 }
-                if let count = count(for: section) {
+                if store.info != nil, let count = count(for: section) {
                     Text(count, format: .number).foregroundStyle(.secondary).monospacedDigit()
                 }
             }

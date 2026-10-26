@@ -56,7 +56,8 @@ struct VolumesView: View {
     var body: some View {
         let rows = store.volumes.filter { ui.filter.isEmpty || $0.name.localizedCaseInsensitiveContains(ui.filter) || ($0.project ?? "").localizedCaseInsensitiveContains(ui.filter) }
             .sorted(using: sortOrder)
-        Table(rows, sortOrder: $sortOrder) {
+        @Bindable var ui = ui
+        Table(rows, selection: $ui.selectedVolumeID, sortOrder: $sortOrder) {
             TableColumn("Volume", value: \.name) { volume in
                 VStack(alignment: .leading, spacing: 1) {
                     Text(volume.name).lineLimit(1).truncationMode(.middle)
@@ -87,7 +88,8 @@ struct ImagesView: View {
 
     var body: some View {
         let rows = store.images.filter { ui.filter.isEmpty || $0.title.localizedCaseInsensitiveContains(ui.filter) }.sorted(using: sortOrder)
-        Table(rows, sortOrder: $sortOrder) {
+        @Bindable var ui = ui
+        Table(rows, selection: $ui.selectedImageID, sortOrder: $sortOrder) {
             TableColumn("Image", value: \.title) { Text($0.title).lineLimit(1).truncationMode(.middle) }
             TableColumn("Status") { Tag($0.containers > 0 ? "in use · \($0.containers)" : "unused") }.width(100)
             TableColumn("Size", value: \.size) { Text(Format.bytes($0.size)).monospacedDigit() }.width(90)
@@ -116,7 +118,8 @@ struct NetworksView: View {
 
     var body: some View {
         let rows = store.networks.filter { ui.filter.isEmpty || $0.name.localizedCaseInsensitiveContains(ui.filter) || ($0.subnet ?? "").contains(ui.filter) }
-        Table(rows) {
+        @Bindable var ui = ui
+        Table(rows, selection: $ui.selectedNetworkID) {
             TableColumn("Network") { network in
                 HStack(spacing: 6) {
                     Text(network.name)

@@ -118,7 +118,7 @@ struct Card<Content: View>: View {
     }
 }
 
-private struct Field: View {
+struct Field: View {
     let label: String
     let value: String
     let copy: String?
@@ -144,7 +144,7 @@ private struct Field: View {
     }
 }
 
-private struct EnvRow: View {
+struct EnvRow: View {
     let key: String
     let value: String
     @Binding var revealed: Set<String>

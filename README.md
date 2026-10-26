@@ -5,7 +5,7 @@ A native macOS app for [Colima](https://github.com/abiosoft/colima): a Liquid Gl
 A browser version of the same dashboard lives in [colima-ctrl](https://github.com/mxttbennett/colima-ctrl).
 
 - Containers grouped by Compose project, with live uptime, CPU and memory graphs, ports, mounts, networks, environment (secrets hidden until clicked) and streaming logs
-- Volumes, images and networks with sortable tables, remove and prune
+- Volumes, images and networks with sortable tables, remove and prune, and a detail panel for each row (mountpoint and labels, digest and environment, subnet and connected containers), with the containers that use it one click away
 - Start, stop and restart Colima, with live output, and a Start screen when the VM is down
 - Menu bar status dot (green, yellow, red) and a quick list of running containers
 - Command palette (`⌘K`), filter, arrow-key navigation
