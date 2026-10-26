@@ -1,0 +1,17 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.46000,0.42000,0.97000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        { "glass" : true, "image-name" : "front.svg", "name" : "front" },
+        { "glass" : false, "image-name" : "wires.svg", "name" : "wires" },
+        { "glass" : false, "image-name" : "back.svg", "name" : "back" }
+      ],
+      "shadow" : { "kind" : "neutral", "opacity" : 0.5 },
+      "translucency" : { "enabled" : false, "value" : 0.4 }
+    }
+  ],
+  "supported-platforms" : { "squares" : "shared" }
+}

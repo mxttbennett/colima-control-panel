@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <g transform="translate(51 51) scale(0.9) rotate(-4 512 530)">
+    <rect x="312" y="400" width="400" height="260" rx="10" fill="#eef0ff"/>
+    <circle cx="352" cy="470" r="27" fill="#a3aff2"/><circle cx="352" cy="470" r="22" fill="#1c1d6e"/><circle cx="352" cy="470" r="11" fill="#0b0c3d"/><circle cx="352" cy="590" r="27" fill="#a3aff2"/><circle cx="352" cy="590" r="22" fill="#1c1d6e"/><circle cx="352" cy="590" r="11" fill="#0b0c3d"/><circle cx="672" cy="470" r="27" fill="#a3aff2"/><circle cx="672" cy="470" r="22" fill="#1c1d6e"/><circle cx="672" cy="470" r="11" fill="#0b0c3d"/><circle cx="672" cy="590" r="27" fill="#a3aff2"/><circle cx="672" cy="590" r="22" fill="#1c1d6e"/><circle cx="672" cy="590" r="11" fill="#0b0c3d"/><circle cx="512" cy="442" r="27" fill="#a3aff2"/><circle cx="512" cy="442" r="22" fill="#1c1d6e"/><circle cx="512" cy="442" r="11" fill="#0b0c3d"/><circle cx="512" cy="618" r="27" fill="#a3aff2"/><circle cx="512" cy="618" r="22" fill="#1c1d6e"/><circle cx="512" cy="618" r="11" fill="#0b0c3d"/>
+    <circle cx="512" cy="530" r="36" fill="#7f8be0"/><circle cx="512" cy="530" r="29" fill="#dfe4ff"/>
+    <rect x="509" y="504" width="6" height="26" rx="3" fill="#4a52c0"/>
+    <circle cx="440" cy="530" r="8" fill="#30d158"/><circle cx="584" cy="530" r="8" fill="#ffd60a"/>
+  </g>
+</svg>
