@@ -9,7 +9,7 @@ struct SidebarView: View {
         @Bindable var ui = ui
         List(Section.allCases, selection: $ui.section) { section in
             HStack {
-                Label(section.title, systemImage: section.symbol)
+                Label { Text(section.title) } icon: { Image(systemName: section.symbol).foregroundStyle(section.color) }
                 Spacer()
                 if section == .containers, let color = store.health.color {
                     StatusDot(color: color, size: 8).help(store.health.label)
@@ -51,7 +51,7 @@ private struct VMCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 20))
+        .glassEffect(.regular.tint(Brand.blue.opacity(0.22)), in: .rect(cornerRadius: 20))
     }
 }
 
@@ -68,14 +68,14 @@ private struct Totals: View {
                 Spacer()
                 Text("\(totals.latestCPU / 100, format: .number.precision(.fractionLength(2))) of \(Int(cores)) cores").monospacedDigit()
             }
-            Sparkline(values: totals.cpu, maximum: cores * 100).frame(height: 28)
+            Sparkline(values: totals.cpu, maximum: cores * 100, color: Brand.blue).frame(height: 28)
             Spacer().frame(height: 4)
             HStack {
                 Text("Memory").foregroundStyle(.secondary)
                 Spacer()
                 Text("\(Format.bytes(Int64(totals.latestMemory))) of \(Format.bytes(Int64(memory)))").monospacedDigit()
             }
-            Sparkline(values: totals.memory, maximum: memory).frame(height: 28)
+            Sparkline(values: totals.memory, maximum: memory, color: Brand.mint).frame(height: 28)
         }
         .font(.caption)
     }

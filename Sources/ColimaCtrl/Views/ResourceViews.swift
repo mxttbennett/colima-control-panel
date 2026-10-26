@@ -68,6 +68,7 @@ struct VolumesView: View {
             TableColumn("Size", value: \.size) { Text(Format.bytes($0.size)).monospacedDigit() }.width(90)
             TableColumn("") { volume in Button("Remove", systemImage: "trash") { removal = volume }.labelStyle(.iconOnly).buttonStyle(.borderless) }.width(36)
         }
+        .scrollContentBackground(.hidden)
         .toolbar { ToolbarItem { Button("Prune unused", systemImage: "trash") { prune = .volumes }.help("Delete all unused volumes") } }
         .pruneConfirmation($prune)
         .confirmationDialog("Delete volume \(removal?.name ?? "")?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
@@ -96,6 +97,7 @@ struct ImagesView: View {
             TableColumn("Created", value: \.created) { Text(Format.ago($0.created)).foregroundStyle(.secondary) }.width(110)
             TableColumn("") { image in Button("Remove", systemImage: "trash") { removal = image }.labelStyle(.iconOnly).buttonStyle(.borderless) }.width(36)
         }
+        .scrollContentBackground(.hidden)
         .toolbar {
             ToolbarItem {
                 Menu("Prune", systemImage: "trash") {
@@ -133,6 +135,7 @@ struct NetworksView: View {
                 Text(store.containers.filter { $0.networks.contains(network.name) }.count, format: .number).monospacedDigit()
             }.width(90)
         }
+        .scrollContentBackground(.hidden)
         .overlay { if rows.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") } }
     }
 }
@@ -173,7 +176,7 @@ private struct SelfCard: View {
             Text("Colima Ctrl").font(.caption).foregroundStyle(.secondary)
             Text(Format.bytes(Int64(metrics.memory))).font(.title2.weight(.semibold))
             Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU · this app").font(.caption).foregroundStyle(.secondary)
-            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10)).frame(height: 30).padding(.top, 6)
+            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: Brand.green).frame(height: 30).padding(.top, 6)
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)

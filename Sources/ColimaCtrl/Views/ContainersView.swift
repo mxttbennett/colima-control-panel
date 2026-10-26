@@ -64,7 +64,7 @@ private struct GroupHeader: View {
 
     var body: some View {
         HStack {
-            Text(project ?? "No project").font(.subheadline.weight(.semibold))
+            Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
             Text("\(rows.filter(\.isRunning).count)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
             Spacer()
             if let project {
@@ -165,7 +165,7 @@ private struct RowGraph: View {
         HStack(spacing: 8) {
             Text("\(series.latestCPU, format: .number.precision(.fractionLength(1)))%")
                 .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
-            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false).frame(width: 64, height: 18)
+            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64, height: 18)
         }
     }
 }

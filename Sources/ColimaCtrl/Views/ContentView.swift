@@ -26,6 +26,10 @@ struct ContentView: View {
                     }
                 }
             }
+            .background(alignment: .topLeading) {
+                LinearGradient(colors: [ui.section.color.opacity(0.14), ui.section.color.opacity(0)], startPoint: .topLeading, endPoint: UnitPoint(x: 0.55, y: 0.45))
+                    .allowsHitTesting(false)
+            }
             .navigationTitle(ui.section.title)
             .searchable(text: $ui.filter, prompt: "Filter")
             .searchFocused($searchFocused)
@@ -50,6 +54,7 @@ struct ContentView: View {
             ui.pendingSelection = nil
             ui.selectedContainerID = match.id
         }
+        .tint(Brand.blue)
         .frame(minWidth: 940, minHeight: 580)
     }
 

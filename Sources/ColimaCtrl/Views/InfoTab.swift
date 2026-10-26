@@ -73,7 +73,7 @@ private struct Graphs: View {
         let series = store.stats.series(for: id)
         HStack(spacing: 12) {
             GraphCard(title: "CPU", value: running ? "\(series.latestCPU.formatted(.number.precision(.fractionLength(1))))%" : "–", values: series.cpu, maximum: max(10, series.cpu.max() ?? 10))
-            GraphCard(title: "Memory", value: running ? Format.bytes(Int64(series.latestMemory)) : "–", values: series.memory, maximum: max(1, (series.memory.max() ?? 1) * 1.25))
+            GraphCard(title: "Memory", value: running ? Format.bytes(Int64(series.latestMemory)) : "–", values: series.memory, maximum: max(1, (series.memory.max() ?? 1) * 1.25), color: Brand.mint)
         }
     }
 }
@@ -83,6 +83,7 @@ private struct GraphCard: View {
     let value: String
     let values: [Double]
     let maximum: Double
+    var color: Color = Brand.blue
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -91,7 +92,7 @@ private struct GraphCard: View {
                 Spacer()
                 Text(value).font(.caption.weight(.medium)).monospacedDigit()
             }
-            Sparkline(values: values, maximum: maximum).frame(height: 44)
+            Sparkline(values: values, maximum: maximum, color: color).frame(height: 44)
         }
         .padding(12)
         .contentCard()
