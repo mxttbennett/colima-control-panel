@@ -51,7 +51,7 @@ private struct VMCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular.tint(Brand.blue.opacity(0.22)), in: .rect(cornerRadius: 20))
+        .glassEffect(.regular, in: .rect(cornerRadius: 20))
     }
 }
 
