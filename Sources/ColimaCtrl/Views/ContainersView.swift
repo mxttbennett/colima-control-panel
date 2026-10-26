@@ -72,9 +72,9 @@ private struct GroupHeader: View {
             if let project {
                 GlassEffectContainer(spacing: 6) {
                     HStack(spacing: 6) {
-                        Button("Start") { store.perform(.start, project: project) }
-                        Button("Restart") { store.perform(.restart, project: project) }
-                        Button("Stop") { store.perform(.stop, project: project) }
+                        Button("Start All") { store.perform(.start, project: project) }
+                        Button("Restart All") { store.perform(.restart, project: project) }
+                        Button("Stop All") { store.perform(.stop, project: project) }
                     }
                     .buttonStyle(.glass).controlSize(.small)
                 }
