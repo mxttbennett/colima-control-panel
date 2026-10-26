@@ -1,8 +1,11 @@
 // Renders the app icon artwork: three glass orbs with glowing cores, joined by wires.
 // Usage: swift scripts/render-icon.swift Resources/AppIcon.icon/Assets/art.png
+// Renders the app icon artwork: a glass jellyfish whose tentacles are glowing wires.
+// Usage: swift scripts/render-icon.swift Resources/AppIcon.icon/Assets/art.png
 import AppKit
 import Metal
 import SceneKit
+import simd
 
 func color(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> NSColor { NSColor(calibratedRed: r, green: g, blue: b, alpha: a) }
 
@@ -73,24 +76,44 @@ func cable(_ control: [SCNVector3], _ c: NSColor, radius: CGFloat) -> SCNNode {
     return node
 }
 
-func orb(_ r: CGFloat, at p: SCNVector3, core: NSColor) -> SCNNode {
-    let root = SCNNode(); root.position = p
-    let sphere = SCNSphere(radius: r); sphere.segmentCount = 96; sphere.materials = [glassMaterial()]
-    root.addChildNode(SCNNode(geometry: sphere))
-    let ring = SCNTorus(ringRadius: r, pipeRadius: 0.022)
-    let rm = SCNMaterial(); rm.lightingModel = .constant; rm.diffuse.contents = color(0.95, 0.95, 1); rm.transparency = 0.75
-    ring.materials = [rm]
-    let rn = SCNNode(geometry: ring); rn.eulerAngles = SCNVector3(CGFloat.pi / 2, 0, 0); root.addChildNode(rn)
-    let blob = SCNPlane(width: r * 0.95, height: r * 0.62)
-    let bm = SCNMaterial(); bm.lightingModel = .constant; bm.diffuse.contents = spot(); bm.transparency = 0.7; bm.isDoubleSided = true
-    blob.materials = [bm]
-    let bn = SCNNode(geometry: blob); bn.position = SCNVector3(-r * 0.42, r * 0.5, r * 0.97); bn.eulerAngles = SCNVector3(0, 0, 0.6); root.addChildNode(bn)
-    let nucleus = SCNSphere(radius: r * 0.3); nucleus.segmentCount = 48; nucleus.materials = [glowMaterial(core)]
-    root.addChildNode(SCNNode(geometry: nucleus))
-    return root
+
+func bell(radius R: CGFloat, height H: CGFloat, segments: Int = 72) -> SCNGeometry {
+    var profile: [(CGFloat, CGFloat)] = []
+    for i in 0...24 { let a = CGFloat(i) / 24 * .pi / 2; profile.append((R * sin(a), H * cos(a))) }
+    for i in 1...6 { let t = CGFloat(i) / 6; profile.append((R * (1 - 0.06 * t), -0.2 * H * sin(t * .pi / 2))) }
+    for i in 1...20 { let t = CGFloat(i) / 20; profile.append((R * 0.94 * (1 - t), -0.2 * H + 0.55 * H * sin(t * .pi / 2))) }
+    var vertices: [SCNVector3] = []
+    for (r, y) in profile {
+        for j in 0..<segments {
+            let phi = CGFloat(j) / CGFloat(segments) * 2 * .pi
+            vertices.append(SCNVector3(r * cos(phi), y, r * sin(phi)))
+        }
+    }
+    var indices: [Int32] = []
+    for i in 0..<(profile.count - 1) {
+        for j in 0..<segments {
+            let a = Int32(i * segments + j), b = Int32(i * segments + (j + 1) % segments)
+            let c = Int32((i + 1) * segments + j), d = Int32((i + 1) * segments + (j + 1) % segments)
+            indices += [a, c, b, b, c, d]
+        }
+    }
+    var normals = [SIMD3<Float>](repeating: .zero, count: vertices.count)
+    for t in stride(from: 0, to: indices.count, by: 3) {
+        let i0 = Int(indices[t]), i1 = Int(indices[t + 1]), i2 = Int(indices[t + 2])
+        func p(_ i: Int) -> SIMD3<Float> { SIMD3(Float(vertices[i].x), Float(vertices[i].y), Float(vertices[i].z)) }
+        let n = simd_cross(p(i1) - p(i0), p(i2) - p(i0))
+        normals[i0] += n; normals[i1] += n; normals[i2] += n
+    }
+    let nv = normals.map { n -> SCNVector3 in let u = simd_normalize(n); return SCNVector3(CGFloat(u.x), CGFloat(u.y), CGFloat(u.z)) }
+    return SCNGeometry(sources: [SCNGeometrySource(vertices: vertices), SCNGeometrySource(normals: nv)], elements: [SCNGeometryElement(indices: indices, primitiveType: .triangles)])
 }
 
-let yellow = color(1, 0.84, 0.04), pink = color(1, 0.37, 0.78), green = color(0.19, 0.82, 0.35), mint = color(0.37, 0.88, 0.82)
+func tipNode(_ path: [SCNVector3], _ c: NSColor, radius: CGFloat) -> SCNNode {
+    let tip = SCNSphere(radius: radius * 1.8); tip.materials = [glowMaterial(c)]
+    let n = SCNNode(geometry: tip); n.position = path[path.count - 1]; return n
+}
+
+let yellow = color(1, 0.84, 0.04), pink = color(1, 0.37, 0.78), green = color(0.19, 0.82, 0.35), mint = color(0.37, 0.88, 0.82), orange = color(1, 0.62, 0.04)
 func v(_ x: CGFloat, _ y: CGFloat, _ z: CGFloat) -> SCNVector3 { SCNVector3(x, y, z) }
 
 let scene = SCNScene()
@@ -98,13 +121,45 @@ scene.background.contents = NSColor.clear
 scene.lightingEnvironment.contents = studio()
 scene.lightingEnvironment.intensity = 1.5
 
-let T = v(0.1, 1.5, 0), L = v(-1.6, -0.95, 0.2), R = v(1.65, -0.75, -0.2)
-scene.rootNode.addChildNode(orb(1.2, at: T, core: yellow))
-scene.rootNode.addChildNode(orb(1.35, at: L, core: mint))
-scene.rootNode.addChildNode(orb(1.15, at: R, core: pink))
-scene.rootNode.addChildNode(cable([T, v(-0.8, 2.1, 1.2), v(-1.8, 1.8, 1.5), v(-2.6, 0.9, 1.5), v(-2.1, 0.2, 1.3), v(-2.7, -0.3, 1.1), L], yellow, radius: 0.1))
-scene.rootNode.addChildNode(cable([T, v(1.0, 2.2, 1.2), v(2.0, 1.9, 1.5), v(2.8, 1.1, 1.5), v(2.3, 0.4, 1.3), v(2.9, -0.1, 1.1), R], pink, radius: 0.1))
-scene.rootNode.addChildNode(cable([L, v(-1.2, -2.1, 1.0), v(-0.5, -2.7, 1.4), v(0.3, -2.0, 1.6), v(1.0, -2.8, 1.4), v(1.9, -2.1, 1.0), R], green, radius: 0.1))
+// Five tentacles, each in its own lane with a gentle S, so none cross.
+let lanes: [CGFloat] = [-1.0, -0.5, 0, 0.5, 1.0]
+let lengths: [CGFloat] = [2.3, 2.7, 3.0, 2.7, 2.3]
+let colors = [yellow, pink, green, mint, orange]
+let amplitude: CGFloat = 0.18, wireRadius: CGFloat = 0.11
+
+let R: CGFloat = 1.9, H: CGFloat = 1.45
+let jelly = SCNNode()
+let shell = bell(radius: R, height: H)
+let gm = glassMaterial(); gm.diffuse.contents = color(0.62, 0.70, 1.0, 0.24)
+shell.materials = [gm]
+jelly.addChildNode(SCNNode(geometry: shell))
+
+// A thin bright rim defines the bell's edge.
+let rimRing = SCNTorus(ringRadius: R * 0.985, pipeRadius: 0.03)
+let rimMat = SCNMaterial(); rimMat.lightingModel = .constant; rimMat.diffuse.contents = color(0.95, 0.97, 1); rimMat.transparency = 0.8; rimRing.materials = [rimMat]
+let rimNode = SCNNode(geometry: rimRing); rimNode.position = v(0, -H * 0.08, 0); jelly.addChildNode(rimNode)
+
+// A small soft core inside the dome.
+let nucleus = SCNSphere(radius: R * 0.15); nucleus.segmentCount = 48; nucleus.materials = [glowMaterial(color(1.0, 0.85, 0.96))]
+let nucleusNode = SCNNode(geometry: nucleus); nucleusNode.position = v(0, H * 0.4, 0); jelly.addChildNode(nucleusNode)
+
+// Each tentacle gets its own lane and a gentle S, so none cross.
+let y0 = H * 0.12
+for (i, lane) in lanes.enumerated() {
+    let length = lengths[i]
+    let sign: CGFloat = i % 2 == 0 ? 1 : -1
+    var points: [SCNVector3] = []
+    for k in 0...6 {
+        let t = CGFloat(k) / 6
+        let grow = sqrt(t)
+        let x = lane * (R / 1.9) * (1 + 0.18 * t) + sign * amplitude * sin(t * .pi * 2.2) * grow
+        points.append(v(x, y0 - length * t, 0.15 * sin(t * .pi)))
+    }
+    jelly.addChildNode(cable(points, colors[i], radius: wireRadius))
+    jelly.addChildNode(tipNode(points, colors[i], radius: wireRadius))
+}
+jelly.eulerAngles = SCNVector3(0.1, 0.0, -0.12)
+scene.rootNode.addChildNode(jelly)
 
 let key = SCNNode(); key.light = SCNLight(); key.light!.type = .directional; key.light!.intensity = 900; key.eulerAngles = SCNVector3(-0.7, 0.5, 0)
 scene.rootNode.addChildNode(key)
