@@ -24,7 +24,7 @@ struct ColimaCtrlApp: App {
     }
 
     var body: some Scene {
-        Window("Colima Ctrl", id: "main") {
+        Window("Colima Control Panel", id: "main") {
             ContentView()
                 .environment(store).environment(ui).environment(prefs).environment(setup)
         }

@@ -2,8 +2,9 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-app="$root/build/Colima Ctrl.app"
+app="$root/build/Colima Control Panel.app"
 version="$(git -C "$root" describe --tags --always 2>/dev/null || echo 0.1.0)"
+version="${version#v}"
 
 cd "$root"
 swift build -c release
@@ -24,8 +25,8 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
   <key>CFBundleIdentifier</key><string>dev.mxttbennett.colima-ctrl</string>
-  <key>CFBundleName</key><string>Colima Ctrl</string>
-  <key>CFBundleDisplayName</key><string>Colima Ctrl</string>
+  <key>CFBundleName</key><string>Colima Control Panel</string>
+  <key>CFBundleDisplayName</key><string>Colima Control Panel</string>
   <key>CFBundleExecutable</key><string>ColimaCtrl</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleIconName</key><string>AppIcon</string>
@@ -39,5 +40,10 @@ cat > "$app/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --sign - "$app" >/dev/null
+# CODESIGN_IDENTITY="Developer ID Application: Name (TEAMID)" signs for distribution; without it the app is ad-hoc signed.
+if [ -n "${CODESIGN_IDENTITY:-}" ]; then
+  codesign --force --options runtime --timestamp --sign "$CODESIGN_IDENTITY" "$app" >/dev/null
+else
+  codesign --force --sign - "$app" >/dev/null
+fi
 echo "built $app"
