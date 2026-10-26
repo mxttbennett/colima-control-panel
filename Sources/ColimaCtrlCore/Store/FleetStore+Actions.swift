@@ -48,6 +48,23 @@ extension FleetStore {
         run { try await $0.send("POST", kind.path) }
     }
 
+    public func inspectVolume(_ name: String) async throws -> VolumeDetail {
+        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name
+        return VolumeDetail(try await client.get("/volumes/\(encoded)", as: APIVolumeInspect.self))
+    }
+
+    public func inspectImage(_ id: String) async throws -> ImageDetail {
+        ImageDetail(try await client.get("/images/\(id)/json", as: APIImageInspect.self))
+    }
+
+    public func inspectNetwork(_ id: String) async throws -> NetworkDetail {
+        NetworkDetail(try await client.get("/networks/\(id)", as: APINetworkInspect.self))
+    }
+
+    public func remove(network id: String) {
+        run { try await $0.send("DELETE", "/networks/\(id)") }
+    }
+
     public func cachedInspect(_ id: String) -> ContainerInspect? { inspectCache[id] }
 
     public func inspect(_ id: String) async throws -> ContainerInspect {

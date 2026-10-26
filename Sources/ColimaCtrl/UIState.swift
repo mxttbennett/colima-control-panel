@@ -27,6 +27,9 @@ enum DetailTab: String, CaseIterable, Identifiable {
 final class UIState {
     var section: Section = .containers
     var selectedContainerID: String?
+    var selectedVolumeID: String?
+    var selectedImageID: String?
+    var selectedNetworkID: String?
     var detailTab: DetailTab = .info
     var filter = ""
     var runningOnly = false
@@ -40,6 +43,30 @@ final class UIState {
         if let raw = defaults.string(forKey: "tab"), let tab = DetailTab(rawValue: raw.capitalized) { detailTab = tab }
         pendingSelection = defaults.string(forKey: "select")
     }
+
+    /// The row whose detail panel is open in the current section.
+    var paneSelection: String? {
+        get {
+            switch section {
+            case .containers: selectedContainerID
+            case .volumes: selectedVolumeID
+            case .images: selectedImageID
+            case .networks: selectedNetworkID
+            case .system: nil
+            }
+        }
+        set {
+            switch section {
+            case .containers: selectedContainerID = newValue
+            case .volumes: selectedVolumeID = newValue
+            case .images: selectedImageID = newValue
+            case .networks: selectedNetworkID = newValue
+            case .system: break
+            }
+        }
+    }
+
+    func closePane() { paneSelection = nil }
 
     func toggleSelection(_ id: String) {
         selectedContainerID = selectedContainerID == id ? nil : id

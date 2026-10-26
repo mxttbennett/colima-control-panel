@@ -26,6 +26,7 @@ struct ContainerDetailView: View {
 
 private struct DetailHeader: View {
     @Environment(FleetStore.self) private var store
+    @Environment(UIState.self) private var ui
     let row: ContainerRow
     @State private var confirmRemove = false
 
@@ -35,6 +36,8 @@ private struct DetailHeader: View {
                 StatusDot(color: row.display.color)
                 Text(row.name).font(.title3.weight(.semibold)).lineLimit(1)
                 CopyButton(text: row.name)
+                Spacer()
+                Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
             Group {
                 if row.state == "running", let started = row.startedAt {

@@ -8,6 +8,8 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
     public let id: String
     public let name: String
     public let image: String
+    public let imageID: String
+    public let volumes: [String]
     public let state: String
     public let status: String
     public let health: String?
@@ -44,6 +46,8 @@ extension ContainerRow {
             id: api.id,
             name: (api.names.first ?? api.id).trimmingCharacters(in: CharacterSet(charactersIn: "/")),
             image: api.image,
+            imageID: api.imageID ?? "",
+            volumes: (api.mounts ?? []).compactMap { $0.type == "volume" ? $0.name : nil },
             state: api.state,
             status: api.status,
             health: health == "health: starting" ? "starting" : health,
@@ -235,6 +239,86 @@ extension StatsSample {
             cpus: api.cpu.online ?? 1,
             memory: usage > reclaimable ? usage - reclaimable : 0,
             memoryLimit: api.memory?.limit ?? 0
+        )
+    }
+}
+
+public struct KeyValue: Equatable, Sendable, Identifiable {
+    public var id: String { key }
+    public let key: String
+    public let value: String
+}
+
+public struct VolumeDetail: Equatable, Sendable {
+    public let driver: String
+    public let scope: String
+    public let mountpoint: String
+    public let created: Date?
+    public let labels: [KeyValue]
+}
+
+public struct ImageDetail: Equatable, Sendable {
+    public let digest: String
+    public let created: Date?
+    public let architecture: String
+    public let os: String
+    public let entrypoint: String
+    public let command: String
+    public let exposedPorts: [String]
+    public let env: [KeyValue]
+}
+
+public struct NetworkDetail: Equatable, Sendable {
+    public struct Member: Equatable, Sendable, Identifiable {
+        public let id: String
+        public let name: String
+        public let address: String
+    }
+    public let driver: String
+    public let scope: String
+    public let created: Date?
+    public let isInternal: Bool
+    public let ipv6: Bool
+    public let subnet: String?
+    public let gateway: String?
+    public let members: [Member]
+}
+
+private func pairs(_ lines: [String]) -> [KeyValue] {
+    lines.map { line in
+        let parts = line.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+        return KeyValue(key: String(parts[0]), value: parts.count > 1 ? String(parts[1]) : "")
+    }
+}
+
+extension VolumeDetail {
+    init(_ api: APIVolumeInspect) {
+        self.init(
+            driver: api.driver ?? "local", scope: api.scope ?? "local", mountpoint: api.mountpoint ?? "",
+            created: api.createdAt.flatMap(DockerDate.parse),
+            labels: (api.labels ?? [:]).map { KeyValue(key: $0.key, value: $0.value) }.sorted { $0.key < $1.key }
+        )
+    }
+}
+
+extension ImageDetail {
+    init(_ api: APIImageInspect) {
+        self.init(
+            digest: api.repoDigests?.first ?? "", created: api.created.flatMap(DockerDate.parse),
+            architecture: api.architecture ?? "", os: api.os ?? "",
+            entrypoint: (api.config?.entrypoint ?? []).joined(separator: " "), command: (api.config?.cmd ?? []).joined(separator: " "),
+            exposedPorts: (api.config?.exposedPorts ?? [:]).keys.sorted(), env: pairs(api.config?.env ?? [])
+        )
+    }
+}
+
+extension NetworkDetail {
+    init(_ api: APINetworkInspect) {
+        let config = api.ipam?.config?.first
+        self.init(
+            driver: api.driver ?? "", scope: api.scope ?? "", created: api.created.flatMap(DockerDate.parse),
+            isInternal: api.isInternal ?? false, ipv6: api.enableIPv6 ?? false, subnet: config?.subnet, gateway: config?.gateway,
+            members: (api.containers ?? [:]).map { Member(id: $0.key, name: $0.value.name ?? String($0.key.prefix(12)), address: $0.value.ipv4 ?? "") }.sorted { $0.name < $1.name }
         )
     }
 }
