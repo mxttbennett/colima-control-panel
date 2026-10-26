@@ -136,7 +136,7 @@ private struct AboutTab: View {
             Text("Version \(version)").foregroundStyle(.secondary)
             Text("A native dashboard and menu bar companion for Colima.").foregroundStyle(.secondary).multilineTextAlignment(.center)
             HStack {
-                Link("GitHub", destination: URL(string: "https://github.com/mxttbennett/colima-ctrl-swift")!)
+                Link("GitHub", destination: URL(string: "https://github.com/mxttbennett/colima-control-panel")!)
                 Link("Colima", destination: URL(string: "https://github.com/abiosoft/colima")!)
             }
             Divider().padding(.vertical, 6)
