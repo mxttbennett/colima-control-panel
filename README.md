@@ -9,7 +9,8 @@ A browser version of the same dashboard lives in [colima-ctrl](https://github.co
 - Start, stop and restart Colima, with live output, and a Start screen when the VM is down
 - Menu bar status dot (green, yellow, red) and a quick list of running containers
 - Command palette (`⌘K`), filter, arrow-key navigation
-- Dock badge with the running container count, behind a setting (Settings, `⌘,`)
+- Dock badge with the running container count, off by default (Settings, `⌘,`), and a "Stop All Running Containers" item in the Dock menu
+- First-run setup that checks Colima is installed, shows its current resources (or suggests defaults for your Mac) to keep or change, and a Settings window with installation status, version, and the same resource controls
 
 ## Build
 

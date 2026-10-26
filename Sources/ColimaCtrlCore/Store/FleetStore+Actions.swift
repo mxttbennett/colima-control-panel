@@ -27,6 +27,12 @@ extension FleetStore {
         }
     }
 
+    public var runningIDs: [String] { containers.filter { $0.isRunning }.map(\.id) }
+
+    public func stopAllRunning() {
+        perform(.stop, on: runningIDs)
+    }
+
     public func perform(_ action: ContainerAction, project: String) {
         perform(action, on: containers.filter { $0.project == project }.map(\.id))
     }

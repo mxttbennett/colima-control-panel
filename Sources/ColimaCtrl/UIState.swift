@@ -34,6 +34,7 @@ final class UIState {
     var filter = ""
     var runningOnly = false
     var showPalette = false
+    var showSetup = false
     /// Container name from `-select`, applied once the container list loads.
     var pendingSelection: String?
 
@@ -84,11 +85,15 @@ final class UIState {
 final class Preferences {
     var dockBadge: Bool { didSet { UserDefaults.standard.set(dockBadge, forKey: "dockBadge") } }
     var menuBarCount: Bool { didSet { UserDefaults.standard.set(menuBarCount, forKey: "menuBarCount") } }
+    var setupCompleted: Bool { didSet { UserDefaults.standard.set(setupCompleted, forKey: "setupCompleted") } }
+    var statsSeconds: Int { didSet { UserDefaults.standard.set(statsSeconds, forKey: "statsSeconds") } }
 
     init() {
         let defaults = UserDefaults.standard
-        defaults.register(defaults: ["dockBadge": true, "menuBarCount": false])
+        defaults.register(defaults: ["dockBadge": false, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3])
         dockBadge = defaults.bool(forKey: "dockBadge")
         menuBarCount = defaults.bool(forKey: "menuBarCount")
+        setupCompleted = defaults.bool(forKey: "setupCompleted")
+        statsSeconds = defaults.integer(forKey: "statsSeconds")
     }
 }

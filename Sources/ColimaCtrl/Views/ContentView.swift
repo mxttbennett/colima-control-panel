@@ -4,6 +4,7 @@ import ColimaCtrlCore
 struct ContentView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @Environment(Preferences.self) private var prefs
     @FocusState private var searchFocused: Bool
 
     var body: some View {
@@ -41,6 +42,8 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $ui.showPalette) { PaletteView() }
+        .sheet(isPresented: $ui.showSetup) { SetupView() }
+        .onChange(of: prefs.statsSeconds, initial: true) { store.statsInterval = .seconds(prefs.statsSeconds) }
         .overlay(alignment: .bottom) { ErrorBanner() }
         .onAppear { store.setDemand(.window, true) }
         .onDisappear { store.setDemand(.window, false) }

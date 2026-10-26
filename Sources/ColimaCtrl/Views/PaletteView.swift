@@ -77,6 +77,9 @@ struct PaletteView: View {
         case .connecting:
             break
         }
+        if !store.runningIDs.isEmpty {
+            list.append(Command(id: "stop-all", title: "Stop all running containers", hint: "action") { store.stopAllRunning() })
+        }
         for row in store.containers {
             let name = row.service.map { "\($0) (\(row.name))" } ?? row.name
             list.append(Command(id: "open-\(row.id)", title: "Open \(name)", hint: "container") { ui.show(row.id) })

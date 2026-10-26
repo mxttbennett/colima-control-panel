@@ -5,6 +5,7 @@ import ColimaCtrlCore
 struct MenuBarContent: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @Environment(Preferences.self) private var prefs
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
 
@@ -34,6 +35,7 @@ struct MenuBarContent: View {
         .padding(16)
         .tint(Brand.blue)
         .frame(width: 340)
+        .onChange(of: prefs.statsSeconds, initial: true) { store.statsInterval = .seconds(prefs.statsSeconds) }
         .onAppear { store.setDemand(.popover, true) }
         .onDisappear { store.setDemand(.popover, false) }
     }
