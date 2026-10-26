@@ -76,7 +76,9 @@ struct VolumesView: View {
         } message: {
             Text("Its data is lost.")
         }
-        .overlay { if rows.isEmpty { ContentUnavailableView("No volumes", systemImage: "cylinder") } }
+        .overlay {
+            if !store.hasLoaded { ProgressView("Loading volumes…") } else if rows.isEmpty { ContentUnavailableView("No volumes", systemImage: "cylinder") }
+        }
     }
 }
 
@@ -110,7 +112,9 @@ struct ImagesView: View {
         .confirmationDialog("Remove image \(removal?.title ?? "")?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
             Button("Remove", role: .destructive) { if let removal { store.remove(image: removal.id) } }
         }
-        .overlay { if rows.isEmpty { ContentUnavailableView("No images", systemImage: "square.stack.3d.up") } }
+        .overlay {
+            if !store.hasLoaded { ProgressView("Loading images…") } else if rows.isEmpty { ContentUnavailableView("No images", systemImage: "square.stack.3d.up") }
+        }
     }
 }
 
@@ -136,7 +140,9 @@ struct NetworksView: View {
             }.width(90)
         }
         .scrollContentBackground(.hidden)
-        .overlay { if rows.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") } }
+        .overlay {
+            if !store.hasLoaded { ProgressView("Loading networks…") } else if rows.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") }
+        }
     }
 }
 
