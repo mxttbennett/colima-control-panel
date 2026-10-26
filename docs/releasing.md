@@ -30,10 +30,10 @@ cask "colima-control-panel" do
   version "0.1.0"
   sha256 "PASTE_THE_SHA256_HERE"
 
-  url "https://github.com/mxttbennett/colima-ctrl-swift/releases/download/v#{version}/ColimaControlPanel-#{version}.zip"
+  url "https://github.com/mxttbennett/colima-control-panel/releases/download/v#{version}/ColimaControlPanel-#{version}.zip"
   name "Colima Control Panel"
   desc "Dashboard and menu bar companion for Colima"
-  homepage "https://github.com/mxttbennett/colima-ctrl-swift"
+  homepage "https://github.com/mxttbennett/colima-control-panel"
 
   livecheck do
     url :url
