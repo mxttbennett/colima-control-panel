@@ -3,24 +3,30 @@ import ColimaCtrlCore
 
 @main
 struct ColimaCtrlApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var store: FleetStore
-    @State private var ui = UIState()
+    @State private var ui: UIState
     @State private var prefs: Preferences
+    @State private var setup = ColimaSetup()
     private let badge: BadgeController
 
     init() {
         let store = FleetStore()
         let prefs = Preferences()
+        let ui = UIState()
+        ui.showSetup = !prefs.setupCompleted
         _store = State(initialValue: store)
         _prefs = State(initialValue: prefs)
+        _ui = State(initialValue: ui)
         badge = BadgeController(store: store, prefs: prefs)
+        AppDelegate.store = store
         store.start()
     }
 
     var body: some Scene {
         Window("Colima Ctrl", id: "main") {
             ContentView()
-                .environment(store).environment(ui).environment(prefs)
+                .environment(store).environment(ui).environment(prefs).environment(setup)
         }
         .defaultSize(width: 1120, height: 720)
         .commands {
@@ -41,7 +47,7 @@ struct ColimaCtrlApp: App {
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView().environment(prefs)
+            SettingsView().environment(prefs).environment(setup).environment(store).environment(ui)
         }
     }
 }

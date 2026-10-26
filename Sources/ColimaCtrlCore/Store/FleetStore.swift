@@ -15,6 +15,7 @@ public final class FleetStore {
     public private(set) var disk: DiskUsage?
     public private(set) var info: EngineInfo?
     public var lastError: String?
+    public var statsInterval: Duration = .seconds(3)
 
     public let stats = StatsHistory()
     public let selfMetrics = SelfMetrics()
@@ -95,7 +96,7 @@ public final class FleetStore {
             statsTask = Task { [weak self] in
                 while !Task.isCancelled {
                     await self?.sampleStats()
-                    try? await Task.sleep(for: .seconds(3))
+                    try? await Task.sleep(for: self?.statsInterval ?? .seconds(3))
                 }
             }
         } else if !wanted {
