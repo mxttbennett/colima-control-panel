@@ -179,9 +179,9 @@ private struct SelfCard: View {
     var body: some View {
         let metrics = store.selfMetrics
         VStack(alignment: .leading, spacing: 4) {
-            Text("Colima Ctrl").font(.caption).foregroundStyle(.secondary)
+            Text("This app").font(.caption).foregroundStyle(.secondary)
             Text(Format.bytes(Int64(metrics.memory))).font(.title2.weight(.semibold))
-            Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU · this app").font(.caption).foregroundStyle(.secondary)
+            Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU").font(.caption).foregroundStyle(.secondary)
             Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: Brand.green).frame(height: 30).padding(.top, 6)
         }
         .padding(16)

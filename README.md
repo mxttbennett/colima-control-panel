@@ -1,48 +1,57 @@
-# Colima Ctrl (native)
+# Colima Control Panel
 
-A native macOS app for [Colima](https://github.com/abiosoft/colima): a Liquid Glass window and a menu bar item. It talks to the Docker socket directly, so there is no server and no browser tab.
+A Mac app for [Colima](https://github.com/abiosoft/colima). Open a window or the menu bar to see your containers, watch their CPU and memory, read their logs, and start or stop the VM.
 
-A browser version of the same dashboard lives in [colima-ctrl](https://github.com/mxttbennett/colima-ctrl).
+It talks to Colima's Docker socket. No server runs in the background, and nothing leaves your Mac.
 
-- Containers grouped by Compose project, with live uptime, CPU and memory graphs, ports, mounts, networks, environment (secrets hidden until clicked) and streaming logs
-- Volumes, images and networks with sortable tables, remove and prune, and a detail panel for each row (mountpoint and labels, digest and environment, subnet and connected containers), with the containers that use it one click away
-- Start, stop and restart Colima, with live output, and a Start screen when the VM is down
-- Menu bar status dot (green, yellow, red) and a quick list of running containers
-- Command palette (`⌘K`), filter, arrow-key navigation
-- Dock badge with the running container count, off by default (Settings, `⌘,`), and a "Stop All Running Containers" item in the Dock menu
-- First-run setup that checks Colima is installed, shows its current resources (or suggests defaults for your Mac) to keep or change, and a Settings window with installation status, version, and the same resource controls
+This is an independent project. It has no affiliation with Colima or its maintainers.
 
-## Build
+## What you get
 
-Needs macOS 26 and Xcode 26 or later, and a running [Colima](https://github.com/abiosoft/colima) (`brew install colima docker`).
+- **Containers**, grouped by Compose project. Each shows uptime, CPU and memory graphs, ports, mounts, networks, environment, and a live log. Environment values with names like `PASSWORD` or `TOKEN` stay hidden until you click.
+- **Volumes, images, and networks** in sortable tables. Each row opens a panel that shows what uses it and how it is configured. Remove and prune sit behind a confirmation.
+- **The VM**. Start, stop, and restart Colima with live output. When Colima is down, the window shows a Start button instead of an empty list.
+- **A menu bar icon**. A small jellyfish whose core turns green, yellow, or red with the health of your running containers.
+- **Quick actions**. Press `⌘K` for a command palette, `/` to filter, and the arrow keys to move through rows. Right-click the Dock icon for "Stop All Running Containers".
+- **Setup on first launch**. The app checks that Colima is installed, shows the CPU, memory, and disk it uses (or suggests values for your Mac), and lets you keep or change them. Settings has the same controls.
+- **An optional Dock badge** with the number of running containers. It is off by default.
+
+## Requirements
+
+- macOS 26 (Tahoe) or later
+- [Colima](https://github.com/abiosoft/colima) and the Docker CLI: `brew install colima docker`
+
+## Install
+
+Build from source. You need Xcode 26 or later.
 
 ```sh
+git clone https://github.com/mxttbennett/colima-ctrl-swift.git
+cd colima-ctrl-swift
 scripts/build-app.sh
-open "build/Colima Ctrl.app"
+open "build/Colima Control Panel.app"
 ```
 
-The script builds a release binary, compiles the layered icon with `actool`, and ad-hoc signs the bundle. The icon artwork is rendered from a SceneKit scene; regenerate it with `swift scripts/render-icon.swift Resources/AppIcon.icon/Assets/art.png`.
+Drag the app into `/Applications` to keep it. The build uses an ad hoc signature, so macOS may ask you to right-click the app and choose Open the first time.
 
-## Performance
+## Use a different Colima profile
 
-- Stats are sampled only while the window or menu bar popover is showing, using one-shot requests whose CPU is computed locally from successive samples.
-- Docker events drive refreshes; bursts are coalesced into one refresh.
-- Each container's graph data is its own observable object, so a stats tick redraws only the rows that changed.
-- Log lines are demuxed off the main thread and applied in 80 ms batches.
-- Glass is used for controls and navigation; content cards are flat fills.
-- The container detail panel overlays the list rather than resizing it, slides in over 80 ms (none with Reduce Motion), and stays mounted for a few seconds after closing. Selection redraws only the two rows involved.
+The app manages the `default` profile. To use another, launch it with `COLIMA_PROFILE=work`.
 
-## Test
+## How it works
+
+- Containers, images, volumes, and networks come from the Docker API over `~/.colima/<profile>/docker.sock`.
+- Start, stop, and restart run the `colima` command. Changing resources edits the `cpu`, `memory`, and `disk` lines in `colima.yaml`, leaves the rest alone, and saves a `.bak` copy first.
+- Graphs refresh while the window or menu bar popover is on screen and pause otherwise. CPU comes from successive one-shot samples.
+- At idle with the window open, the app uses about 0.6% CPU and 70 to 120 MB of memory.
+
+## Develop
 
 ```sh
 swift test
 ```
 
-The core tests include a live check against your Colima socket when one is running.
-
-## Configuration
-
-`COLIMA_PROFILE` selects a Colima profile (default `default`).
+The tests include checks against a running Colima socket. They skip themselves when Colima is stopped. `scripts/render-icon.swift` regenerates the icon artwork. [docs/releasing.md](docs/releasing.md) covers packaging and Homebrew.
 
 ## License
 

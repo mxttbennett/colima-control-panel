@@ -132,7 +132,7 @@ private struct AboutTab: View {
     var body: some View {
         VStack(spacing: 14) {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 96, height: 96)
-            Text("Colima Ctrl").font(.title2.weight(.semibold))
+            Text("Colima Control Panel").font(.title2.weight(.semibold))
             Text("Version \(version)").foregroundStyle(.secondary)
             Text("A native dashboard and menu bar companion for Colima.").foregroundStyle(.secondary).multilineTextAlignment(.center)
             HStack {

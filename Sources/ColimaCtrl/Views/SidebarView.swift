@@ -87,7 +87,7 @@ private struct SelfRow: View {
     var body: some View {
         let metrics = store.selfMetrics
         HStack {
-            Text("Colima Ctrl").foregroundStyle(.secondary)
+            Text("This app").foregroundStyle(.secondary)
             Spacer()
             Text("\(Format.bytes(Int64(metrics.memory))) · \(metrics.cpu, format: .number.precision(.fractionLength(1)))%").monospacedDigit()
         }
