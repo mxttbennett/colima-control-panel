@@ -3,38 +3,33 @@ import ColimaCtrlCore
 
 @MainActor
 enum MenuBarIcon {
-    /// A synth module with patch cables out of every side, drawn in the menu bar's label color, with a colored status dot.
+    /// Three orbs joined by wires, drawn in the menu bar's label color. The cores take the fleet's status color.
     static func image(for health: FleetHealth) -> NSImage {
         let size = NSSize(width: 21, height: 18)
         let image = NSImage(size: size, flipped: false) { _ in
             NSColor.labelColor.set()
-            let module = NSBezierPath(roundedRect: NSRect(x: 4.5, y: 5, width: 9, height: 7), xRadius: 1.2, yRadius: 1.2)
-            module.lineWidth = 1.4
-            module.stroke()
-            NSBezierPath(ovalIn: NSRect(x: 7.8, y: 7.3, width: 2.4, height: 2.4)).fill()
+            let wires = NSBezierPath()
+            wires.lineWidth = 1.1
+            wires.lineCapStyle = .round
+            wires.move(to: NSPoint(x: 8.2, y: 11.0))
+            wires.curve(to: NSPoint(x: 5.6, y: 7.9), controlPoint1: NSPoint(x: 6.3, y: 11.8), controlPoint2: NSPoint(x: 7.0, y: 8.6))
+            wires.move(to: NSPoint(x: 12.8, y: 11.0))
+            wires.curve(to: NSPoint(x: 16.0, y: 7.9), controlPoint1: NSPoint(x: 15.0, y: 11.8), controlPoint2: NSPoint(x: 14.2, y: 8.6))
+            wires.move(to: NSPoint(x: 8.3, y: 4.3))
+            wires.curve(to: NSPoint(x: 13.5, y: 4.3), controlPoint1: NSPoint(x: 9.2, y: 1.7), controlPoint2: NSPoint(x: 12.0, y: 6.9))
+            wires.stroke()
 
-            let cables = NSBezierPath()
-            cables.lineWidth = 1.2
-            cables.lineCapStyle = .round
-            let routes: [(from: NSPoint, c1: NSPoint, c2: NSPoint, to: NSPoint)] = [
-                (NSPoint(x: 4.5, y: 10.5), NSPoint(x: 2, y: 11), NSPoint(x: 0.8, y: 12.5), NSPoint(x: 1.8, y: 15)),
-                (NSPoint(x: 4.5, y: 6.5), NSPoint(x: 2, y: 6), NSPoint(x: 0.8, y: 4.5), NSPoint(x: 1.8, y: 2)),
-                (NSPoint(x: 13.5, y: 10.5), NSPoint(x: 16, y: 11), NSPoint(x: 17.2, y: 12.5), NSPoint(x: 16.2, y: 15)),
-                (NSPoint(x: 9, y: 12), NSPoint(x: 8.5, y: 14), NSPoint(x: 10, y: 15.5), NSPoint(x: 9, y: 17)),
-                (NSPoint(x: 9, y: 5), NSPoint(x: 8.5, y: 3.5), NSPoint(x: 10, y: 2.5), NSPoint(x: 9, y: 1)),
+            let orbs: [(center: NSPoint, radius: CGFloat)] = [
+                (NSPoint(x: 10.5, y: 13.2), 3.6), (NSPoint(x: 4.6, y: 4.8), 3.7), (NSPoint(x: 17.0, y: 4.8), 3.4),
             ]
-            for route in routes {
-                cables.move(to: route.from)
-                cables.curve(to: route.to, controlPoint1: route.c1, controlPoint2: route.c2)
-            }
-            cables.stroke()
-            for route in routes {
-                NSBezierPath(ovalIn: NSRect(x: route.to.x - 1.1, y: route.to.y - 1.1, width: 2.2, height: 2.2)).fill()
-            }
-
-            if let dot = Self.color(for: health) {
-                dot.setFill()
-                NSBezierPath(ovalIn: NSRect(x: 14.5, y: 0.5, width: 6, height: 6)).fill()
+            let core = Self.coreColor(for: health)
+            for orb in orbs {
+                let outline = NSBezierPath(ovalIn: NSRect(x: orb.center.x - orb.radius, y: orb.center.y - orb.radius, width: orb.radius * 2, height: orb.radius * 2))
+                outline.lineWidth = 1.2
+                outline.stroke()
+                core.setFill()
+                NSBezierPath(ovalIn: NSRect(x: orb.center.x - 1.4, y: orb.center.y - 1.4, width: 2.8, height: 2.8)).fill()
+                NSColor.labelColor.set()
             }
             return true
         }
@@ -42,9 +37,9 @@ enum MenuBarIcon {
         return image
     }
 
-    private static func color(for health: FleetHealth) -> NSColor? {
+    private static func coreColor(for health: FleetHealth) -> NSColor {
         switch health {
-        case .idle: nil
+        case .idle: NSColor.labelColor.withAlphaComponent(0.45)
         case .healthy: .systemGreen
         case .starting: .systemYellow
         case .unhealthy: .systemRed
