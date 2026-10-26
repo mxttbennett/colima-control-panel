@@ -3,34 +3,34 @@ import ColimaCtrlCore
 
 @MainActor
 enum MenuBarIcon {
-    /// Three orbs joined by wires, drawn in the menu bar's label color. The cores take the fleet's status color.
+    /// A jellyfish in the menu bar's label color. Its core takes the fleet's status color.
     static func image(for health: FleetHealth) -> NSImage {
         let size = NSSize(width: 21, height: 18)
         let image = NSImage(size: size, flipped: false) { _ in
             NSColor.labelColor.set()
-            let wires = NSBezierPath()
-            wires.lineWidth = 1.1
-            wires.lineCapStyle = .round
-            wires.move(to: NSPoint(x: 8.2, y: 11.0))
-            wires.curve(to: NSPoint(x: 5.6, y: 7.9), controlPoint1: NSPoint(x: 6.3, y: 11.8), controlPoint2: NSPoint(x: 7.0, y: 8.6))
-            wires.move(to: NSPoint(x: 12.8, y: 11.0))
-            wires.curve(to: NSPoint(x: 16.0, y: 7.9), controlPoint1: NSPoint(x: 15.0, y: 11.8), controlPoint2: NSPoint(x: 14.2, y: 8.6))
-            wires.move(to: NSPoint(x: 8.3, y: 4.3))
-            wires.curve(to: NSPoint(x: 13.5, y: 4.3), controlPoint1: NSPoint(x: 9.2, y: 1.7), controlPoint2: NSPoint(x: 12.0, y: 6.9))
-            wires.stroke()
 
-            let orbs: [(center: NSPoint, radius: CGFloat)] = [
-                (NSPoint(x: 10.5, y: 13.2), 3.6), (NSPoint(x: 4.6, y: 4.8), 3.7), (NSPoint(x: 17.0, y: 4.8), 3.4),
-            ]
-            let core = Self.coreColor(for: health)
-            for orb in orbs {
-                let outline = NSBezierPath(ovalIn: NSRect(x: orb.center.x - orb.radius, y: orb.center.y - orb.radius, width: orb.radius * 2, height: orb.radius * 2))
-                outline.lineWidth = 1.2
-                outline.stroke()
-                core.setFill()
-                NSBezierPath(ovalIn: NSRect(x: orb.center.x - 1.4, y: orb.center.y - 1.4, width: 2.8, height: 2.8)).fill()
-                NSColor.labelColor.set()
+            let bell = NSBezierPath()
+            bell.lineWidth = 1.3
+            bell.lineJoinStyle = .round
+            bell.move(to: NSPoint(x: 2.8, y: 9.4))
+            bell.curve(to: NSPoint(x: 18.2, y: 9.4), controlPoint1: NSPoint(x: 2.8, y: 18.6), controlPoint2: NSPoint(x: 18.2, y: 18.6))
+            bell.curve(to: NSPoint(x: 2.8, y: 9.4), controlPoint1: NSPoint(x: 13.6, y: 8.0), controlPoint2: NSPoint(x: 7.4, y: 8.0))
+            bell.close()
+            bell.stroke()
+
+            let tentacles = NSBezierPath()
+            tentacles.lineWidth = 1.15
+            tentacles.lineCapStyle = .round
+            for (index, x) in [5.4, 8.0, 10.5, 13.0, 15.6].enumerated() {
+                let bend: CGFloat = index % 2 == 0 ? 1.3 : -1.3
+                let reach: CGFloat = index == 2 ? 0.6 : 1.8
+                tentacles.move(to: NSPoint(x: x, y: 8.2))
+                tentacles.curve(to: NSPoint(x: x, y: reach), controlPoint1: NSPoint(x: x + bend, y: 6.0), controlPoint2: NSPoint(x: x - bend, y: 3.2))
             }
+            tentacles.stroke()
+
+            Self.coreColor(for: health).setFill()
+            NSBezierPath(ovalIn: NSRect(x: 10.5 - 1.7, y: 12.3 - 1.7, width: 3.4, height: 3.4)).fill()
             return true
         }
         image.isTemplate = false
