@@ -11,7 +11,7 @@ func studio() -> NSImage {
     let size = NSSize(width: 2048, height: 1024)
     let image = NSImage(size: size)
     image.lockFocus()
-    NSGradient(colors: [color(0.18, 0.16, 0.45), color(0.55, 0.52, 0.95), color(0.95, 0.95, 1.0)], atLocations: [0, 0.55, 1], colorSpace: .deviceRGB)!.draw(in: NSRect(origin: .zero, size: size), angle: 90)
+    NSGradient(colors: [color(0.16, 0.18, 0.47), color(0.52, 0.57, 0.96), color(0.95, 0.95, 1.0)], atLocations: [0, 0.55, 1], colorSpace: .deviceRGB)!.draw(in: NSRect(origin: .zero, size: size), angle: 90)
     NSColor.white.setFill()
     for rect in [NSRect(x: 300, y: 560, width: 380, height: 220), NSRect(x: 1250, y: 620, width: 520, height: 180), NSRect(x: 800, y: 300, width: 160, height: 300)] {
         NSBezierPath(roundedRect: rect, xRadius: 40, yRadius: 40).fill()
@@ -35,7 +35,7 @@ func glassMaterial() -> SCNMaterial {
     m.writesToDepthBuffer = false
     m.transparencyMode = .aOne
     m.lightingModel = .physicallyBased
-    m.diffuse.contents = color(0.62, 0.64, 1.0, 0.20)
+    m.diffuse.contents = color(0.60, 0.66, 1.0, 0.20)
     m.metalness.contents = 0.0
     m.roughness.contents = 0.05
     return m
