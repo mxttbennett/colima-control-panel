@@ -26,8 +26,8 @@ This is an independent project. It has no affiliation with Colima or its maintai
 Build from source. You need Xcode 26 or later.
 
 ```sh
-git clone https://github.com/mxttbennett/colima-ctrl-swift.git
-cd colima-ctrl-swift
+git clone https://github.com/mxttbennett/colima-control-panel.git
+cd colima-control-panel
 scripts/build-app.sh
 open "build/Colima Control Panel.app"
 ```
