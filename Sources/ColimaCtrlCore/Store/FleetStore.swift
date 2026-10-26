@@ -14,6 +14,8 @@ public final class FleetStore {
     public private(set) var networks: [NetworkRow] = []
     public private(set) var disk: DiskUsage?
     public private(set) var info: EngineInfo?
+    /// False until the first full refresh after connecting, so views can show "loading" instead of "none".
+    public private(set) var hasLoaded = false
     public var lastError: String?
     public var statsInterval: Duration = .seconds(3)
 
@@ -73,6 +75,7 @@ public final class FleetStore {
 
     private func disconnected() {
         connection = .down
+        hasLoaded = false
         session?.cancel()
         session = nil
         updateStatsTask()
@@ -112,6 +115,7 @@ public final class FleetStore {
         do {
             if heavy { try await refreshHeavy() }
             try await refreshContainers()
+            if !hasLoaded { hasLoaded = true }
         } catch {
             if connection == .up, !Task.isCancelled { lastError = error.localizedDescription }
         }

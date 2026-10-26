@@ -14,7 +14,7 @@ struct ContentView: View {
         } detail: {
             PaneHost {
                 if store.connection == .connecting {
-                    ProgressView().controlSize(.large).frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ProgressView("Connecting to Colima…").controlSize(.large).frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if store.connection == .down || store.vm.isBusy && store.connection != .up {
                     DownView()
                 } else {

@@ -8,7 +8,9 @@ struct ContainersView: View {
     var body: some View {
         let groups = grouped()
         Group {
-            if groups.isEmpty {
+            if !store.hasLoaded {
+                ProgressView("Loading containers…").frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if groups.isEmpty {
                 ContentUnavailableView(store.containers.isEmpty ? "No containers" : "Nothing matches", systemImage: "shippingbox")
             } else {
                 List {
