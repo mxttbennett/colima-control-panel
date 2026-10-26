@@ -32,6 +32,7 @@ struct MenuBarContent: View {
             }
         }
         .padding(16)
+        .tint(Brand.blue)
         .frame(width: 340)
         .onAppear { store.setDemand(.popover, true) }
         .onDisappear { store.setDemand(.popover, false) }

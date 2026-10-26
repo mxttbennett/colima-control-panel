@@ -30,6 +30,7 @@ struct PaneHost<Content: View>: View {
                     .frame(maxHeight: .infinity)
                     .background(Color(nsColor: .windowBackgroundColor))
                     .overlay(alignment: .leading) { Divider() }
+                    .overlay(alignment: .top) { Rectangle().fill(mounted.section.color).frame(height: 3) }
                     .offset(x: open && mounted == target ? 0 : width + 1)
                     .allowsHitTesting(open && mounted == target)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.08), value: open)
