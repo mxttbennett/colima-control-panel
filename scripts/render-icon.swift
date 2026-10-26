@@ -14,7 +14,7 @@ func studio() -> NSImage {
     let size = NSSize(width: 2048, height: 1024)
     let image = NSImage(size: size)
     image.lockFocus()
-    NSGradient(colors: [color(0.16, 0.18, 0.47), color(0.52, 0.57, 0.96), color(0.95, 0.95, 1.0)], atLocations: [0, 0.55, 1], colorSpace: .deviceRGB)!.draw(in: NSRect(origin: .zero, size: size), angle: 90)
+    NSGradient(colors: [color(0.04, 0.07, 0.40), color(0.20, 0.32, 0.92), color(0.80, 0.86, 1.0)], atLocations: [0, 0.55, 1], colorSpace: .deviceRGB)!.draw(in: NSRect(origin: .zero, size: size), angle: 90)
     NSColor.white.setFill()
     for rect in [NSRect(x: 300, y: 560, width: 380, height: 220), NSRect(x: 1250, y: 620, width: 520, height: 180), NSRect(x: 800, y: 300, width: 160, height: 300)] {
         NSBezierPath(roundedRect: rect, xRadius: 40, yRadius: 40).fill()
@@ -49,7 +49,7 @@ func glowMaterial(_ c: NSColor) -> SCNMaterial {
     m.lightingModel = .physicallyBased
     m.diffuse.contents = c
     m.emission.contents = c
-    m.emission.intensity = 1.1
+    m.emission.intensity = 0.7
     m.metalness.contents = 0.0
     m.roughness.contents = 0.25
     return m
@@ -113,7 +113,7 @@ func tipNode(_ path: [SCNVector3], _ c: NSColor, radius: CGFloat) -> SCNNode {
     let n = SCNNode(geometry: tip); n.position = path[path.count - 1]; return n
 }
 
-let yellow = color(1, 0.84, 0.04), pink = color(1, 0.37, 0.78), green = color(0.19, 0.82, 0.35), mint = color(0.37, 0.88, 0.82), orange = color(1, 0.62, 0.04)
+let yellow = color(1, 0.80, 0), pink = color(1, 0.18, 0.62), green = color(0, 0.76, 0.28), mint = color(0, 0.80, 0.74), orange = color(1, 0.48, 0)
 func v(_ x: CGFloat, _ y: CGFloat, _ z: CGFloat) -> SCNVector3 { SCNVector3(x, y, z) }
 
 let scene = SCNScene()
@@ -130,7 +130,7 @@ let amplitude: CGFloat = 0.18, wireRadius: CGFloat = 0.11
 let R: CGFloat = 1.9, H: CGFloat = 1.45
 let jelly = SCNNode()
 let shell = bell(radius: R, height: H)
-let gm = glassMaterial(); gm.diffuse.contents = color(0.62, 0.70, 1.0, 0.24)
+let gm = glassMaterial(); gm.diffuse.contents = color(0.28, 0.40, 1.0, 0.34)
 shell.materials = [gm]
 jelly.addChildNode(SCNNode(geometry: shell))
 
@@ -140,7 +140,7 @@ let rimMat = SCNMaterial(); rimMat.lightingModel = .constant; rimMat.diffuse.con
 let rimNode = SCNNode(geometry: rimRing); rimNode.position = v(0, -H * 0.08, 0); jelly.addChildNode(rimNode)
 
 // A small soft core inside the dome.
-let nucleus = SCNSphere(radius: R * 0.15); nucleus.segmentCount = 48; nucleus.materials = [glowMaterial(color(1.0, 0.85, 0.96))]
+let nucleus = SCNSphere(radius: R * 0.15); nucleus.segmentCount = 48; nucleus.materials = [glowMaterial(color(1.0, 0.55, 0.85))]
 let nucleusNode = SCNNode(geometry: nucleus); nucleusNode.position = v(0, H * 0.4, 0); jelly.addChildNode(nucleusNode)
 
 // Each tentacle gets its own lane and a gentle S, so none cross.
@@ -165,7 +165,7 @@ let key = SCNNode(); key.light = SCNLight(); key.light!.type = .directional; key
 scene.rootNode.addChildNode(key)
 let cam = SCNNode(); cam.camera = SCNCamera()
 cam.camera!.fieldOfView = 34; cam.camera!.wantsHDR = true
-cam.camera!.bloomIntensity = 0.55; cam.camera!.bloomThreshold = 0.9; cam.camera!.bloomBlurRadius = 10
+cam.camera!.bloomIntensity = 0.35; cam.camera!.bloomThreshold = 0.9; cam.camera!.bloomBlurRadius = 10
 cam.position = v(0, 0.25, 13); scene.rootNode.addChildNode(cam)
 
 let renderer = SCNRenderer(device: MTLCreateSystemDefaultDevice()!, options: nil)

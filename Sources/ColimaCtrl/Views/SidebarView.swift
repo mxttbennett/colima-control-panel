@@ -9,7 +9,7 @@ struct SidebarView: View {
         @Bindable var ui = ui
         List(Section.allCases, selection: $ui.section) { section in
             HStack {
-                Label { Text(section.title) } icon: { Image(systemName: section.symbol).foregroundStyle(section.color) }
+                Label { Text(section.title) } icon: { SectionIcon(section: section) }
                 Spacer()
                 if section == .containers, let color = store.health.color {
                     StatusDot(color: color, size: 8).help(store.health.label)
@@ -32,6 +32,15 @@ struct SidebarView: View {
         case .networks: store.networks.count
         case .system: nil
         }
+    }
+}
+
+private struct SectionIcon: View {
+    @Environment(\.backgroundProminence) private var prominence
+    let section: Section
+
+    var body: some View {
+        Image(systemName: section.symbol).foregroundStyle(prominence == .increased ? Color.white : section.color)
     }
 }
 
