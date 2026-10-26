@@ -17,6 +17,7 @@ public final class FleetStore {
     public var lastError: String?
 
     public let stats = StatsHistory()
+    public let selfMetrics = SelfMetrics()
     public let vm: ColimaVM
     public let client: DockerClient
 
@@ -83,6 +84,7 @@ public final class FleetStore {
 
     public func setDemand(_ source: StatsDemand, _ active: Bool) {
         if active { demand.insert(source) } else { demand.remove(source) }
+        selfMetrics.setActive(!demand.isEmpty)
         updateStatsTask()
     }
 
