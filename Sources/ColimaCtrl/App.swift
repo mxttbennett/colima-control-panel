@@ -39,7 +39,7 @@ struct ColimaCtrlApp: App {
             }
         }
 
-        MenuBarExtra {
+        MenuBarExtra(isInserted: Bindable(prefs).showMenuBarIcon) {
             MenuBarContent().environment(store).environment(ui).environment(prefs)
         } label: {
             MenuBarLabel().environment(store).environment(prefs)

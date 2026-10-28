@@ -84,14 +84,16 @@ final class UIState {
 @MainActor @Observable
 final class Preferences {
     var dockBadge: Bool { didSet { UserDefaults.standard.set(dockBadge, forKey: "dockBadge") } }
+    var showMenuBarIcon: Bool { didSet { UserDefaults.standard.set(showMenuBarIcon, forKey: "showMenuBarIcon") } }
     var menuBarCount: Bool { didSet { UserDefaults.standard.set(menuBarCount, forKey: "menuBarCount") } }
     var setupCompleted: Bool { didSet { UserDefaults.standard.set(setupCompleted, forKey: "setupCompleted") } }
     var statsSeconds: Int { didSet { UserDefaults.standard.set(statsSeconds, forKey: "statsSeconds") } }
 
     init() {
         let defaults = UserDefaults.standard
-        defaults.register(defaults: ["dockBadge": false, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3])
+        defaults.register(defaults: ["dockBadge": false, "showMenuBarIcon": true, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3])
         dockBadge = defaults.bool(forKey: "dockBadge")
+        showMenuBarIcon = defaults.bool(forKey: "showMenuBarIcon")
         menuBarCount = defaults.bool(forKey: "menuBarCount")
         setupCompleted = defaults.bool(forKey: "setupCompleted")
         statsSeconds = defaults.integer(forKey: "statsSeconds")
