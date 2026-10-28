@@ -11,7 +11,7 @@ This is an independent project. It has no affiliation with Colima or its maintai
 - **Containers**, grouped by Compose project. Each shows uptime, CPU and memory graphs, ports, mounts, networks, environment, and a live log. Environment values with names like `PASSWORD` or `TOKEN` stay hidden until you click.
 - **Volumes, images, and networks** in sortable tables. Each row opens a panel that shows what uses it and how it is configured. Remove and prune sit behind a confirmation.
 - **The VM**. Start, stop, and restart Colima with live output. When Colima is down, the window shows a Start button instead of an empty list.
-- **A menu bar icon**. A small jellyfish whose core turns green, yellow, or red with the health of your running containers.
+- **A menu bar icon**. A small jellyfish whose core turns green, yellow, or red with the health of your running containers. Turn it off in Settings if you don't want it.
 - **Quick actions**. Press `⌘K` for a command palette, `/` to filter, and the arrow keys to move through rows. Right-click the Dock icon for "Stop All Running Containers".
 - **Setup on first launch**. The app checks that Colima is installed, shows the CPU, memory, and disk it uses (or suggests values for your Mac), and lets you keep or change them. Settings has the same controls.
 - **An optional Dock badge** with the number of running containers. It is off by default.

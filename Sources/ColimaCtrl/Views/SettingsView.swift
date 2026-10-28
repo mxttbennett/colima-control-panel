@@ -33,7 +33,9 @@ private struct GeneralTab: View {
         Form {
             SwiftUI.Section("Appearance") {
                 Toggle("Show running containers on the Dock icon", isOn: $prefs.dockBadge)
+                Toggle("Show menu bar icon", isOn: $prefs.showMenuBarIcon)
                 Toggle("Show running count next to the menu bar icon", isOn: $prefs.menuBarCount)
+                    .disabled(!prefs.showMenuBarIcon)
             }
             SwiftUI.Section("Behavior") {
                 Toggle("Open at login", isOn: $launchAtLogin)
