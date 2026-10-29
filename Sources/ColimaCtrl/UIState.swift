@@ -27,6 +27,7 @@ enum DetailTab: String, CaseIterable, Identifiable {
 final class UIState {
     var section: Section = .containers
     var selectedContainerID: String?
+    var selectedContainerIDs: Set<String> = []
     var selectedVolumeID: String?
     var selectedImageID: String?
     var selectedNetworkID: String?
@@ -69,14 +70,10 @@ final class UIState {
 
     func closePane() { paneSelection = nil }
 
-    func toggleSelection(_ id: String) {
-        selectedContainerID = selectedContainerID == id ? nil : id
-        detailTab = .info
-    }
-
     func show(_ container: String, tab: DetailTab = .info) {
         section = .containers
         selectedContainerID = container
+        selectedContainerIDs = [container]
         detailTab = tab
     }
 }
