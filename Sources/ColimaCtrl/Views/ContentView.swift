@@ -52,6 +52,7 @@ struct ContentView: View {
             guard let name = ui.pendingSelection, let match = store.containers.first(where: { $0.name == name }) else { return }
             ui.pendingSelection = nil
             ui.selectedContainerID = match.id
+            ui.selectedContainerIDs = [match.id]
         }
         .tint(Brand.blue)
         .frame(minWidth: 940, minHeight: 580)

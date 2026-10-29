@@ -4,8 +4,10 @@ import ColimaCtrlCore
 struct ContainersView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @State private var pendingRemoval: PendingContainerRemoval?
 
     var body: some View {
+        @Bindable var ui = ui
         let groups = grouped()
         Group {
             if !store.hasLoaded {
@@ -13,18 +15,26 @@ struct ContainersView: View {
             } else if groups.isEmpty {
                 ContentUnavailableView(store.containers.isEmpty ? "No containers" : "Nothing matches", systemImage: "shippingbox")
             } else {
-                List {
+                List(selection: $ui.selectedContainerIDs) {
                     ForEach(groups, id: \.project) { group in
                         SwiftUI.Section {
                             ForEach(group.rows) { row in
                                 ContainerRowView(row: row)
                                     .contentShape(Rectangle())
-                                    .onTapGesture { ui.toggleSelection(row.id) }
-                                    .listRowBackground(SelectionBackground(id: row.id))
-                                    .contextMenu { ContainerMenu(row: row) }
+                                    .tag(row.id)
+                                    .contextMenu {
+                                        ContainerMenu(row: row, selectedIDs: ui.selectedContainerIDs) { ids in
+                                            requestRemoval(ids, title: removalTitle(for: ids))
+                                        }
+                                    }
                             }
                         } header: {
-                            GroupHeader(project: group.project, rows: group.rows)
+                            GroupHeader(project: group.project, rows: group.rows) {
+                                guard let project = group.project else { return }
+                                let projectRows = store.containers.filter { $0.project == project }
+                                let title = "Remove all \(projectRows.count) containers from \(project)?"
+                                requestRemoval(projectRows.map(\.id), title: title)
+                            }
                         }
                     }
                 }
@@ -34,6 +44,38 @@ struct ContainersView: View {
         }
         .onKeyPress(.downArrow) { move(1, in: groups) }
         .onKeyPress(.upArrow) { move(-1, in: groups) }
+        .onChange(of: ui.selectedContainerIDs) {
+            if ui.selectedContainerIDs.count == 1, let id = ui.selectedContainerIDs.first {
+                ui.selectedContainerID = id
+                ui.detailTab = .info
+            } else if ui.selectedContainerIDs.isEmpty {
+                ui.selectedContainerID = nil
+            }
+        }
+        .confirmationDialog(
+            pendingRemoval?.title ?? "Remove containers?",
+            isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { pendingRemoval = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button(pendingRemoval.map { $0.ids.count == 1 ? "Remove Container" : "Remove \($0.ids.count) Containers" } ?? "Remove", role: .destructive) {
+                guard let pendingRemoval else { return }
+                store.remove(containers: pendingRemoval.ids)
+                ui.selectedContainerIDs.subtract(pendingRemoval.ids)
+                if let selected = ui.selectedContainerID, pendingRemoval.ids.contains(selected) { ui.selectedContainerID = nil }
+                self.pendingRemoval = nil
+            }
+        } message: {
+            Text("Running containers are force-stopped.")
+        }
+    }
+
+    private func requestRemoval(_ ids: [String], title: String) {
+        guard !ids.isEmpty else { return }
+        pendingRemoval = PendingContainerRemoval(ids: ids, title: title)
+    }
+
+    private func removalTitle(for ids: [String]) -> String {
+        ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?"
     }
 
     private struct ProjectGroup { let project: String?; let rows: [ContainerRow] }
@@ -54,15 +96,23 @@ struct ContainersView: View {
         let ordered = groups.flatMap(\.rows)
         guard !ordered.isEmpty else { return .ignored }
         let index = ordered.firstIndex { $0.id == ui.selectedContainerID } ?? (step > 0 ? -1 : ordered.count)
-        ui.selectedContainerID = ordered[min(ordered.count - 1, max(0, index + step))].id
+        let id = ordered[min(ordered.count - 1, max(0, index + step))].id
+        ui.selectedContainerID = id
+        ui.selectedContainerIDs = [id]
         return .handled
     }
+}
+
+private struct PendingContainerRemoval {
+    let ids: [String]
+    let title: String
 }
 
 private struct GroupHeader: View {
     @Environment(FleetStore.self) private var store
     let project: String?
     let rows: [ContainerRow]
+    let removeAll: () -> Void
 
     var body: some View {
         HStack {
@@ -75,6 +125,7 @@ private struct GroupHeader: View {
                         Button("Start All") { store.perform(.start, project: project) }
                         Button("Restart All") { store.perform(.restart, project: project) }
                         Button("Stop All") { store.perform(.stop, project: project) }
+                        Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll)
                     }
                     .buttonStyle(.glass).controlSize(.small)
                 }
@@ -89,6 +140,8 @@ struct ContainerMenu: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
     let row: ContainerRow
+    let selectedIDs: Set<String>
+    let onRemove: ([String]) -> Void
 
     var body: some View {
         if row.isRunning {
@@ -101,17 +154,9 @@ struct ContainerMenu: View {
         Divider()
         Button("Copy Name") { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(row.name, forType: .string) }
         Divider()
-        Button("Remove", role: .destructive) { store.remove(container: row.id) }
-    }
-}
-
-/// Reads the selection itself, so changing it redraws two rows instead of the whole list.
-private struct SelectionBackground: View {
-    @Environment(UIState.self) private var ui
-    let id: String
-
-    var body: some View {
-        (ui.selectedContainerID == id ? Color.accentColor.opacity(0.16) : Color.clear)
+        Button(selectedIDs.contains(row.id) && selectedIDs.count > 1 ? "Remove \(selectedIDs.count) Selected" : "Remove", role: .destructive) {
+            onRemove(selectedIDs.contains(row.id) ? Array(selectedIDs) : [row.id])
+        }
     }
 }
 

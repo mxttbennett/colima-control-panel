@@ -38,7 +38,17 @@ extension FleetStore {
     }
 
     public func remove(container id: String) {
-        run { try await $0.send("DELETE", "/containers/\(id)?force=1") }
+        remove(containers: [id])
+    }
+
+    public func remove(containers ids: [String]) {
+        guard !ids.isEmpty else { return }
+        run { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                for id in ids { group.addTask { try await client.send("DELETE", "/containers/\(id)?force=1") } }
+                try await group.waitForAll()
+            }
+        }
     }
 
     public func remove(image id: String) {
