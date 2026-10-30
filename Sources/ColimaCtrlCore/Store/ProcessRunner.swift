@@ -1,8 +1,9 @@
 import Foundation
+import Darwin
 
 enum ProcessRunner {
     /// Runs a command and streams its combined output line by line. Returns the exit status, or -1 if it could not start.
-    static func run(_ executable: String, _ arguments: [String], onLine: @escaping @Sendable (String) -> Void) async -> Int32 {
+    static func run(_ executable: String, _ arguments: [String], timeout: Duration? = nil, onLine: @escaping @Sendable (String) -> Void) async -> Int32 {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
@@ -27,6 +28,20 @@ enum ProcessRunner {
             }
         }
 
+        let didTimeOut = LockedFlag()
+        let timeoutWork = timeout.map { _ in
+            DispatchWorkItem {
+                guard process.isRunning else { return }
+                didTimeOut.set()
+                process.terminate()
+                DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+                    if process.isRunning { _ = kill(process.processIdentifier, SIGKILL) }
+                }
+            }
+        }
+        if let timeoutWork, let timeout {
+            DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(Int(timeout.components.seconds)), execute: timeoutWork)
+        }
         let status: Int32 = await withCheckedContinuation { continuation in
             process.terminationHandler = { continuation.resume(returning: $0.terminationStatus) }
             do { try process.run() } catch {
@@ -34,8 +49,9 @@ enum ProcessRunner {
                 continuation.resume(returning: -1)
             }
         }
+        timeoutWork?.cancel()
         for await line in lines { onLine(line) }
-        return status
+        return didTimeOut.value ? -2 : status
     }
 
     static func stripANSI(_ text: String) -> String {
@@ -44,9 +60,31 @@ enum ProcessRunner {
 
     /// Output of a short command, or nil if it failed.
     static func capture(_ executable: String, _ arguments: [String]) async -> String? {
+        let result = await captureResult(executable, arguments)
+        return result.status == 0 ? result.output : nil
+    }
+
+    static func captureResult(_ executable: String, _ arguments: [String]) async -> (status: Int32, output: String) {
         let box = LineBox()
         let status = await run(executable, arguments) { box.append($0) }
-        return status == 0 ? box.joined : nil
+        return (status, box.joined)
+    }
+}
+
+private final class LockedFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var flag = false
+
+    func set() {
+        lock.lock()
+        defer { lock.unlock() }
+        flag = true
+    }
+
+    var value: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return flag
     }
 }
 
