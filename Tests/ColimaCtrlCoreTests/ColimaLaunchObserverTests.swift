@@ -20,6 +20,21 @@ import Testing
     #expect(startsAfterNextColimaStart)
 }
 
+@Test func ignoresColimaAlreadyRunningAtFirstObservation() {
+    // Arrange
+    var observer = ColimaLaunchObserver()
+
+    // Act
+    let firstObservation = observer.shouldLaunchCCP(isRunning: true)
+    let afterStop = observer.shouldLaunchCCP(isRunning: false)
+    let startsAfterStop = observer.shouldLaunchCCP(isRunning: true)
+
+    // Assert
+    #expect(!firstObservation)
+    #expect(!afterStop)
+    #expect(startsAfterStop)
+}
+
 @Test func statusArgumentsIncludeNonDefaultProfile() {
     // Arrange
     let defaultProfile = "default"
