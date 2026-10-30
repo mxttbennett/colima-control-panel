@@ -119,10 +119,11 @@ struct VMControls: View {
                 }
             } else if store.connection == .up {
                 GlassEffectContainer(spacing: 6) {
-                    VStack(spacing: 6) {
-                        Button("Restart Colima") { confirming = .restart }.frame(maxWidth: .infinity)
-                        Button("Stop Colima") { confirming = .stop }.frame(maxWidth: .infinity)
+                    HStack(spacing: 6) {
+                        Button("Restart Colima") { confirming = .restart }
+                        Button("Stop") { confirming = .stop }
                     }
+                    .frame(maxWidth: .infinity)
                     .buttonStyle(.glass).controlSize(.small)
                 }
             } else if store.connection == .down {
