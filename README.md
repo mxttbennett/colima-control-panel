@@ -1,58 +1,60 @@
+<p align="center">
+  <img src="Resources/AppIcon.icon/Assets/art.png" width="144" alt="Colima Control Panel app icon, a glass jellyfish">
+</p>
+
 # Colima Control Panel
 
-A Mac app for [Colima](https://github.com/abiosoft/colima). Open a window or the menu bar to see your containers, watch their CPU and memory, read their logs, and start or stop the VM.
+A native macOS dashboard and menu bar companion for [Colima](https://github.com/abiosoft/colima). Browse containers, images, volumes, and networks, watch resource use, and manage your VM from one place.
 
-It talks to Colima's Docker socket. No network service runs by default, and nothing leaves your Mac.
+This is an independent project and is not affiliated with Colima or its maintainers.
 
-This is an independent project. It has no affiliation with Colima or its maintainers.
+## Screenshots
 
-## What you get
+Screenshots use sample Docker data.
 
-- **Containers**, grouped by Compose project. Each shows uptime, CPU and memory graphs, ports, mounts, networks, environment, and a live log. Environment values with names like `PASSWORD` or `TOKEN` stay hidden until you click.
-- **Volumes, images, and networks** in sortable tables. Each row opens a panel that shows what uses it and how it is configured. Remove and prune sit behind a confirmation.
-- **The VM**. Start, stop, and restart Colima with live output. When Colima is down, the window shows a Start button instead of an empty list.
-- **A menu bar icon**. A small jellyfish whose core turns green, yellow, or red with the health of your running containers. Turn it off in Settings if you don't want it.
-- **Keep CCP running with Colima**. An optional setting starts Colima when CCP opens, opens CCP when Colima starts, and stops Colima when you quit CCP. A small local helper checks the active profile's Docker socket every three seconds. CCP saves the active profile so the helper can keep watching after CCP quits.
-- **Quick actions**. Press `⌘K` for a command palette, `/` to filter, and the arrow keys to move through rows. Right-click the Dock icon for "Stop All Running Containers".
-- **Setup on first launch**. The app checks that Colima is installed, shows the CPU, memory, and disk it uses (or suggests values for your Mac), and lets you keep or change them. Settings has the same controls.
-- **An optional Dock badge** with the number of running containers. It is off by default.
+<img src="docs/images/container-detail.png" width="100%" alt="Colima Control Panel showing a Compose project, running containers, resource graphs, and container details">
 
-## Requirements
-
-- macOS 26 (Tahoe) or later
-- [Colima](https://github.com/abiosoft/colima) and the Docker CLI: `brew install colima docker`
+<img src="docs/images/settings.png" width="560" alt="General settings, including the optional Keep CCP running with Colima setting">
 
 ## Install
 
-Build from source. You need Xcode 26 or later.
+Colima Control Panel requires macOS 26 or later, Colima, the Docker CLI, and Xcode 26 or later to build.
 
 ```sh
+brew install colima docker
 git clone https://github.com/mxttbennett/colima-control-panel.git
 cd colima-control-panel
 scripts/build-app.sh
 open "build/Colima Control Panel.app"
 ```
 
-Drag the app into `/Applications` to keep it. The build uses an ad hoc signature, so macOS may ask you to right-click the app and choose Open the first time.
+Move the app to `/Applications` to keep it. Builds use an ad hoc signature, so macOS may ask you to right-click the app and choose Open the first time.
 
-## Use a different Colima profile
+## Use
 
-The app manages the `default` profile. To use another, launch it with `COLIMA_PROFILE=work`.
+- Start, stop, and restart Colima from the sidebar.
+- Browse containers by Compose project. Select a container to see its health, ports, environment, logs, and resource graphs.
+- Inspect images, volumes, and networks, and remove or prune them with confirmation.
+- Press **⌘K** for the command palette, `/` to filter, and use arrow keys to move through containers.
+- Set `COLIMA_PROFILE=work` when launching CCP to use a profile other than `default`.
+- Enable **Keep CCP running with Colima** in Settings to have CCP start Colima when it opens, open when Colima starts externally, and stop Colima when CCP quits. This option is off by default.
 
 ## How it works
 
-- Containers, images, volumes, and networks come from the Docker API over `~/.colima/<profile>/docker.sock`.
-- Start, stop, and restart run the `colima` command. Changing resources edits the `cpu`, `memory`, and `disk` lines in `colima.yaml`, leaves the rest alone, and saves a `.bak` copy first.
-- Graphs refresh while the window or menu bar popover is on screen and pause otherwise. CPU comes from successive one-shot samples.
-- At idle with the window open, the app uses about 0.6% CPU and 70 to 120 MB of memory.
+CCP reads Docker data from `~/.colima/<profile>/docker.sock`. It does not run a network service or send data off your Mac.
+
+When **Keep CCP running with Colima** is enabled, a small bundled LaunchAgent checks the active profile's Docker socket every three seconds. It opens CCP when Colima starts and keeps watching after CCP quits. CCP saves the active profile so the helper can follow it.
 
 ## Develop
 
 ```sh
 swift test
+scripts/build-app.sh
 ```
 
-The tests include checks against a running Colima socket. They skip themselves when Colima is stopped. `scripts/render-icon.swift` regenerates the icon artwork. [docs/releasing.md](docs/releasing.md) covers packaging and Homebrew.
+The tests include Docker API checks against a running Colima socket. They skip those checks when Colima is stopped. `scripts/render-icon.swift` renders the artwork used by the app icon.
+
+See [docs/releasing.md](docs/releasing.md) for packaging and Homebrew release steps.
 
 ## License
 
