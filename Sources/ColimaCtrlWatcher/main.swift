@@ -12,11 +12,17 @@ struct ColimaCtrlWatcher {
         }
         let bundleIdentifier = "dev.mxttbennett.colima-ctrl"
         let defaults = UserDefaults(suiteName: bundleIdentifier) ?? .standard
-        let profile = defaults.string(forKey: "colimaProfile") ?? "default"
-        let client = DockerClient(socketPath: DockerClient.defaultSocketPath(profile: profile))
+        var profile = "default"
+        var client = DockerClient(socketPath: DockerClient.defaultSocketPath(profile: profile))
         var observer = ColimaLaunchObserver()
 
         while true {
+            let selected = defaults.string(forKey: "colimaProfile") ?? "default"
+            if selected != profile {
+                profile = selected
+                client = DockerClient(socketPath: DockerClient.defaultSocketPath(profile: profile))
+                observer = ColimaLaunchObserver()
+            }
             let isRunning = await client.ping()
             if observer.shouldLaunchCCP(isRunning: isRunning), NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty {
                 let open = Process()
