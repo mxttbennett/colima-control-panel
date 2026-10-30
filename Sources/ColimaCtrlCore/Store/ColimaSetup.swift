@@ -33,8 +33,8 @@ public final class ColimaSetup {
         return false
     }
 
-    public init(profile: String = ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? "default") {
-        self.profile = profile
+    public init(profile: String? = nil) {
+        self.profile = profile ?? ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? UserDefaults.standard.string(forKey: "colimaProfile") ?? "default"
     }
 
     public func refresh() async {

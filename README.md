@@ -2,7 +2,7 @@
 
 A Mac app for [Colima](https://github.com/abiosoft/colima). Open a window or the menu bar to see your containers, watch their CPU and memory, read their logs, and start or stop the VM.
 
-It talks to Colima's Docker socket. No server runs in the background, and nothing leaves your Mac.
+It talks to Colima's Docker socket. No network service runs by default, and nothing leaves your Mac.
 
 This is an independent project. It has no affiliation with Colima or its maintainers.
 
@@ -12,6 +12,7 @@ This is an independent project. It has no affiliation with Colima or its maintai
 - **Volumes, images, and networks** in sortable tables. Each row opens a panel that shows what uses it and how it is configured. Remove and prune sit behind a confirmation.
 - **The VM**. Start, stop, and restart Colima with live output. When Colima is down, the window shows a Start button instead of an empty list.
 - **A menu bar icon**. A small jellyfish whose core turns green, yellow, or red with the health of your running containers. Turn it off in Settings if you don't want it.
+- **Keep CCP running with Colima**. An optional setting starts Colima when CCP opens, opens CCP when Colima starts, and stops Colima when you quit CCP. A small local helper checks the active profile's Docker socket every three seconds. CCP saves the active profile so the helper can keep watching after CCP quits.
 - **Quick actions**. Press `⌘K` for a command palette, `/` to filter, and the arrow keys to move through rows. Right-click the Dock icon for "Stop All Running Containers".
 - **Setup on first launch**. The app checks that Colima is installed, shows the CPU, memory, and disk it uses (or suggests values for your Mac), and lets you keep or change them. Settings has the same controls.
 - **An optional Dock badge** with the number of running containers. It is off by default.
