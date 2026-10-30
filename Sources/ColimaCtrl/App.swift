@@ -14,13 +14,22 @@ struct ColimaCtrlApp: App {
         let store = FleetStore()
         let prefs = Preferences()
         let ui = UIState()
+        let profile = ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? UserDefaults.standard.string(forKey: "colimaProfile") ?? "default"
+        UserDefaults.standard.set(profile, forKey: "colimaProfile")
         ui.showSetup = !prefs.setupCompleted
         _store = State(initialValue: store)
         _prefs = State(initialValue: prefs)
         _ui = State(initialValue: ui)
         badge = BadgeController(store: store, prefs: prefs)
         AppDelegate.store = store
+        AppDelegate.vm = store.vm
+        AppDelegate.prefs = prefs
         store.start()
+        if prefs.keepCCPWithColima {
+            do { try ColimaWatcherService.register() }
+            catch { prefs.colimaWatcherError = error.localizedDescription }
+            store.vm.startIfStopped()
+        }
     }
 
     var body: some Scene {

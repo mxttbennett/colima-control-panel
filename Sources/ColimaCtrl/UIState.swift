@@ -85,14 +85,17 @@ final class Preferences {
     var menuBarCount: Bool { didSet { UserDefaults.standard.set(menuBarCount, forKey: "menuBarCount") } }
     var setupCompleted: Bool { didSet { UserDefaults.standard.set(setupCompleted, forKey: "setupCompleted") } }
     var statsSeconds: Int { didSet { UserDefaults.standard.set(statsSeconds, forKey: "statsSeconds") } }
+    var keepCCPWithColima: Bool { didSet { UserDefaults.standard.set(keepCCPWithColima, forKey: "keepCCPWithColima") } }
+    var colimaWatcherError: String?
 
     init() {
         let defaults = UserDefaults.standard
-        defaults.register(defaults: ["dockBadge": false, "showMenuBarIcon": true, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3])
+        defaults.register(defaults: ["dockBadge": false, "showMenuBarIcon": true, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3, "keepCCPWithColima": false])
         dockBadge = defaults.bool(forKey: "dockBadge")
         showMenuBarIcon = defaults.bool(forKey: "showMenuBarIcon")
         menuBarCount = defaults.bool(forKey: "menuBarCount")
         setupCompleted = defaults.bool(forKey: "setupCompleted")
         statsSeconds = defaults.integer(forKey: "statsSeconds")
+        keepCCPWithColima = defaults.bool(forKey: "keepCCPWithColima")
     }
 }

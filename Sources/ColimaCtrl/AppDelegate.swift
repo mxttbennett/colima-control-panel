@@ -5,6 +5,25 @@ import ColimaCtrlCore
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     static weak var store: FleetStore?
+    static var vm: ColimaVM?
+    static var prefs: Preferences?
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard Self.prefs?.keepCCPWithColima == true, let vm = Self.vm else { return .terminateNow }
+        Task { @MainActor in
+            if await vm.stopIfRunning() {
+                sender.reply(toApplicationShouldTerminate: true)
+            } else {
+                let alert = NSAlert()
+                alert.messageText = "Colima couldn't stop"
+                alert.informativeText = vm.error ?? "Colima returned an error while stopping."
+                alert.addButton(withTitle: "Quit Anyway")
+                alert.addButton(withTitle: "Cancel")
+                sender.reply(toApplicationShouldTerminate: alert.runModal() == .alertFirstButtonReturn)
+            }
+        }
+        return .terminateLater
+    }
 
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu()

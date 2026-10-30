@@ -25,6 +25,7 @@ struct SettingsView: View {
 
 private struct GeneralTab: View {
     @Environment(Preferences.self) private var prefs
+    @Environment(FleetStore.self) private var store
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError: String?
 
@@ -49,6 +50,15 @@ private struct GeneralTab: View {
                         }
                     }
                 if let loginError { Text(loginError).font(.caption).foregroundStyle(.red) }
+                Toggle("Keep CCP running with Colima", isOn: Binding(
+                    get: { prefs.keepCCPWithColima },
+                    set: updateColimaLifecycle
+                ))
+                Text("Starts Colima when CCP opens, opens CCP when Colima starts, and stops Colima when you quit CCP.").font(.caption).foregroundStyle(.secondary)
+                if let error = prefs.colimaWatcherError { Text(error).font(.caption).foregroundStyle(.red) }
+                if prefs.keepCCPWithColima, ColimaWatcherService.service.status == .requiresApproval {
+                    Text("Allow Colima Control Panel in System Settings → General → Login Items & Extensions.").font(.caption).foregroundStyle(.secondary)
+                }
                 Picker("Refresh graphs every", selection: $prefs.statsSeconds) {
                     ForEach([2, 3, 5, 10], id: \.self) { Text("\($0) seconds").tag($0) }
                 }
@@ -56,6 +66,21 @@ private struct GeneralTab: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func updateColimaLifecycle(_ enabled: Bool) {
+        do {
+            if enabled {
+                try ColimaWatcherService.register()
+                store.vm.startIfStopped()
+            } else {
+                try ColimaWatcherService.unregister()
+            }
+            prefs.keepCCPWithColima = enabled
+            prefs.colimaWatcherError = nil
+        } catch {
+            prefs.colimaWatcherError = error.localizedDescription
+        }
     }
 }
 

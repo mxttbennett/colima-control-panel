@@ -7,8 +7,9 @@ public struct DockerClient: Sendable {
         self.socketPath = socketPath
     }
 
-    public static func defaultSocketPath(profile: String = ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? "default") -> String {
-        FileManager.default.homeDirectoryForCurrentUser.path + "/.colima/\(profile)/docker.sock"
+    public static func defaultSocketPath(profile: String? = nil) -> String {
+        let profile = profile ?? ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? UserDefaults.standard.string(forKey: "colimaProfile") ?? "default"
+        return FileManager.default.homeDirectoryForCurrentUser.path + "/.colima/\(profile)/docker.sock"
     }
 
     public var socketExists: Bool { FileManager.default.fileExists(atPath: socketPath) }
