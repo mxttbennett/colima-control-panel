@@ -33,14 +33,16 @@ private struct DetailHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                StatusDot(color: row.display.color)
+                if store.pending[row.id] != nil { ProgressView().controlSize(.mini).frame(width: 9, height: 9) } else { StatusDot(color: row.display.color) }
                 Text(row.name).font(.title3.weight(.semibold)).lineLimit(1)
                 CopyButton(text: row.name)
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
             Group {
-                if row.state == "running", let started = row.startedAt {
+                if let pending = store.pending[row.id] {
+                    Text(pending.label)
+                } else if row.state == "running", let started = row.startedAt {
                     TimelineView(.periodic(from: .now, by: 1)) { Text("Up \(Format.uptime(since: started, now: $0.date))") }
                 } else {
                     Text(row.status)
@@ -58,6 +60,7 @@ private struct DetailHeader: View {
                     Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red)
                 }
                 .buttonStyle(.bordered)
+                .disabled(store.pending[row.id] != nil)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,5 +88,45 @@ struct CopyButton: View {
             }
         }
         .labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary).help("Copy")
+    }
+}
+
+struct MultiSelectionPane: View {
+    @Environment(FleetStore.self) private var store
+    @Environment(UIState.self) private var ui
+
+    var body: some View {
+        let ids = Array(ui.selectedContainerIDs)
+        let rows = store.containers.filter { ui.selectedContainerIDs.contains($0.id) }
+        let busy = ids.contains { store.pending[$0] != nil }
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("\(rows.count) containers selected").font(.title3.weight(.semibold))
+                Spacer()
+                Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
+            }
+            Text("\(rows.filter(\.isRunning).count) running, \(rows.filter { !$0.isRunning }.count) stopped")
+                .font(.callout).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Button("Start") { store.perform(.start, on: ids) }
+                Button("Restart") { store.perform(.restart, on: ids) }
+                Button("Stop") { store.perform(.stop, on: ids) }
+                Button("Remove", role: .destructive) {
+                    ui.confirm = ConfirmRequest(title: "Remove \(rows.count) selected containers?", message: "Running containers are force-stopped.", button: "Remove \(rows.count) Containers") {
+                        store.remove(containers: ids)
+                        ui.closePane()
+                    }
+                }.tint(.red)
+            }
+            .buttonStyle(.bordered).disabled(busy)
+            List(rows) { row in
+                HStack(spacing: 8) {
+                    StatusDot(color: row.display.color)
+                    Text(row.title).lineLimit(1)
+                }
+            }
+            .listStyle(.plain)
+        }
+        .padding(16)
     }
 }

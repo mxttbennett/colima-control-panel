@@ -45,6 +45,15 @@ struct ContentView: View {
         .sheet(isPresented: $ui.showSetup) { SetupView() }
         .onChange(of: prefs.statsSeconds, initial: true) { store.statsInterval = .seconds(prefs.statsSeconds) }
         .overlay(alignment: .bottom) { ErrorBanner() }
+        .animation(.snappy, value: store.lastError)
+        .confirmationDialog(
+            ui.confirm?.title ?? "", isPresented: Binding(get: { ui.confirm != nil }, set: { if !$0 { ui.confirm = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button(ui.confirm?.button ?? "Confirm", role: .destructive) { ui.confirm?.action() }
+        } message: {
+            Text(ui.confirm?.message ?? "")
+        }
         .onAppear { store.setDemand(.window, true) }
         .onDisappear { store.setDemand(.window, false) }
         .onChange(of: ui.section) { ui.filter = "" }
@@ -62,6 +71,7 @@ struct ContentView: View {
 
 private struct ErrorBanner: View {
     @Environment(FleetStore.self) private var store
+    @State private var hovering = false
 
     var body: some View {
         if let message = store.lastError {
@@ -73,7 +83,9 @@ private struct ErrorBanner: View {
             .glassEffect(.regular.tint(.red.opacity(0.35)), in: .capsule)
             .padding(16)
             .transition(.move(edge: .bottom).combined(with: .opacity))
-            .task(id: message) {
+            .onHover { hovering = $0 }
+            .task(id: "\(message)|\(hovering)") {
+                guard !hovering else { return }
                 try? await Task.sleep(for: .seconds(6))
                 store.lastError = nil
             }

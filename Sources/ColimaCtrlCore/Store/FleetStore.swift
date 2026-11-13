@@ -17,6 +17,8 @@ public final class FleetStore {
     /// False until the first full refresh after connecting, so views can show "loading" instead of "none".
     public private(set) var hasLoaded = false
     public var lastError: String?
+    /// In-flight actions keyed by container id (or `PruneKind.pendingKey`), cleared once the follow-up refresh finishes.
+    public internal(set) var pending: [String: PendingOp] = [:]
     public var statsInterval: Duration = .seconds(3)
 
     public let stats = StatsHistory()

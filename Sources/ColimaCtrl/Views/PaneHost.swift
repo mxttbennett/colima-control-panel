@@ -33,7 +33,7 @@ struct PaneHost<Content: View>: View {
                     .overlay(alignment: .top) { Rectangle().fill(mounted.section.color).frame(height: 3) }
                     .offset(x: open && mounted == target ? 0 : width + 1)
                     .allowsHitTesting(open && mounted == target)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.08), value: open)
+                    .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: open)
             }
         }
         .onChange(of: target, initial: true) { _, new in
@@ -49,7 +49,7 @@ struct PaneHost<Content: View>: View {
 
     private func exists(_ target: PaneTarget) -> Bool {
         switch target.section {
-        case .containers: store.containers.contains { $0.id == target.id }
+        case .containers: target.id == UIState.multiSelection || store.containers.contains { $0.id == target.id }
         case .volumes: store.volumes.contains { $0.name == target.id }
         case .images: store.images.contains { $0.id == target.id }
         case .networks: store.networks.contains { $0.id == target.id }
@@ -59,7 +59,8 @@ struct PaneHost<Content: View>: View {
 
     @ViewBuilder private func pane(_ target: PaneTarget) -> some View {
         switch target.section {
-        case .containers: ContainerDetailView(id: target.id)
+        case .containers:
+            if target.id == UIState.multiSelection { MultiSelectionPane() } else { ContainerDetailView(id: target.id) }
         case .volumes: VolumeDetailView(name: target.id)
         case .images: ImageDetailView(id: target.id)
         case .networks: NetworkDetailView(id: target.id)
