@@ -111,7 +111,7 @@ struct Card<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary)
-            VStack(alignment: .leading, spacing: 8) { content }
+            VStack(alignment: .leading, spacing: 8) { content }.textSelection(.enabled)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)

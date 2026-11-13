@@ -34,7 +34,7 @@ private struct DetailHeader: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 StatusDot(color: row.display.color)
-                Text(row.name).font(.title3.weight(.semibold)).lineLimit(1)
+                Text(row.name).font(.title3.weight(.semibold)).lineLimit(1).textSelection(.enabled)
                 CopyButton(text: row.name)
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
