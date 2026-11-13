@@ -11,12 +11,12 @@ struct PaneHeader<Actions: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(title).font(.title3.weight(.semibold)).lineLimit(2)
+                Text(title).font(.title3.weight(.semibold)).lineLimit(2).textSelection(.enabled)
                 CopyButton(text: copy)
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
-            if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary).lineLimit(1) }
+            if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
             HStack(spacing: 8) { actions }.buttonStyle(.bordered)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
