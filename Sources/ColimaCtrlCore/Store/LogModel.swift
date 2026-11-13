@@ -51,6 +51,11 @@ public final class LogModel {
         failure = message
     }
 
+    public func clear() {
+        pending.removeAll()
+        lines.removeAll()
+    }
+
     public func stop() {
         task?.cancel()
         task = nil

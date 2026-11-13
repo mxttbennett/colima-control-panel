@@ -42,8 +42,6 @@ struct ContainersView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .onKeyPress(.downArrow) { move(1, in: groups) }
-        .onKeyPress(.upArrow) { move(-1, in: groups) }
         .onChange(of: ui.selectedContainerIDs) {
             if ui.selectedContainerIDs.count == 1, let id = ui.selectedContainerIDs.first {
                 ui.selectedContainerID = id
@@ -96,15 +94,6 @@ struct ContainersView: View {
         }
     }
 
-    private func move(_ step: Int, in groups: [ProjectGroup]) -> KeyPress.Result {
-        let ordered = groups.flatMap(\.rows)
-        guard !ordered.isEmpty else { return .ignored }
-        let index = ordered.firstIndex { $0.id == ui.selectedContainerID } ?? (step > 0 ? -1 : ordered.count)
-        let id = ordered[min(ordered.count - 1, max(0, index + step))].id
-        ui.selectedContainerID = id
-        ui.selectedContainerIDs = [id]
-        return .handled
-    }
 }
 
 private struct PendingContainerRemoval {
@@ -133,6 +122,7 @@ private struct GroupHeader: View {
                         Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll)
                     }
                     .buttonStyle(.glass).controlSize(.small)
+                    .disabled(rows.contains { store.pending[$0.id] != nil })
                 }
             }
         }
@@ -150,10 +140,10 @@ struct ContainerMenu: View {
 
     var body: some View {
         if row.isRunning {
-            Button("Restart") { store.perform(.restart, on: [row.id]) }
-            Button("Stop") { store.perform(.stop, on: [row.id]) }
+            Button("Restart") { store.perform(.restart, on: [row.id]) }.disabled(store.pending[row.id] != nil)
+            Button("Stop") { store.perform(.stop, on: [row.id]) }.disabled(store.pending[row.id] != nil)
         } else {
-            Button("Start") { store.perform(.start, on: [row.id]) }
+            Button("Start") { store.perform(.start, on: [row.id]) }.disabled(store.pending[row.id] != nil)
         }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
         Divider()
@@ -166,22 +156,33 @@ struct ContainerMenu: View {
 }
 
 private struct ContainerRowView: View {
+    @Environment(FleetStore.self) private var store
     let row: ContainerRow
 
     var body: some View {
+        let pending = store.pending[row.id]
         HStack(spacing: 12) {
-            StatusDot(color: row.display.color)
+            if pending != nil {
+                ProgressView().controlSize(.mini).frame(width: 9, height: 9)
+            } else {
+                StatusDot(color: row.display.color)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
                     Text(row.title).lineLimit(1)
                     ForEach(row.ports, id: \.self) { PortLink(port: $0) }
                 }
-                Subtitle(row: row).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Group {
+                    if let pending { Text(pending.label) } else { Subtitle(row: row) }
+                }
+                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 8)
             if row.state == "running" { RowGraph(id: row.id) }
         }
         .padding(.vertical, 3)
+        .opacity(pending == nil ? 1 : 0.6)
+        .animation(.snappy, value: pending)
     }
 }
 

@@ -59,6 +59,14 @@ struct PaletteView: View {
         results[index].run()
     }
 
+    /// The palette sheet is still dismissing when a command runs, so the dialog waits for it to clear.
+    private func confirm(_ title: String, _ message: String, _ button: String, action: @escaping @MainActor () -> Void) {
+        Task {
+            try? await Task.sleep(for: .milliseconds(250))
+            ui.confirm = ConfirmRequest(title: title, message: message, button: button, action: action)
+        }
+    }
+
     private func filtered() -> [Command] {
         let words = query.lowercased().split(separator: " ")
         return Array(commands().filter { command in words.allSatisfy { command.title.lowercased().contains($0) } }.prefix(40))
@@ -70,15 +78,15 @@ struct PaletteView: View {
         }
         switch store.connection {
         case .up:
-            list.append(Command(id: "vm-restart", title: "Restart Colima", hint: "vm") { store.vm.run(.restart) })
-            list.append(Command(id: "vm-stop", title: "Stop Colima", hint: "vm") { store.vm.run(.stop) })
+            list.append(Command(id: "vm-restart", title: "Restart Colima", hint: "vm") { confirm("Restart Colima?", "Running containers stop and come back.", "Restart") { store.vm.run(.restart) } })
+            list.append(Command(id: "vm-stop", title: "Stop Colima", hint: "vm") { confirm("Stop Colima?", "Running containers stop.", "Stop") { store.vm.run(.stop) } })
         case .down:
             list.append(Command(id: "vm-start", title: "Start Colima", hint: "vm") { store.vm.run(.start) })
         case .connecting:
             break
         }
         if !store.runningIDs.isEmpty {
-            list.append(Command(id: "stop-all", title: "Stop all running containers", hint: "action") { store.stopAllRunning() })
+            list.append(Command(id: "stop-all", title: "Stop all running containers", hint: "action") { confirm("Stop all running containers?", "\(store.runningIDs.count) containers will stop.", "Stop All") { store.stopAllRunning() } })
         }
         for row in store.containers {
             let name = row.service.map { "\($0) (\(row.name))" } ?? row.name

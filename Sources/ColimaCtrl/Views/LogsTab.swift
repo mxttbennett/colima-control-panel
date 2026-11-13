@@ -6,6 +6,7 @@ struct LogsTab: View {
     let containerID: String
     @State private var model: LogModel?
     @State private var filter = ""
+    @State private var appliedFilter = ""
     @State private var follow = true
 
     var body: some View {
@@ -13,10 +14,12 @@ struct LogsTab: View {
             HStack(spacing: 10) {
                 TextField("Filter logs", text: $filter).textFieldStyle(.roundedBorder)
                 Toggle("Follow", isOn: $follow).toggleStyle(.checkbox)
+                Button("Copy", systemImage: "doc.on.doc") { copyVisible() }.labelStyle(.iconOnly).help("Copy the shown lines")
+                Button("Clear", systemImage: "trash") { model?.clear() }.labelStyle(.iconOnly).help("Clear the log view")
             }
             .padding(.horizontal, 16).padding(.bottom, 8)
             if let model {
-                LogList(model: model, filter: filter, follow: follow)
+                LogList(model: model, filter: appliedFilter, follow: $follow)
             } else {
                 Spacer()
             }
@@ -27,13 +30,27 @@ struct LogsTab: View {
             model = created
         }
         .onDisappear { model?.stop() }
+        .task(id: filter) {
+            if filter.isEmpty { appliedFilter = ""; return }
+            try? await Task.sleep(for: .milliseconds(150))
+            appliedFilter = filter
+        }
+    }
+
+    private func copyVisible() {
+        guard let model else { return }
+        let text = model.lines.filter { appliedFilter.isEmpty || $0.text.localizedCaseInsensitiveContains(appliedFilter) }.map(\.text).joined(separator: "\n")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 }
 
 private struct LogList: View {
     let model: LogModel
     let filter: String
-    let follow: Bool
+    @Binding var follow: Bool
+    @State private var atBottom = true
+    @State private var userScrolling = false
 
     var body: some View {
         let visible = filter.isEmpty ? model.lines : model.lines.filter { $0.text.localizedCaseInsensitiveContains(filter) }
@@ -50,9 +67,28 @@ private struct LogList: View {
                 .textSelection(.enabled)
                 .padding(.horizontal, 16).padding(.vertical, 8)
             }
+            .onScrollGeometryChange(for: Bool.self) { $0.contentOffset.y + $0.containerSize.height >= $0.contentSize.height - 24 } action: { _, new in atBottom = new }
+            .onScrollPhaseChange { _, phase in
+                if phase == .interacting { userScrolling = true }
+                if phase == .idle, userScrolling {
+                    userScrolling = false
+                    follow = atBottom
+                }
+            }
             .onChange(of: model.lines.last?.id) {
                 if follow, let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottom) }
             }
+            .overlay(alignment: .bottom) {
+                if !follow {
+                    Button("Jump to latest", systemImage: "arrow.down") {
+                        follow = true
+                        if let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+                    }
+                    .buttonStyle(.glass).controlSize(.small).padding(10)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.snappy, value: follow)
         }
         .overlay { if let failure = model.failure { Text(failure).foregroundStyle(.red).padding() } }
     }

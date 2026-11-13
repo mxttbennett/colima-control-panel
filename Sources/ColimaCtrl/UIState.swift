@@ -23,8 +23,17 @@ enum DetailTab: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+struct ConfirmRequest {
+    let title: String
+    let message: String
+    let button: String
+    let action: @MainActor () -> Void
+}
+
 @MainActor @Observable
 final class UIState {
+    static let multiSelection = "multi-selection"
+
     var section: Section = .containers
     var selectedContainerID: String?
     var selectedContainerIDs: Set<String> = []
@@ -36,6 +45,7 @@ final class UIState {
     var runningOnly = false
     var showPalette = false
     var showSetup = false
+    var confirm: ConfirmRequest?
     /// Container name from `-select`, applied once the container list loads.
     var pendingSelection: String?
 
@@ -50,7 +60,7 @@ final class UIState {
     var paneSelection: String? {
         get {
             switch section {
-            case .containers: selectedContainerID
+            case .containers: selectedContainerIDs.count > 1 ? Self.multiSelection : selectedContainerID
             case .volumes: selectedVolumeID
             case .images: selectedImageID
             case .networks: selectedNetworkID
@@ -59,7 +69,9 @@ final class UIState {
         }
         set {
             switch section {
-            case .containers: selectedContainerID = newValue
+            case .containers:
+                selectedContainerID = newValue
+                if newValue == nil { selectedContainerIDs = [] }
             case .volumes: selectedVolumeID = newValue
             case .images: selectedImageID = newValue
             case .networks: selectedNetworkID = newValue
