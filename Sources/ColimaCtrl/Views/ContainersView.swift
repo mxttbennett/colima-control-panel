@@ -29,7 +29,7 @@ struct ContainersView: View {
                                     }
                             }
                         } header: {
-                            GroupHeader(project: group.project, rows: group.rows) {
+                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount) {
                                 guard let project = group.project else { return }
                                 let projectRows = store.containers.filter { $0.project == project }
                                 let title = "Remove all \(projectRows.count) containers from \(project)?"
@@ -78,17 +78,21 @@ struct ContainersView: View {
         ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?"
     }
 
-    private struct ProjectGroup { let project: String?; let rows: [ContainerRow] }
+    private struct ProjectGroup { let project: String?; let rows: [ContainerRow]; let runningCount: Int }
 
     private func grouped() -> [ProjectGroup] {
-        let query = ui.filter.lowercased()
+        let query = ui.filter
         let rows = store.containers.filter { row in
             (!ui.runningOnly || row.isRunning)
-                && (query.isEmpty || [row.name, row.service ?? "", row.project ?? "", row.image].contains { $0.lowercased().contains(query) })
+                && (query.isEmpty || row.name.localizedCaseInsensitiveContains(query)
+                    || row.service?.localizedCaseInsensitiveContains(query) == true
+                    || row.project?.localizedCaseInsensitiveContains(query) == true
+                    || row.image.localizedCaseInsensitiveContains(query))
         }
         let byProject = Dictionary(grouping: rows, by: \.project)
         return byProject.keys.sorted { ($0 == nil ? 1 : 0, $0 ?? "") < ($1 == nil ? 1 : 0, $1 ?? "") }.map { key in
-            ProjectGroup(project: key, rows: byProject[key]!.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending })
+            let rows = byProject[key]!
+            return ProjectGroup(project: key, rows: rows.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }, runningCount: rows.filter(\.isRunning).count)
         }
     }
 
@@ -112,12 +116,13 @@ private struct GroupHeader: View {
     @Environment(FleetStore.self) private var store
     let project: String?
     let rows: [ContainerRow]
+    let runningCount: Int
     let removeAll: () -> Void
 
     var body: some View {
         HStack {
             Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
-            Text("\(rows.filter(\.isRunning).count)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
+            Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
             Spacer()
             if let project {
                 GlassEffectContainer(spacing: 6) {

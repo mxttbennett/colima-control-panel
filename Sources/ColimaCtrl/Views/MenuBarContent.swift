@@ -10,6 +10,14 @@ struct MenuBarContent: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
+        let running = store.connection == .up
+            ? store.containers.filter(\.isRunning).sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+            : []
+        let headline = switch store.connection {
+        case .connecting: "Connecting…"
+        case .down: "Colima is stopped"
+        case .up: running.isEmpty ? "Nothing running" : "\(running.count) running"
+        }
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 if let color = store.health.color { StatusDot(color: color) }
@@ -17,7 +25,7 @@ struct MenuBarContent: View {
                 Spacer()
             }
             VMControls()
-            if store.connection == .up { containerList }
+            if store.connection == .up { containerList(running) }
             Divider()
             HStack {
                 Text("This app").foregroundStyle(.secondary)
@@ -40,17 +48,7 @@ struct MenuBarContent: View {
         .onDisappear { store.setDemand(.popover, false) }
     }
 
-    private var headline: String {
-        switch store.connection {
-        case .connecting: "Connecting…"
-        case .down: "Colima is stopped"
-        case .up: store.runningCount == 0 ? "Nothing running" : "\(store.runningCount) running"
-        }
-    }
-
-    private var running: [ContainerRow] { store.containers.filter(\.isRunning).sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending } }
-
-    @ViewBuilder private var containerList: some View {
+    @ViewBuilder private func containerList(_ running: [ContainerRow]) -> some View {
         if !running.isEmpty {
             VStack(spacing: 2) {
                 ForEach(running.prefix(10)) { row in
