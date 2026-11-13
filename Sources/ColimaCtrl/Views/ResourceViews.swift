@@ -124,6 +124,7 @@ struct NetworksView: View {
 
     var body: some View {
         let rows = store.networks.filter { ui.filter.isEmpty || $0.name.localizedCaseInsensitiveContains(ui.filter) || ($0.subnet ?? "").contains(ui.filter) }
+        let containerCounts = store.containers.reduce(into: [String: Int]()) { counts, row in row.networks.forEach { counts[$0, default: 0] += 1 } }
         @Bindable var ui = ui
         Table(rows, selection: $ui.selectedNetworkID) {
             TableColumn("Network") { network in
@@ -136,7 +137,7 @@ struct NetworksView: View {
             TableColumn("Driver") { Text("\($0.driver) · \($0.scope)").foregroundStyle(.secondary) }.width(130)
             TableColumn("Subnet") { Text($0.subnet ?? "").font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary) }.width(150)
             TableColumn("Containers") { network in
-                Text(store.containers.filter { $0.networks.contains(network.name) }.count, format: .number).monospacedDigit()
+                Text(containerCounts[network.name] ?? 0, format: .number).monospacedDigit()
             }.width(90)
         }
         .scrollContentBackground(.hidden)
@@ -191,6 +192,7 @@ private struct SelfCard: View {
 }
 
 private struct Summary: View {
+    @Environment(FleetStore.self) private var store
     let title: String
     let value: Int64
     let detail: String
@@ -211,7 +213,12 @@ private struct Summary: View {
             Text(Format.bytes(value)).font(.title2.weight(.semibold))
             Text(detail).font(.caption).foregroundStyle(.secondary)
             if let action, let prune {
-                Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.glass).controlSize(.small).tint(.red).padding(.top, 8)
+                HStack(spacing: 8) {
+                    Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.glass).controlSize(.small).tint(.red)
+                        .disabled(store.pending[action.1.pendingKey] != nil)
+                    if store.pending[action.1.pendingKey] != nil { ProgressView().controlSize(.small) }
+                }
+                .padding(.top, 8)
             }
         }
         .padding(16)
