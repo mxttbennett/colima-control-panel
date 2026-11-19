@@ -166,14 +166,14 @@ struct ContainerMenu: View {
         }
         Button("Show Info") { ui.show(row.id) }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
-        if row.isRunning { Button("Open Shell in Terminal") { openShell() } }
+        if row.isRunning { Button("Open Shell in Terminal") { openContainerShell(row, store: store) } }
         ForEach(row.ports, id: \.self) { port in
             Button("Open localhost:\(String(port)) in Browser") { NSWorkspace.shared.open(URL(string: "http://localhost:\(port)")!) }
         }
         Divider()
-        Button("Copy Name") { copy(row.name) }
-        Button("Copy ID") { copy(row.id) }
-        Button("Copy Image") { copy(row.image) }
+        Button("Copy Name") { Clipboard.copy(row.name) }
+        Button("Copy ID") { Clipboard.copy(row.id) }
+        Button("Copy Image") { Clipboard.copy(row.image) }
         Divider()
         Button(selectedIDs.contains(row.id) && selectedIDs.count > 1 ? "Remove \(selectedIDs.count) Selected" : "Remove", role: .destructive) {
             onRemove(selectedIDs.contains(row.id) ? Array(selectedIDs) : [row.id])
@@ -181,22 +181,16 @@ struct ContainerMenu: View {
     }
 }
 
-extension ContainerMenu {
-    func copy(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-    }
-
-    func openShell() {
-        let script = ShellCommand.dockerExecScript(socketPath: store.client.socketPath, containerID: row.id)
-        let url = FileManager.default.temporaryDirectory.appending(path: "ccp-shell-\(row.id.prefix(12)).command")
-        do {
-            try script.write(to: url, atomically: true, encoding: .utf8)
-            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
-            NSWorkspace.shared.open(url)
-        } catch {
-            store.lastError = "Open shell: \(error.localizedDescription)"
-        }
+@MainActor
+func openContainerShell(_ row: ContainerRow, store: FleetStore) {
+    let script = ShellCommand.dockerExecScript(socketPath: store.client.socketPath, containerID: row.id)
+    let url = FileManager.default.temporaryDirectory.appending(path: "ccp-shell-\(row.id.prefix(12)).command")
+    do {
+        try script.write(to: url, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+        NSWorkspace.shared.open(url)
+    } catch {
+        store.lastError = "Open shell: \(error.localizedDescription)"
     }
 }
 

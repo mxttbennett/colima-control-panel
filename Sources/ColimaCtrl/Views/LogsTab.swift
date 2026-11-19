@@ -54,8 +54,7 @@ struct LogsTab: View {
     }
 
     private func copyVisible() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(visibleLines.map(\.text).joined(separator: "\n"), forType: .string)
+        Clipboard.copy(visibleLines.map(\.text).joined(separator: "\n"))
     }
 
     private func save() {

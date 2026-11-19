@@ -54,6 +54,7 @@ private struct DetailHeader: View {
                     if row.isRunning {
                         Button("Restart") { store.perform(.restart, on: [row.id]) }
                         Button("Stop") { store.perform(.stop, on: [row.id]) }
+                        Button("Shell", systemImage: "terminal") { openContainerShell(row, store: store) }.help("Open a shell in Terminal")
                     } else {
                         Button("Start") { store.perform(.start, on: [row.id]) }
                     }
@@ -79,8 +80,7 @@ struct CopyButton: View {
 
     var body: some View {
         Button(copied ? "Copied" : "Copy", systemImage: copied ? "checkmark" : "doc.on.doc") {
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(text, forType: .string)
+            Clipboard.copy(text)
             copied = true
             Task {
                 try? await Task.sleep(for: .seconds(1))
