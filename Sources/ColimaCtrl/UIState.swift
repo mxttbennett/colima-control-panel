@@ -47,6 +47,7 @@ final class UIState {
     var runningOnly = false
     var containerSort: ContainerSort { didSet { UserDefaults.standard.set(containerSort.rawValue, forKey: "containerSort") } }
     var showPalette = false
+    var pendingUpdateCheck = false
     var showSetup = false
     var showPull = false
     var focusFilter = 0
