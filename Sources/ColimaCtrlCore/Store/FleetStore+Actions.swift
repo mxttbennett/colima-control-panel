@@ -71,6 +71,11 @@ extension FleetStore {
         perform(action, on: containers.filter { $0.project == project }.map(\.id))
     }
 
+    public func rename(container id: String, to name: String) {
+        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
+        run("Rename to \(name)") { try await $0.send("POST", "/containers/\(id)/rename?name=\(encoded)") }
+    }
+
     public func remove(container id: String) {
         remove(containers: [id])
     }

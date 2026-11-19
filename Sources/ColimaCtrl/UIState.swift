@@ -55,6 +55,7 @@ final class UIState {
     var pendingUpdateCheck = false
     var showSetup = false
     var showPull = false
+    var renaming: ContainerRow?
     var focusFilter = 0
     var zoom: Double = 1 { didSet { UserDefaults.standard.set(zoom, forKey: "zoom") } }
     var logFilter = ""
