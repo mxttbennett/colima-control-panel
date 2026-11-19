@@ -13,10 +13,13 @@ struct ContainerDetailView: View {
                 DetailHeader(row: row)
                 GlassSegmented(options: DetailTab.allCases, selection: $ui.detailTab) { $0.rawValue }
                     .frame(maxWidth: .infinity).padding(.horizontal, 16).padding(.bottom, 10)
-                switch ui.detailTab {
-                case .info: InfoTab(row: row).id(row.id)
-                case .logs: LogsTab(containerID: row.id).id(row.id)
+                Group {
+                    switch ui.detailTab {
+                    case .info: InfoTab(row: row).id(row.id).transition(.opacity)
+                    case .logs: LogsTab(containerID: row.id).id(row.id).transition(.opacity)
+                    }
                 }
+                .motion(Motion.quick, value: ui.detailTab)
             }
         }
     }

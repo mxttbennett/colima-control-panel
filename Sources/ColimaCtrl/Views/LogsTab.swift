@@ -17,7 +17,7 @@ struct LogsTab: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                TextField("Filter logs", text: $filter).textFieldStyle(.roundedBorder)
+                TextField("Filter logs", text: $filter).textFieldStyle(.plain).padding(.horizontal, 12).padding(.vertical, 5).glassEffect(.regular, in: .capsule)
                 Toggle("Follow", isOn: $follow).toggleStyle(.checkbox)
                 Button("Copy", systemImage: "doc.on.doc") { copyVisible() }.labelStyle(.iconOnly).help("Copy the shown lines")
                 Button("Clear", systemImage: "trash") { model?.clear() }.labelStyle(.iconOnly).help("Clear the log view")

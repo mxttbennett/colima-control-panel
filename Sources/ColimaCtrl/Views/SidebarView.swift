@@ -15,7 +15,7 @@ struct SidebarView: View {
                     StatusDot(color: color, size: 8, label: store.health.label)
                 }
                 if store.info != nil, let count = count(for: section) {
-                    Text(count, format: .number).foregroundStyle(.secondary).monospacedDigit()
+                    Text(count, format: .number).foregroundStyle(.secondary).monospacedDigit().rollingNumbers(count)
                 }
             }
             .tag(section)
@@ -110,14 +110,14 @@ private struct Totals: View {
             HStack {
                 Text("CPU").foregroundStyle(.secondary)
                 Spacer()
-                Text("\(totals.latestCPU / 100, format: .number.precision(.fractionLength(2))) of \(Int(cores)) cores").monospacedDigit()
+                Text("\(totals.latestCPU / 100, format: .number.precision(.fractionLength(2))) of \(Int(cores)) cores").monospacedDigit().rollingNumbers(Int(totals.latestCPU))
             }
             Sparkline(values: totals.cpu, maximum: cores * 100, color: Brand.blue).frame(height: 28)
             Spacer().frame(height: 4)
             HStack {
                 Text("Memory").foregroundStyle(.secondary)
                 Spacer()
-                Text("\(Format.bytes(Int64(totals.latestMemory))) of \(Format.bytes(Int64(memory)))").monospacedDigit()
+                Text("\(Format.bytes(Int64(totals.latestMemory))) of \(Format.bytes(Int64(memory)))").monospacedDigit().rollingNumbers(Int(totals.latestMemory / 1_000_000))
             }
             Sparkline(values: totals.memory, maximum: memory, color: Brand.mint).frame(height: 28)
         }

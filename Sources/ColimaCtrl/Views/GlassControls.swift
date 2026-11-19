@@ -19,7 +19,7 @@ struct GlassSegmented<Value: Hashable & Identifiable>: View {
                         .glassEffect(selected ? Glass.regular.tint(Brand.blue.opacity(0.4)).interactive() : Glass.identity, in: .capsule)
                         .glassEffectID(selected ? "selection" : "option-\(option.id)", in: namespace)
                         .contentShape(.capsule)
-                        .onTapGesture { withAnimation(.bouncy(duration: 0.4)) { selection = option } }
+                        .onTapGesture { withAnimation(Motion.smooth) { selection = option } }
                         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
                 }
             }
@@ -53,8 +53,8 @@ private struct LiquidButtonBody: View {
             .padding(.horizontal, compact ? 10 : 14).padding(.vertical, compact ? 4 : 6)
             .glassEffect(glass.interactive(), in: .capsule)
             .opacity(enabled ? 1 : 0.45)
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.bouncy(duration: 0.25), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(Motion.quick, value: configuration.isPressed)
     }
 }
 

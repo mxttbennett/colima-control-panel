@@ -240,7 +240,7 @@ private struct DiskBar: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Docker disk").font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text(Format.bytes(disk.total)).font(.title2.weight(.semibold))
+                Text(Format.bytes(disk.total)).font(.title2.weight(.semibold)).rollingNumbers(disk.total)
             }
             GeometryReader { proxy in
                 HStack(spacing: 2) {
@@ -249,6 +249,7 @@ private struct DiskBar: View {
                     }
                 }
                 .clipShape(.rect(cornerRadius: 5))
+                .motion(Motion.smooth, value: disk)
             }
             .frame(height: 12)
             HStack(spacing: 16) {
