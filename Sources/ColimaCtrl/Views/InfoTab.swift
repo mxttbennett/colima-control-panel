@@ -19,7 +19,7 @@ struct InfoTab: View {
                         if let created = inspect.created { Field("Created", Format.ago(created)) }
                         Field("Restart", inspect.restartPolicy)
                         if inspect.restartCount > 0 { Field("Restarts", "\(inspect.restartCount)") }
-                        if !row.isRunning, let exitCode = inspect.exitCode { Field("Exit code", exitText(exitCode, oomKilled: inspect.oomKilled)) }
+                        if !row.isRunning, let exitCode = inspect.exitCode { Field("Exit code", ContainerInspect.exitDescription(code: exitCode, oomKilled: inspect.oomKilled)) }
                         if let health = inspect.health { Field("Health", health) }
                     }
                     if !inspect.ports.isEmpty {
@@ -61,12 +61,6 @@ struct InfoTab: View {
             if let fresh = try? await store.inspect(row.id), fresh != inspect { inspect = fresh }
         }
     }
-}
-
-private func exitText(_ code: Int, oomKilled: Bool) -> String {
-    var text = "\(code)"
-    if code == 0 { text += " (success)" } else if oomKilled { text += " (out of memory)" } else if code > 128 { text += " (signal \(code - 128))" }
-    return text
 }
 
 private struct EnvironmentCard: View {

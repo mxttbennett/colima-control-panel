@@ -20,7 +20,10 @@ struct ContainersView: View {
 
     var body: some View {
         @Bindable var ui = ui
-        let groups = grouped()
+        let groups = ContainerGrouping.groups(
+            rows: store.containers, query: ui.filter, runningOnly: ui.runningOnly, sort: ui.containerSort,
+            cpu: { store.stats.series(for: $0).latestCPU }, memory: { store.stats.series(for: $0).latestMemory }
+        )
         Group {
             if !store.hasLoaded {
                 ProgressView("Loading containers…").frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -97,45 +100,6 @@ struct ContainersView: View {
 
     private func removalTitle(for ids: [String]) -> String {
         ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?"
-    }
-
-    private func sorted(_ rows: [ContainerRow]) -> [ContainerRow] {
-        let byName = { (a: ContainerRow, b: ContainerRow) in a.title.localizedStandardCompare(b.title) == .orderedAscending }
-        switch ui.containerSort {
-        case .name:
-            return rows.sorted(by: byName)
-        case .cpu:
-            return rows.sorted { (store.stats.series(for: $0.id).latestCPU, $1.title) > (store.stats.series(for: $1.id).latestCPU, $0.title) }
-        case .memory:
-            return rows.sorted { (store.stats.series(for: $0.id).latestMemory, $1.title) > (store.stats.series(for: $1.id).latestMemory, $0.title) }
-        case .uptime:
-            return rows.sorted { a, b in
-                switch (a.startedAt, b.startedAt) {
-                case let (x?, y?): x < y
-                case (_?, nil): true
-                case (nil, _?): false
-                case (nil, nil): byName(a, b)
-                }
-            }
-        }
-    }
-
-    private struct ProjectGroup { let project: String?; let rows: [ContainerRow]; let runningCount: Int }
-
-    private func grouped() -> [ProjectGroup] {
-        let query = ui.filter
-        let rows = store.containers.filter { row in
-            (!ui.runningOnly || row.isRunning)
-                && (query.isEmpty || row.name.localizedCaseInsensitiveContains(query)
-                    || row.service?.localizedCaseInsensitiveContains(query) == true
-                    || row.project?.localizedCaseInsensitiveContains(query) == true
-                    || row.image.localizedCaseInsensitiveContains(query))
-        }
-        let byProject = Dictionary(grouping: rows, by: \.project)
-        return byProject.keys.sorted { ($0 == nil ? 1 : 0, $0 ?? "") < ($1 == nil ? 1 : 0, $1 ?? "") }.map { key in
-            let rows = byProject[key]!
-            return ProjectGroup(project: key, rows: sorted(rows), runningCount: rows.filter(\.isRunning).count)
-        }
     }
 
 }
@@ -276,7 +240,7 @@ private struct Subtitle: View {
     var body: some View {
         if row.state == "running", let started = row.startedAt {
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                Text("Up \(Format.uptime(since: started, now: context.date)) · \(row.image)")
+                Text("Up \(Uptime.text(since: started, now: context.date)) · \(row.image)")
             }
         } else {
             Text(row.state == "running" ? "\(row.status) · \(row.image)" : row.status)

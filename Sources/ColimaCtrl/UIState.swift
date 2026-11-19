@@ -23,11 +23,6 @@ enum DetailTab: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum ContainerSort: String, CaseIterable, Identifiable {
-    case name = "Name", cpu = "CPU", memory = "Memory", uptime = "Uptime"
-    var id: String { rawValue }
-}
-
 struct ConfirmRequest {
     let title: String
     let message: String

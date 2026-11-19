@@ -43,7 +43,7 @@ private struct DetailHeader: View {
                 if let pending = store.pending[row.id] {
                     Text(pending.label)
                 } else if row.state == "running", let started = row.startedAt {
-                    TimelineView(.periodic(from: .now, by: 1)) { Text("Up \(Format.uptime(since: started, now: $0.date))") }
+                    TimelineView(.periodic(from: .now, by: 1)) { Text("Up \(Uptime.text(since: started, now: $0.date))") }
                 } else {
                     Text(row.status)
                 }
