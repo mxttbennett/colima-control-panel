@@ -5,7 +5,9 @@ struct Empty: Decodable, Sendable {}
 struct APIContainer: Decodable, Sendable {
     struct Port: Decodable, Sendable {
         let publicPort: Int?
-        enum CodingKeys: String, CodingKey { case publicPort = "PublicPort" }
+        let privatePort: Int?
+        let type: String?
+        enum CodingKeys: String, CodingKey { case publicPort = "PublicPort", privatePort = "PrivatePort", type = "Type" }
     }
     struct NetworkSettings: Decodable, Sendable {
         let networks: [String: Empty]?
