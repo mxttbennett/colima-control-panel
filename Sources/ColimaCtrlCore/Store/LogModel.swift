@@ -10,7 +10,9 @@ public struct LogLine: Identifiable, Sendable, Equatable {
 
 @MainActor @Observable
 public final class LogModel {
-    public static let capacity = 5000
+    public static let defaultCapacity = 5000
+
+    public let capacity: Int
 
     public private(set) var lines: [LogLine] = []
     public private(set) var failure: String?
@@ -22,9 +24,10 @@ public final class LogModel {
     @ObservationIgnored private var pending: [(String, Bool)] = []
     @ObservationIgnored private var flushScheduled = false
 
-    public init(client: DockerClient, containerID: String) {
+    public init(client: DockerClient, containerID: String, capacity: Int = LogModel.defaultCapacity) {
         self.client = client
         self.containerID = containerID
+        self.capacity = capacity
     }
 
     public func start(tail: Int = 300) {
@@ -81,6 +84,6 @@ public final class LogModel {
             defer { nextID += 1 }
             return LogLine(id: nextID, timestamp: parts.count > 1 ? String(parts[0]) : "", text: parts.count > 1 ? String(parts[1]) : raw, isError: isError)
         })
-        if lines.count > Self.capacity + 500 { lines.removeFirst(lines.count - Self.capacity) }
+        if lines.count > capacity + 500 { lines.removeFirst(lines.count - capacity) }
     }
 }

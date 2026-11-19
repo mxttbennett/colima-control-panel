@@ -59,6 +59,13 @@ private struct GeneralTab: View {
                 if prefs.keepCCPWithColima, ColimaWatcherService.service.status == .requiresApproval {
                     Text("Allow Colima Control Panel in System Settings → General → Login Items & Extensions.").font(.caption).foregroundStyle(.secondary)
                 }
+                Picker("Open container details on", selection: $prefs.defaultDetailTab) {
+                    ForEach(DetailTab.allCases) { Text($0.rawValue).tag($0) }
+                }
+                Picker("Keep log lines per container", selection: $prefs.logCapacity) {
+                    ForEach([1000, 5000, 20000, 50000], id: \.self) { Text($0, format: .number).tag($0) }
+                }
+                Text("Applies the next time you open a container's logs. Larger buffers use more memory.").font(.caption).foregroundStyle(.secondary)
                 Picker("Refresh graphs every", selection: $prefs.statsSeconds) {
                     ForEach([2, 3, 5, 10], id: \.self) { Text("\($0) seconds").tag($0) }
                 }

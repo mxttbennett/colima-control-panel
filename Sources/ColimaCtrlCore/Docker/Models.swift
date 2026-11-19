@@ -137,6 +137,7 @@ public struct DiskUsage: Equatable, Sendable {
     public let buildCache: DiskBucket
 
     public var total: Int64 { images.size + containers.size + volumes.size + buildCache.size }
+    public var reclaimable: Int64 { images.reclaimable + containers.reclaimable + volumes.reclaimable + buildCache.reclaimable }
 }
 
 public struct ContainerInspect: Equatable, Sendable {

@@ -4,6 +4,7 @@ import ColimaCtrlCore
 struct ContainersView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @Environment(Preferences.self) private var prefs
     @State private var pendingRemoval: PendingContainerRemoval?
     @AppStorage("collapsedProjects") private var collapsedRaw = ""
 
@@ -67,7 +68,7 @@ struct ContainersView: View {
         .onChange(of: ui.selectedContainerIDs) {
             if ui.selectedContainerIDs.count == 1, let id = ui.selectedContainerIDs.first {
                 ui.selectedContainerID = id
-                ui.detailTab = .info
+                ui.detailTab = prefs.defaultDetailTab
             } else if ui.selectedContainerIDs.isEmpty {
                 ui.selectedContainerID = nil
             }

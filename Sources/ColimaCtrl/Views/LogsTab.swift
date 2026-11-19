@@ -4,6 +4,7 @@ import ColimaCtrlCore
 
 struct LogsTab: View {
     @Environment(FleetStore.self) private var store
+    @Environment(Preferences.self) private var prefs
     let containerID: String
     @State private var model: LogModel?
     @State private var filter = ""
@@ -35,7 +36,7 @@ struct LogsTab: View {
             }
         }
         .onAppear {
-            let created = LogModel(client: store.client, containerID: containerID)
+            let created = LogModel(client: store.client, containerID: containerID, capacity: prefs.logCapacity)
             created.start()
             model = created
         }
