@@ -10,6 +10,7 @@ struct LogsTab: View {
     @State private var model: LogModel?
     @State private var appliedFilter = ""
     @State private var follow = true
+    @State private var jump: LogJump?
     @AppStorage("logWrap") private var wrap = true
     @AppStorage("logTimestamps") private var timestamps = true
     @AppStorage("logFilterOnly") private var filterOnly = true
@@ -33,13 +34,16 @@ struct LogsTab: View {
                         ForEach(LogLevelFilter.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }
                     }
                     Divider()
+                    Button("Jump to First Error") { jump = LogJump(last: false, nonce: (jump?.nonce ?? 0) + 1) }
+                    Button("Jump to Last Error") { jump = LogJump(last: true, nonce: (jump?.nonce ?? 0) + 1) }
+                    Divider()
                     Button("Save to File…") { save() }
                 }
                 .labelStyle(.iconOnly).menuStyle(.borderlessButton).fixedSize()
             }
             .padding(.horizontal, 16).padding(.bottom, 8)
             if let model {
-                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly, level: level)
+                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly, level: level, jump: jump)
             } else {
                 Spacer()
             }
@@ -78,6 +82,11 @@ struct LogsTab: View {
     }
 }
 
+struct LogJump: Equatable {
+    let last: Bool
+    let nonce: Int
+}
+
 private struct LogList: View {
     let model: LogModel
     let filter: String
@@ -86,6 +95,7 @@ private struct LogList: View {
     let timestamps: Bool
     let filterOnly: Bool
     let level: LogLevelFilter
+    let jump: LogJump?
     @Environment(\.uiZoom) private var zoom
     @State private var position = 0
     @State private var atBottom = true
@@ -144,6 +154,11 @@ private struct LogList: View {
                 }
             }
             .onChange(of: filter) { position = 0 }
+            .onChange(of: jump) {
+                guard let jump, let target = jump.last ? LogText.errorIDs(in: visible).last : LogText.errorIDs(in: visible).first else { return }
+                follow = false
+                proxy.scrollTo(target, anchor: .center)
+            }
             .animation(.snappy, value: follow)
         }
         .overlay { if let failure = model.failure { Text(failure).foregroundStyle(.red).padding() } }
