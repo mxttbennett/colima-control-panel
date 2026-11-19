@@ -28,6 +28,7 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
     public let health: String?
     public let project: String?
     public let service: String?
+    public let projectDirectory: String?
     public let ports: [Int]
     public let networks: [String]
     public let created: Date
@@ -71,6 +72,7 @@ extension ContainerRow {
             health: health == "health: starting" ? "starting" : health,
             project: labels["com.docker.compose.project"],
             service: labels["com.docker.compose.service"],
+            projectDirectory: labels["com.docker.compose.project.working_dir"],
             ports: Array(Set((api.ports ?? []).compactMap(\.publicPort))).sorted(),
             networks: (api.networkSettings?.networks.map { Array($0.keys) } ?? []).sorted(),
             created: Date(timeIntervalSince1970: TimeInterval(api.created)),

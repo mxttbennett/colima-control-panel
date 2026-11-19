@@ -46,6 +46,7 @@ final class UIState {
     var containerSort: ContainerSort { didSet { UserDefaults.standard.set(containerSort.rawValue, forKey: "containerSort") } }
     var showPalette = false
     var showSetup = false
+    var showPull = false
     var confirm: ConfirmRequest?
     /// Container name from `-select`, applied once the container list loads.
     var pendingSelection: String?

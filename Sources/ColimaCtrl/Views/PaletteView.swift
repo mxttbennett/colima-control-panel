@@ -11,6 +11,7 @@ private struct Command: Identifiable {
 struct PaletteView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @Environment(ColimaSetup.self) private var setup
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @State private var selection = 0
@@ -85,6 +86,21 @@ struct PaletteView: View {
         case .connecting:
             break
         }
+        list.append(Command(id: "pull-image", title: "Pull image…", hint: "images") { ui.section = .images; ui.showPull = true })
+        for kind in [PruneKind.containers, .imagesDangling, .imagesUnused, .volumes, .buildCache] {
+            list.append(Command(id: "prune-\(kind.rawValue)", title: "Prune \(kind.paletteName)", hint: "prune") {
+                confirm(kind.title, kind.warning, "Remove") { store.prune(kind) }
+            })
+        }
+        for profile in ColimaProfile.available() where profile != store.profile {
+            list.append(Command(id: "profile-\(profile)", title: "Switch to profile \(profile)", hint: "profile") {
+                switchColimaProfile(profile, store: store, setup: setup, ui: ui)
+            })
+        }
+        for sort in ContainerSort.allCases where sort != ui.containerSort {
+            list.append(Command(id: "sort-\(sort.rawValue)", title: "Sort containers by \(sort.rawValue)", hint: "view") { ui.section = .containers; ui.containerSort = sort })
+        }
+        list.append(Command(id: "running-only", title: ui.runningOnly ? "Show all containers" : "Show only running containers", hint: "view") { ui.section = .containers; ui.runningOnly.toggle() })
         if !store.runningIDs.isEmpty {
             list.append(Command(id: "stop-all", title: "Stop all running containers", hint: "action") { confirm("Stop all running containers?", "\(store.runningIDs.count) containers will stop.", "Stop All") { store.stopAllRunning() } })
         }

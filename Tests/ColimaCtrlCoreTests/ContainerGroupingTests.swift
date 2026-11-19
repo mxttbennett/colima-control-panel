@@ -2,8 +2,11 @@ import Foundation
 import Testing
 @testable import ColimaCtrlCore
 
-private func row(_ id: String, project: String? = nil, service: String? = nil, state: String = "running", image: String = "img", started: TimeInterval? = nil) throws -> ContainerRow {
-    let labels = [project.map { "\"com.docker.compose.project\":\"\($0)\"" }, service.map { "\"com.docker.compose.service\":\"\($0)\"" }].compactMap { $0 }.joined(separator: ",")
+private func row(_ id: String, project: String? = nil, service: String? = nil, directory: String? = nil, state: String = "running", image: String = "img", started: TimeInterval? = nil) throws -> ContainerRow {
+    let labels = [
+        project.map { "\"com.docker.compose.project\":\"\($0)\"" }, service.map { "\"com.docker.compose.service\":\"\($0)\"" },
+        directory.map { "\"com.docker.compose.project.working_dir\":\"\($0)\"" },
+    ].compactMap { $0 }.joined(separator: ",")
     let json = """
     {"Id":"\(id)","Names":["/\(id)"],"Image":"\(image)","State":"\(state)","Status":"Up","Created":1,"Labels":{\(labels)}}
     """
@@ -96,4 +99,16 @@ private func row(_ id: String, project: String? = nil, service: String? = nil, s
     #expect(ContainerInspect.exitDescription(code: 137, oomKilled: false) == "137 (signal 9)")
     #expect(ContainerInspect.exitDescription(code: 137, oomKilled: true) == "137 (out of memory)")
     #expect(ContainerInspect.exitDescription(code: 2, oomKilled: false) == "2")
+}
+
+@Test func projectDirectoryComesFromTheComposeLabel() throws {
+    // Arrange
+    let rows = [try row("a", project: "p"), try row("b", project: "p", directory: "/work/p")]
+
+    // Act
+    let groups = ContainerGrouping.groups(rows: rows, query: "", runningOnly: false, sort: .name)
+
+    // Assert
+    #expect(groups.first?.directory == "/work/p")
+    #expect(ContainerGrouping.groups(rows: [try row("solo")], query: "", runningOnly: false, sort: .name).first?.directory == nil)
 }
