@@ -27,7 +27,7 @@ struct LogsTab: View {
                 Toggle("Follow", isOn: $follow).toggleStyle(.checkbox)
                 Button("Copy", systemImage: "doc.on.doc") { copyVisible() }.labelStyle(.iconOnly).help("Copy the shown lines")
                 Button("Clear", systemImage: "trash") { model?.clear() }.labelStyle(.iconOnly).help("Clear the log view")
-                Menu("Log options", systemImage: "ellipsis.circle") {
+                Menu("Log options", systemImage: level == .all ? "ellipsis.circle" : "line.3.horizontal.decrease.circle.fill") {
                     Toggle("Wrap lines", isOn: $wrap)
                     Toggle("Show timestamps", isOn: $timestamps)
                     Toggle("Hide lines that don't match the filter", isOn: $filterOnly)
@@ -44,10 +44,12 @@ struct LogsTab: View {
                     Button("Save to File…") { save() }
                 }
                 .labelStyle(.iconOnly).menuStyle(.borderlessButton).fixedSize()
+                .help(level == .all ? "Log options" : "Log options (showing \(level.title.lowercased()))")
             }
             .padding(.horizontal, 16).padding(.bottom, 8)
             if let model {
-                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly, level: level, jump: jump)
+                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly, level: level, jump: jump,
+                        showAllLevels: { levelRaw = LogLevelFilter.all.rawValue }, clearFilter: { ui.logFilter = "" })
             } else {
                 Spacer()
             }
@@ -101,6 +103,8 @@ private struct LogList: View {
     let filterOnly: Bool
     let level: LogLevelFilter
     let jump: LogJump?
+    let showAllLevels: () -> Void
+    let clearFilter: () -> Void
     @Environment(\.uiZoom) private var zoom
     @State private var position = 0
     @State private var atBottom = true
@@ -167,6 +171,27 @@ private struct LogList: View {
             .animation(.snappy, value: follow)
         }
         .overlay { if let failure = model.failure { Text(failure).foregroundStyle(.red).padding() } }
+        .overlay {
+            if visible.isEmpty, !model.lines.isEmpty {
+                if leveled.isEmpty {
+                    ContentUnavailableView {
+                        Label("No lines at this level", systemImage: "line.3.horizontal.decrease.circle")
+                    } description: {
+                        Text("Showing \(level.title.lowercased()). \(model.lines.count) loaded lines are hidden.")
+                    } actions: {
+                        Button("Show All Lines", action: showAllLevels).buttonStyle(.liquid)
+                    }
+                } else {
+                    ContentUnavailableView {
+                        Label("No matching lines", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("Nothing matches \u{201C}\(filter)\u{201D}.")
+                    } actions: {
+                        Button("Clear Filter", action: clearFilter).buttonStyle(.liquid)
+                    }
+                }
+            }
+        }
     }
 
     private func row(_ line: LogLine, current: Bool) -> Text {
