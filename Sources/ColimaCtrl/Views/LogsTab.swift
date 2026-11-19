@@ -13,6 +13,9 @@ struct LogsTab: View {
     @AppStorage("logWrap") private var wrap = true
     @AppStorage("logTimestamps") private var timestamps = true
     @AppStorage("logFilterOnly") private var filterOnly = true
+    @AppStorage("logLevel") private var levelRaw = LogLevelFilter.all.rawValue
+
+    private var level: LogLevelFilter { LogLevelFilter(rawValue: levelRaw) ?? .all }
 
     var body: some View {
         @Bindable var ui = ui
@@ -26,6 +29,9 @@ struct LogsTab: View {
                     Toggle("Wrap lines", isOn: $wrap)
                     Toggle("Show timestamps", isOn: $timestamps)
                     Toggle("Hide lines that don't match the filter", isOn: $filterOnly)
+                    Picker("Show", selection: $levelRaw) {
+                        ForEach(LogLevelFilter.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }
+                    }
                     Divider()
                     Button("Save to File…") { save() }
                 }
@@ -33,7 +39,7 @@ struct LogsTab: View {
             }
             .padding(.horizontal, 16).padding(.bottom, 8)
             if let model {
-                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly)
+                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps, filterOnly: filterOnly, level: level)
             } else {
                 Spacer()
             }
@@ -55,7 +61,7 @@ struct LogsTab: View {
 
     private var visibleLines: [LogLine] {
         guard let model else { return [] }
-        return model.lines.filter { appliedFilter.isEmpty || $0.text.localizedCaseInsensitiveContains(appliedFilter) }
+        return level.apply(model.lines).filter { appliedFilter.isEmpty || $0.text.localizedCaseInsensitiveContains(appliedFilter) }
     }
 
     private func copyVisible() {
@@ -79,14 +85,16 @@ private struct LogList: View {
     let wrap: Bool
     let timestamps: Bool
     let filterOnly: Bool
+    let level: LogLevelFilter
     @Environment(\.uiZoom) private var zoom
     @State private var position = 0
     @State private var atBottom = true
     @State private var userScrolling = false
 
     var body: some View {
-        let matching = filter.isEmpty ? [] : model.lines.filter { $0.text.localizedCaseInsensitiveContains(filter) }
-        let visible = filter.isEmpty || !filterOnly ? model.lines : matching
+        let leveled = level.apply(model.lines)
+        let matching = filter.isEmpty ? [] : leveled.filter { $0.text.localizedCaseInsensitiveContains(filter) }
+        let visible = filter.isEmpty || !filterOnly ? leveled : matching
         let matchIDs = matching.map(\.id)
         let current = matchIDs.indices.contains(position) ? matchIDs[position] : nil
         ScrollViewReader { proxy in

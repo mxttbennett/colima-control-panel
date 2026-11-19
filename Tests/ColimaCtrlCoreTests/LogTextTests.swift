@@ -11,6 +11,10 @@ import Testing
         ("{\"level\":\"error\",\"msg\":\"x\"}", .error),
         ("2026-01-01 DEBUG cache miss", .debug),
         ("an error occurred in plain prose", nil),
+        ("info: Program[0]", .info),
+        ("warn: Microsoft.EntityFrameworkCore[10]", .warning),
+        ("fail: App.Worker[0]", .error),
+        ("information: not a level", nil),
     ]
 
     // Act & Assert
