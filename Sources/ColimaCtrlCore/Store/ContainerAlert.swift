@@ -28,7 +28,7 @@ public struct ContainerAlert: Equatable, Sendable, Identifiable {
     }
 
     /// Exit codes 0, 130 (interrupt) and 143 (terminate) are normal shutdowns, so they stay quiet.
-    private static let quietExitCodes: Set<Int> = [0, 130, 143]
+    static let quietExitCodes: Set<Int> = [0, 130, 143]
 
     public static func diff(old: [ContainerRow], new: [ContainerRow], ignoring: Set<String>) -> [ContainerAlert] {
         let before = Dictionary(old.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })

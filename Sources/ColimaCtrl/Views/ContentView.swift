@@ -18,6 +18,7 @@ struct ContentView: View {
         case .images: return count(store.images.count, "image")
         case .networks: return count(store.networks.count, "network")
         case .system: return ""
+        case .activity: return store.activity.events.isEmpty ? "" : count(store.activity.events.count, "event")
         }
     }
 
@@ -39,6 +40,7 @@ struct ContentView: View {
                         case .images: ImagesView()
                         case .networks: NetworksView()
                         case .system: SystemView()
+                        case .activity: ActivityView()
                         }
                     }
                     .id(ui.section)
@@ -62,6 +64,9 @@ struct ContentView: View {
                         .help("Sort containers within each project (now: \(ui.containerSort.rawValue))")
                     }
                     ToolbarItem { Toggle("Running", systemImage: "play.circle", isOn: $ui.runningOnly).help("Show only running containers") }
+                }
+                if ui.section == .activity {
+                    ToolbarItem { Button("Clear", systemImage: "trash") { store.clearActivity() }.help("Clear the activity log").disabled(store.activity.events.isEmpty) }
                 }
                 ToolbarItem { Button("Command Palette", systemImage: "command") { ui.showPalette = true }.help("Command palette (⌘K)") }
             }

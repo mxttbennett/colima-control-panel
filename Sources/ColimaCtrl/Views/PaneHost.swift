@@ -86,7 +86,7 @@ struct PaneHost<Content: View>: View {
         case .volumes: target.id == UIState.multiSelection || store.volumes.contains { $0.name == target.id }
         case .images: target.id == UIState.multiSelection || store.images.contains { $0.id == target.id }
         case .networks: target.id == UIState.multiSelection || store.networks.contains { $0.id == target.id }
-        case .system: false
+        case .system, .activity: false
         }
     }
 
@@ -104,7 +104,7 @@ struct PaneHost<Content: View>: View {
             if target.id == UIState.multiSelection { MultiSelectionPane() } else { ContainerDetailView(id: target.id) }
         case .volumes, .images, .networks:
             if target.id == UIState.multiSelection { ResourceMultiSelectionPane(section: target.section) } else { resourceDetail(target) }
-        case .system: EmptyView()
+        case .system, .activity: EmptyView()
         }
     }
 }

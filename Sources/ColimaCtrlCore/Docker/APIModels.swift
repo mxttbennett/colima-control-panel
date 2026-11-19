@@ -217,12 +217,15 @@ struct APITtyProbe: Decodable, Sendable {
 struct APIEvent: Decodable, Sendable {
     struct Actor: Decodable, Sendable {
         let id: String?
-        enum CodingKeys: String, CodingKey { case id = "ID" }
+        let attributes: [String: String]?
+        enum CodingKeys: String, CodingKey { case id = "ID", attributes = "Attributes" }
     }
     let type: String
     let action: String
     let actor: Actor?
-    enum CodingKeys: String, CodingKey { case type = "Type", action = "Action", actor = "Actor" }
+    let time: Int?
+    let timeNano: Int?
+    enum CodingKeys: String, CodingKey { case type = "Type", action = "Action", actor = "Actor", time, timeNano }
 }
 
 struct APIVolumeInspect: Decodable, Sendable {

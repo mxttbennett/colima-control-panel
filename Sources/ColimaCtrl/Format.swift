@@ -7,6 +7,12 @@ enum Format {
         return value.formatted(.byteCount(style: .memory, allowedUnits: [.kb, .mb, .gb, .tb], spellsOutZero: false))
     }
 
+    static func clock(_ date: Date) -> String {
+        Calendar.current.isDateInToday(date)
+            ? date.formatted(.dateTime.hour().minute().second())
+            : date.formatted(.dateTime.month(.abbreviated).day().hour().minute())
+    }
+
     static func ago(_ date: Date) -> String {
         date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated))
     }
