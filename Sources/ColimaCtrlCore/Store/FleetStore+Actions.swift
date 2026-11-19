@@ -1,25 +1,31 @@
 import Foundation
 
 public enum ContainerAction: String, Sendable {
-    case start, stop, restart
+    case start, stop, restart, pause, resume
+
+    var endpoint: String { self == .resume ? "unpause" : rawValue }
 
     var pendingOp: PendingOp {
         switch self {
         case .start: .starting
         case .stop: .stopping
         case .restart: .restarting
+        case .pause: .pausing
+        case .resume: .resuming
         }
     }
 }
 
 public enum PendingOp: Sendable {
-    case starting, stopping, restarting, removing, pruning
+    case starting, stopping, restarting, pausing, resuming, removing, pruning
 
     public var label: String {
         switch self {
         case .starting: "Starting…"
         case .stopping: "Stopping…"
         case .restarting: "Restarting…"
+        case .pausing: "Pausing…"
+        case .resuming: "Resuming…"
         case .removing: "Removing…"
         case .pruning: "Pruning…"
         }
@@ -48,7 +54,7 @@ extension FleetStore {
         guard !ids.isEmpty else { return }
         run("\(action.rawValue.capitalized) \(describe(ids))", marking: ids, as: action.pendingOp) { client in
             try await withThrowingTaskGroup(of: Void.self) { group in
-                for id in ids { group.addTask { try await client.send("POST", "/containers/\(id)/\(action.rawValue)") } }
+                for id in ids { group.addTask { try await client.send("POST", "/containers/\(id)/\(action.endpoint)") } }
                 try await group.waitForAll()
             }
         }

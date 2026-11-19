@@ -128,3 +128,10 @@ private func container(state: String = "running", status: String = "Up 2 minutes
     #expect(model.capacity == 1234)
     #expect(LogModel.defaultCapacity == 5000)
 }
+
+@Test func resumingUsesTheEnginesUnpauseEndpoint() {
+    // Act & Assert
+    #expect(ContainerAction.resume.endpoint == "unpause")
+    #expect(ContainerAction.pause.endpoint == "pause")
+    #expect(ContainerAction.restart.endpoint == "restart")
+}
