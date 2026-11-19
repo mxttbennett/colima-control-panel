@@ -20,6 +20,7 @@ struct InfoTab: View {
                         Field("Restart", inspect.restartPolicy)
                         if inspect.restartCount > 0 { Field("Restarts", "\(inspect.restartCount)") }
                         if !row.isRunning, let exitCode = inspect.exitCode { Field("Exit code", ContainerInspect.exitDescription(code: exitCode, oomKilled: inspect.oomKilled)) }
+                        if let limits = limitsText(inspect) { Field("Limits", limits) }
                         if let health = inspect.health { Field("Health", health) }
                     }
                     if !inspect.ports.isEmpty {
@@ -68,6 +69,13 @@ struct InfoTab: View {
             if let fresh = try? await store.inspect(row.id), fresh != inspect { inspect = fresh }
         }
     }
+}
+
+private func limitsText(_ inspect: ContainerInspect) -> String? {
+    var parts: [String] = []
+    if let memory = inspect.memoryLimit { parts.append("\(Format.bytes(memory)) memory") }
+    if let cpus = inspect.cpuLimit { parts.append("\(cpus.formatted(.number.precision(.fractionLength(0...2)))) CPUs") }
+    return parts.isEmpty ? nil : parts.joined(separator: " · ")
 }
 
 private struct EnvironmentCard: View {

@@ -190,6 +190,8 @@ public struct ContainerInspect: Equatable, Sendable {
     public let restartCount: Int
     public let exitCode: Int?
     public let oomKilled: Bool
+    public let memoryLimit: Int64?
+    public let cpuLimit: Double?
 
     /// `KEY=value` lines, the format `docker run --env-file` reads.
     public static func envFile(_ pairs: [(key: String, value: String)]) -> String {
@@ -199,7 +201,7 @@ public struct ContainerInspect: Equatable, Sendable {
     public static func == (lhs: ContainerInspect, rhs: ContainerInspect) -> Bool {
         lhs.id == rhs.id && lhs.image == rhs.image && lhs.command == rhs.command && lhs.health == rhs.health
             && lhs.mounts == rhs.mounts && lhs.ports == rhs.ports && lhs.attachments == rhs.attachments
-            && lhs.labels == rhs.labels && lhs.restartCount == rhs.restartCount && lhs.exitCode == rhs.exitCode && lhs.oomKilled == rhs.oomKilled
+            && lhs.memoryLimit == rhs.memoryLimit && lhs.cpuLimit == rhs.cpuLimit && lhs.labels == rhs.labels && lhs.restartCount == rhs.restartCount && lhs.exitCode == rhs.exitCode && lhs.oomKilled == rhs.oomKilled
             && lhs.env.map { "\($0.key)=\($0.value)" } == rhs.env.map { "\($0.key)=\($0.value)" }
     }
 }
@@ -226,7 +228,9 @@ extension ContainerInspect {
             labels: (api.config.labels ?? [:]).map { KeyValue(key: $0.key, value: $0.value) }.sorted { $0.key < $1.key },
             restartCount: api.restartCount ?? 0,
             exitCode: api.state.exitCode,
-            oomKilled: api.state.oomKilled ?? false
+            oomKilled: api.state.oomKilled ?? false,
+            memoryLimit: api.hostConfig?.memory.flatMap { $0 > 0 ? $0 : nil },
+            cpuLimit: api.hostConfig?.nanoCpus.flatMap { $0 > 0 ? Double($0) / 1e9 : nil }
         )
     }
 }

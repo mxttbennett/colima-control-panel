@@ -77,7 +77,8 @@ def inspect(cid):
             "RestartCount": 3 if health == "unhealthy" else 0,
             "Config": {"Image": image, "Env": ["PATH=/usr/local/bin:/usr/bin:/bin"] + env, "Tty": False, "Labels": compose(project, service, DIRECTORY[project]) if project else {}},
             "State": {"StartedAt": started, "Health": {"Status": health} if health else None, "ExitCode": code, "OOMKilled": False},
-            "HostConfig": {"RestartPolicy": {"Name": "unless-stopped" if state == "running" else "no"}},
+            "HostConfig": {"RestartPolicy": {"Name": "unless-stopped" if state == "running" else "no"},
+                           **({"Memory": 768 * 1024 ** 2, "NanoCpus": 1_500_000_000} if service == "api" else {})},
             "Mounts": [{"Type": "volume", "Name": f"{project}_{service}_data", "Destination": "/data", "RW": True}] if service in ("db", "cache") else [],
             "NetworkSettings": {"Ports": {f"{c}/tcp": [{"HostPort": str(h)}] for h, c in ports}, "Networks": {network: {"IPAddress": "172.20.0." + str(2 + [s[0] for s in SPEC].index(name))}}}}
 
