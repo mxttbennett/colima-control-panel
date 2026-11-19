@@ -43,6 +43,7 @@ struct MenuBarContent: View {
         }
         .padding(16)
         .tint(Brand.blue)
+        .preferredColorScheme(prefs.appearance.colorScheme)
         .frame(width: 340)
         .onChange(of: prefs.statsSeconds, initial: true) { store.statsInterval = .seconds(prefs.statsSeconds) }
         .onAppear { store.setDemand(.popover, true) }

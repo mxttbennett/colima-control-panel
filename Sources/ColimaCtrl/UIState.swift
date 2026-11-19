@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 import ColimaCtrlCore
 
 enum Section: String, CaseIterable, Identifiable {
@@ -113,6 +114,18 @@ final class UIState {
     }
 }
 
+enum AppearanceChoice: String, CaseIterable, Identifiable {
+    case system = "System", light = "Light", dark = "Dark"
+    var id: String { rawValue }
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
 @MainActor @Observable
 final class Preferences {
     var dockBadge: Bool { didSet { UserDefaults.standard.set(dockBadge, forKey: "dockBadge") } }
@@ -122,6 +135,7 @@ final class Preferences {
     var statsSeconds: Int { didSet { UserDefaults.standard.set(statsSeconds, forKey: "statsSeconds") } }
     var keepCCPWithColima: Bool { didSet { UserDefaults.standard.set(keepCCPWithColima, forKey: "keepCCPWithColima") } }
     var notifyOnFailures: Bool { didSet { UserDefaults.standard.set(notifyOnFailures, forKey: "notifyOnFailures") } }
+    var appearance: AppearanceChoice { didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "appearance") } }
     var logCapacity: Int { didSet { UserDefaults.standard.set(logCapacity, forKey: "logCapacity") } }
     var defaultDetailTab: DetailTab { didSet { UserDefaults.standard.set(defaultDetailTab.rawValue, forKey: "defaultDetailTab") } }
     var colimaWatcherError: String?
@@ -136,6 +150,7 @@ final class Preferences {
         statsSeconds = defaults.integer(forKey: "statsSeconds")
         keepCCPWithColima = defaults.bool(forKey: "keepCCPWithColima")
         notifyOnFailures = defaults.bool(forKey: "notifyOnFailures")
+        appearance = defaults.string(forKey: "appearance").flatMap { AppearanceChoice(rawValue: $0.capitalized) } ?? .system
         logCapacity = defaults.integer(forKey: "logCapacity")
         defaultDetailTab = defaults.string(forKey: "defaultDetailTab").flatMap(DetailTab.init(rawValue:)) ?? .info
     }
