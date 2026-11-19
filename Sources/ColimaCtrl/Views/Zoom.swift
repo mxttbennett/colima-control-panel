@@ -49,6 +49,16 @@ extension View {
 enum Zoom {
     static let levels: [Double] = [0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0]
 
+    /// Native controls come in a few sizes, so zoom picks the nearest one.
+    static func controlSize(for zoom: Double) -> ControlSize {
+        switch zoom {
+        case ..<0.95: .small
+        case ..<1.2: .regular
+        case ..<1.6: .large
+        default: .extraLarge
+        }
+    }
+
     static func step(_ current: Double, by delta: Int) -> Double {
         let index = levels.enumerated().min { abs($0.element - current) < abs($1.element - current) }?.offset ?? 2
         return levels[min(max(index + delta, 0), levels.count - 1)]
