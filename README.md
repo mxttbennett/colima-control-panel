@@ -61,7 +61,7 @@ Enable **Keep CCP running with Colima** in Settings to have CCP start Colima whe
 
 ## How it works
 
-CCP reads Docker data from `~/.colima/<profile>/docker.sock`. It does not run a network service or send data off your Mac.
+CCP reads Docker data from `~/.colima/<profile>/docker.sock`. It does not run a network service or send data off your Mac. The one exception is the Check for Updates button in Settings, which asks GitHub for the latest release version when you click it.
 
 When **Keep CCP running with Colima** is enabled, a small bundled LaunchAgent checks the active profile's Docker socket every three seconds. It opens CCP when Colima starts and keeps watching after CCP quits. CCP saves the active profile so the helper can follow it.
 
