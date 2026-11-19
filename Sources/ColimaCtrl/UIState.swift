@@ -8,6 +8,8 @@ enum Section: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
+    /// The digit that jumps here with ⌘.
+    var shortcut: Int { (Self.allCases.firstIndex(of: self) ?? 0) + 1 }
     var symbol: String {
         switch self {
         case .containers: "shippingbox"
