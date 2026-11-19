@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One accent for selection, links and the main action. Everything else stays neutral, and color is kept for state.
+/// One hue, used generously for icons, graphs, headings and selection. Other colors are kept for state.
 enum Brand {
     static let blue = Color(red: 0.18, green: 0.38, blue: 0.98)
 }

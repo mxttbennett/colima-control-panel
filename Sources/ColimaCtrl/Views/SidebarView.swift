@@ -41,7 +41,7 @@ private struct SectionIcon: View {
     let section: Section
 
     var body: some View {
-        Image(systemName: section.symbol).foregroundStyle(prominence == .increased ? Color.white : Color.secondary)
+        Image(systemName: section.symbol).foregroundStyle(prominence == .increased ? Color.white : Brand.blue)
     }
 }
 
@@ -113,14 +113,14 @@ private struct Totals: View {
                 Spacer()
                 Text("\(totals.latestCPU / 100, format: .number.precision(.fractionLength(2))) of \(Int(cores)) cores").monospacedDigit().rollingNumbers(Int(totals.latestCPU))
             }
-            Sparkline(values: totals.cpu, maximum: cores * 100, color: .secondary).frame(height: 28)
+            Sparkline(values: totals.cpu, maximum: cores * 100, color: Brand.blue).frame(height: 28)
             Spacer().frame(height: 4)
             HStack {
                 Text("Memory").foregroundStyle(.secondary)
                 Spacer()
                 Text("\(Format.bytes(Int64(totals.latestMemory))) of \(Format.bytes(Int64(memory)))").monospacedDigit().rollingNumbers(Int(totals.latestMemory / 1_000_000))
             }
-            Sparkline(values: totals.memory, maximum: memory, color: .secondary).frame(height: 28)
+            Sparkline(values: totals.memory, maximum: memory, color: Brand.blue.opacity(0.55)).frame(height: 28)
         }
         .zoomFont(.caption)
     }

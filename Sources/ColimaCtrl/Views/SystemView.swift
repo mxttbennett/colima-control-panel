@@ -83,7 +83,7 @@ private struct SelfCard: View {
             Text("This app").zoomFont(.caption).foregroundStyle(.secondary)
             Text(Format.bytes(Int64(metrics.memory))).zoomFont(.title2.weight(.semibold))
             Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU").zoomFont(.caption).foregroundStyle(.secondary)
-            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: .secondary).frame(height: 30).padding(.top, 6)
+            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: Brand.blue).frame(height: 30).padding(.top, 6)
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)

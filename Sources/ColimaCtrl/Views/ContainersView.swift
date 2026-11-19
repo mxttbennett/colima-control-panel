@@ -133,7 +133,7 @@ private struct GroupHeader: View {
                 HStack {
                     Image(systemName: collapsed ? "chevron.right" : "chevron.down")
                         .zoomFont(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
-                    Text(project ?? "No project").zoomFont(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Color.primary)
+                    Text(project ?? "No project").zoomFont(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
                     Text("\(runningCount)/\(rows.count) running").zoomFont(.caption).foregroundStyle(.secondary)
                     GroupUsage(rows: rows)
                     Spacer(minLength: 0)
@@ -182,7 +182,7 @@ private struct GroupUsage: View {
             HStack(spacing: 8) {
                 Text(Format.bytes(Int64(memory.last ?? 0))).rollingNumbers(Int((memory.last ?? 0) / 1_000_000))
                 Text("\(cpu.last ?? 0, format: .number.precision(.fractionLength(1)))%").rollingNumbers(Int((cpu.last ?? 0) * 10))
-                Sparkline(values: cpu, maximum: max(10, cpu.max() ?? 10), filled: false, color: .secondary).frame(width: 56 * zoom, height: 16 * zoom)
+                Sparkline(values: cpu, maximum: max(10, cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 56 * zoom, height: 16 * zoom)
             }
             .zoomFont(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
             .padding(.leading, 6)
@@ -373,7 +373,7 @@ private struct RowGraph: View {
             Text("\(series.latestCPU, format: .number.precision(.fractionLength(1)))%")
                 .zoomFont(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
                 .rollingNumbers(Int(series.latestCPU * 10))
-            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: .secondary).frame(width: 64 * zoom, height: 18 * zoom)
+            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64 * zoom, height: 18 * zoom)
         }
     }
 }
