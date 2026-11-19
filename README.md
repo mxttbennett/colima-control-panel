@@ -71,7 +71,7 @@ swift test
 scripts/build-app.sh
 ```
 
-The tests include Docker API checks against a running Colima socket. They skip those checks when Colima is stopped. `scripts/render-icon.swift` renders the artwork used by the app icon.
+The tests include Docker API checks against a running Colima socket. They skip those checks when Colima is stopped. `scripts/test-reclick.sh` checks the re-click-to-deselect behavior against a real table. It needs a desktop session and moves the pointer for a moment. `scripts/render-icon.swift` renders the artwork used by the app icon.
 
 See [docs/releasing.md](docs/releasing.md) for packaging and Homebrew release steps.
 
