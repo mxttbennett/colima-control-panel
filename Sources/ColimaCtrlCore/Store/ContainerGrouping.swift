@@ -21,6 +21,8 @@ public enum ContainerGrouping {
             || row.service?.localizedCaseInsensitiveContains(query) == true
             || row.project?.localizedCaseInsensitiveContains(query) == true
             || row.image.localizedCaseInsensitiveContains(query)
+            || (query.count >= 4 && row.id.hasPrefix(query.lowercased()))
+            || (query.count >= 2 && query.allSatisfy(\.isNumber) && row.portMappings.contains { String($0.host).contains(query) })
     }
 
     /// Compose projects in name order with loose containers last; rows inside each project follow `sort`.
