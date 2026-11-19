@@ -48,3 +48,16 @@ public final class StatsHistory {
         storage = [:]
     }
 }
+
+public enum SeriesMath {
+    /// Adds series sample by sample from the newest end, so containers that started later still line up with the rest.
+    public static func sumAligned(_ lists: [[Double]]) -> [Double] {
+        let length = lists.map(\.count).max() ?? 0
+        return (0..<length).map { offset in
+            lists.reduce(0) { total, list in
+                let index = list.count - (length - offset)
+                return index >= 0 ? total + list[index] : total
+            }
+        }
+    }
+}
