@@ -75,7 +75,18 @@ struct ContentView: View {
                 return .handled
             }
         }
-        .sheet(isPresented: $ui.showPalette) { PaletteView() }
+        .overlay {
+            if ui.showPalette {
+                ZStack(alignment: .top) {
+                    Color.black.opacity(0.14).ignoresSafeArea().contentShape(Rectangle())
+                        .onTapGesture { ui.showPalette = false }
+                        .accessibilityHidden(true)
+                    PaletteView().padding(.top, 110)
+                }
+                .transition(.opacity)
+            }
+        }
+        .motion(Motion.quick, value: ui.showPalette)
         .sheet(isPresented: $ui.showSetup) { SetupView() }
         .onChange(of: prefs.statsSeconds, initial: true) { store.statsInterval = .seconds(prefs.statsSeconds) }
         .overlay(alignment: .bottom) { ErrorBanner() }
