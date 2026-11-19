@@ -17,7 +17,7 @@ struct SettingsView: View {
             ColimaTab().tabItem { Label("Colima", systemImage: "shippingbox") }.tag("colima")
             AboutTab().tabItem { Label("About", systemImage: "info.circle") }.tag("about")
         }
-        .frame(width: 540, height: 600)
+        .frame(width: 540, height: 780)
         .tint(Brand.blue)
         .preferredColorScheme(prefs.appearance.colorScheme)
         .task { await setup.refresh() }
