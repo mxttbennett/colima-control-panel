@@ -9,6 +9,8 @@ struct PaneTarget: Equatable {
 /// Hosts the main content and slides the selected row's detail in from the right.
 /// The panel overlays the content instead of resizing it, so opening or closing never re-lays-out the list underneath,
 /// and it stays mounted briefly after closing so reopening the same row costs a slide, not a rebuild.
+private let paneDefaultWidth: Double = 400
+
 struct PaneHost<Content: View>: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
@@ -16,7 +18,7 @@ struct PaneHost<Content: View>: View {
     @ViewBuilder let content: Content
     @State private var mounted: PaneTarget?
 
-    @AppStorage("paneWidth") private var storedWidth: Double = 400
+    @AppStorage("paneWidth") private var storedWidth: Double = paneDefaultWidth
     @State private var dragStartWidth: Double?
 
     private var width: CGFloat { CGFloat(storedWidth) }
@@ -30,6 +32,7 @@ struct PaneHost<Content: View>: View {
             .onHover { inside in
                 if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
             }
+            .onTapGesture(count: 2) { storedWidth = paneDefaultWidth }
             .gesture(
                 DragGesture(minimumDistance: 1, coordinateSpace: .global)
                     .onChanged { drag in

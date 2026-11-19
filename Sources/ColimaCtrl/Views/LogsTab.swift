@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import ColimaCtrlCore
 
 struct LogsTab: View {
@@ -8,6 +9,8 @@ struct LogsTab: View {
     @State private var filter = ""
     @State private var appliedFilter = ""
     @State private var follow = true
+    @AppStorage("logWrap") private var wrap = true
+    @AppStorage("logTimestamps") private var timestamps = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,10 +19,17 @@ struct LogsTab: View {
                 Toggle("Follow", isOn: $follow).toggleStyle(.checkbox)
                 Button("Copy", systemImage: "doc.on.doc") { copyVisible() }.labelStyle(.iconOnly).help("Copy the shown lines")
                 Button("Clear", systemImage: "trash") { model?.clear() }.labelStyle(.iconOnly).help("Clear the log view")
+                Menu("Log options", systemImage: "ellipsis.circle") {
+                    Toggle("Wrap lines", isOn: $wrap)
+                    Toggle("Show timestamps", isOn: $timestamps)
+                    Divider()
+                    Button("Save to File…") { save() }
+                }
+                .labelStyle(.iconOnly).menuStyle(.borderlessButton).fixedSize()
             }
             .padding(.horizontal, 16).padding(.bottom, 8)
             if let model {
-                LogList(model: model, filter: appliedFilter, follow: $follow)
+                LogList(model: model, filter: appliedFilter, follow: $follow, wrap: wrap, timestamps: timestamps)
             } else {
                 Spacer()
             }
@@ -37,11 +47,23 @@ struct LogsTab: View {
         }
     }
 
+    private var visibleLines: [LogLine] {
+        guard let model else { return [] }
+        return model.lines.filter { appliedFilter.isEmpty || $0.text.localizedCaseInsensitiveContains(appliedFilter) }
+    }
+
     private func copyVisible() {
-        guard let model else { return }
-        let text = model.lines.filter { appliedFilter.isEmpty || $0.text.localizedCaseInsensitiveContains(appliedFilter) }.map(\.text).joined(separator: "\n")
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        NSPasteboard.general.setString(visibleLines.map(\.text).joined(separator: "\n"), forType: .string)
+    }
+
+    private func save() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.plainText]
+        panel.nameFieldStringValue = "\(store.containers.first { $0.id == containerID }?.name ?? "container").log"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let text = visibleLines.map { "\($0.timestamp) \($0.text)" }.joined(separator: "\n") + "\n"
+        do { try text.write(to: url, atomically: true, encoding: .utf8) } catch { store.lastError = "Save logs: \(error.localizedDescription)" }
     }
 }
 
@@ -49,18 +71,21 @@ private struct LogList: View {
     let model: LogModel
     let filter: String
     @Binding var follow: Bool
+    let wrap: Bool
+    let timestamps: Bool
     @State private var atBottom = true
     @State private var userScrolling = false
 
     var body: some View {
         let visible = filter.isEmpty ? model.lines : model.lines.filter { $0.text.localizedCaseInsensitiveContains(filter) }
         ScrollViewReader { proxy in
-            ScrollView {
+            ScrollView(wrap ? [.vertical] : [.vertical, .horizontal]) {
                 LazyVStack(alignment: .leading, spacing: 1) {
                     ForEach(visible) { line in
-                        Text("\(Text(Self.time(line.timestamp)).foregroundStyle(.tertiary)) \(Text(Self.linked(line.text)).foregroundStyle(line.isError ? Color.red : Color.primary))")
+                        row(line)
                             .font(.system(size: 11.5, design: .monospaced))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: !wrap, vertical: true)
+                            .frame(maxWidth: wrap ? .infinity : nil, alignment: .leading)
                             .id(line.id)
                     }
                 }
@@ -76,13 +101,13 @@ private struct LogList: View {
                 }
             }
             .onChange(of: model.lines.last?.id) {
-                if follow, let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+                if follow, let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottomLeading) }
             }
             .overlay(alignment: .bottom) {
                 if !follow {
                     Button("Jump to latest", systemImage: "arrow.down") {
                         follow = true
-                        if let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+                        if let last = visible.last?.id { proxy.scrollTo(last, anchor: .bottomLeading) }
                     }
                     .buttonStyle(.glass).controlSize(.small).padding(10)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -93,18 +118,35 @@ private struct LogList: View {
         .overlay { if let failure = model.failure { Text(failure).foregroundStyle(.red).padding() } }
     }
 
-    private static let linkDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+    private func row(_ line: LogLine) -> Text {
+        let body = Text(Self.styled(line, filter: filter)).foregroundStyle(line.isError ? Color.red : Color.primary)
+        guard timestamps else { return body }
+        return Text("\(Text(Self.time(line.timestamp)).foregroundStyle(.tertiary)) \(body)")
+    }
 
-    private static func linked(_ text: String) -> AttributedString {
+    private static func styled(_ line: LogLine, filter: String) -> AttributedString {
+        let text = line.text
         var result = AttributedString(text)
-        guard text.contains("://") || text.contains("www.") else { return result }
-        let range = NSRange(text.startIndex..., in: text)
-        for match in linkDetector?.matches(in: text, range: range) ?? [] {
-            guard let url = match.url, let span = Range(match.range, in: text),
-                  let lower = AttributedString.Index(span.lowerBound, within: result),
-                  let upper = AttributedString.Index(span.upperBound, within: result) else { continue }
-            result[lower..<upper].link = url
+
+        func apply(_ range: Range<String.Index>, _ change: (inout AttributedSubstring) -> Void) {
+            guard let lower = AttributedString.Index(range.lowerBound, within: result),
+                  let upper = AttributedString.Index(range.upperBound, within: result) else { return }
+            change(&result[lower..<upper])
         }
+
+        if let found = LogText.levelMatch(in: text) {
+            apply(found.range) { slice in
+                switch found.level {
+                case .error: slice.foregroundColor = .red
+                case .warning: slice.foregroundColor = .orange
+                case .debug: slice.foregroundColor = .secondary
+                case .info: slice.foregroundColor = .blue
+                }
+                slice.font = .system(size: 11.5, weight: .semibold, design: .monospaced)
+            }
+        }
+        for link in LogText.links(in: text) { apply(link.range) { $0.link = link.url } }
+        for range in LogText.matches(of: filter, in: text) { apply(range) { $0.backgroundColor = .yellow.opacity(0.35) } }
         return result
     }
 
