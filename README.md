@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Resources/AppIcon.icon/Assets/art.png" width="144" alt="Colima Control Panel app icon, a glass jellyfish">
+  <img src="Resources/AppIcon.icon/Assets/art.png" width="144" alt="Colima Control Panel app icon, a smiling octopus with eight curled arms">
 </p>
 
 # Colima Control Panel
