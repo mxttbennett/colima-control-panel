@@ -94,3 +94,14 @@ private func container(state: String = "running", status: String = "Up 2 minutes
     // Assert
     #expect(sorted.map(\.id) == ["2", "1"])
 }
+
+@Test func displayStatesHaveSpokenLabels() throws {
+    // Arrange
+    let unhealthy = try container(status: "Up 1 minute (unhealthy)")
+    let stopped = try container(state: "exited", status: "Exited (0) 1 hour ago")
+
+    // Act & Assert
+    #expect(unhealthy.display.label == "Unhealthy")
+    #expect(stopped.display.label == "Stopped")
+    #expect(Set([DisplayState.running, .starting, .restarting, .unhealthy, .paused, .stopped].map(\.label)).count == 6)
+}

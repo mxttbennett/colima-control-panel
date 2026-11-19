@@ -12,7 +12,7 @@ struct SidebarView: View {
                 Label { Text(section.title) } icon: { SectionIcon(section: section) }
                 Spacer()
                 if section == .containers, let color = store.health.color {
-                    StatusDot(color: color, size: 8).help(store.health.label)
+                    StatusDot(color: color, size: 8, label: store.health.label)
                 }
                 if store.info != nil, let count = count(for: section) {
                     Text(count, format: .number).foregroundStyle(.secondary).monospacedDigit()

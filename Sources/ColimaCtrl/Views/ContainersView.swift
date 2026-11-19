@@ -248,7 +248,7 @@ private struct ContainerRowView: View {
             if pending != nil {
                 ProgressView().controlSize(.mini).frame(width: 9, height: 9)
             } else {
-                StatusDot(color: row.display.color)
+                StatusDot(color: row.display.color, label: row.display.label)
             }
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {

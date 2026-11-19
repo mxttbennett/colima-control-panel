@@ -37,7 +37,7 @@ struct UsedBy: View {
                 ForEach(containers) { container in
                     Button { ui.show(container.id) } label: {
                         HStack(spacing: 8) {
-                            StatusDot(color: container.display.color, size: 8)
+                            StatusDot(color: container.display.color, size: 8, label: container.display.label)
                             Text(container.title).lineLimit(1)
                             Spacer()
                             Text(container.name).font(.caption).foregroundStyle(.secondary).lineLimit(1)

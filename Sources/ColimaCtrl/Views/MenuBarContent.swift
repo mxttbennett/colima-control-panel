@@ -20,7 +20,7 @@ struct MenuBarContent: View {
         }
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                if let color = store.health.color { StatusDot(color: color) }
+                if let color = store.health.color { StatusDot(color: color, label: store.health.label) }
                 Text(headline).font(.headline)
                 Spacer()
             }
@@ -52,20 +52,14 @@ struct MenuBarContent: View {
         if !running.isEmpty {
             VStack(spacing: 2) {
                 ForEach(running.prefix(10)) { row in
-                    Button { show(.containers, container: row.id) } label: {
-                        HStack(spacing: 8) {
-                            StatusDot(color: row.display.color, size: 8)
-                            Text(row.title).lineLimit(1)
-                            Spacer()
-                            if let started = row.startedAt {
-                                Text(started, style: .relative).font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                            }
-                        }
-                        .padding(.vertical, 4).contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
+                    MenuBarRow(row: row) { show(.containers, container: row.id) }
                 }
                 if running.count > 10 { Text("and \(running.count - 10) more").font(.caption).foregroundStyle(.secondary) }
+                if running.count > 1 {
+                    Button("Stop All", systemImage: "stop.fill") { store.stopAllRunning() }
+                        .buttonStyle(.glass).controlSize(.small).padding(.top, 6)
+                        .disabled(running.contains { store.pending[$0.id] != nil })
+                }
             }
         }
     }
@@ -75,5 +69,38 @@ struct MenuBarContent: View {
         if let container { ui.show(container) }
         openWindow(id: "main")
         NSApp.activate()
+    }
+}
+
+private struct MenuBarRow: View {
+    @Environment(FleetStore.self) private var store
+    let row: ContainerRow
+    let open: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        let pending = store.pending[row.id]
+        HStack(spacing: 8) {
+            Button(action: open) {
+                HStack(spacing: 8) {
+                    if pending != nil { ProgressView().controlSize(.mini).frame(width: 8, height: 8) } else { StatusDot(color: row.display.color, size: 8, label: row.display.label) }
+                    Text(row.title).lineLimit(1)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            if let pending {
+                Text(pending.label).font(.caption).foregroundStyle(.secondary)
+            } else if hovering {
+                Button("Restart", systemImage: "arrow.clockwise") { store.perform(.restart, on: [row.id]) }.help("Restart \(row.title)")
+                Button("Stop", systemImage: "stop.fill") { store.perform(.stop, on: [row.id]) }.help("Stop \(row.title)")
+            } else if let started = row.startedAt {
+                Text(started, style: .relative).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+            }
+        }
+        .labelStyle(.iconOnly).buttonStyle(.borderless)
+        .padding(.vertical, 4)
+        .onHover { hovering = $0 }
     }
 }

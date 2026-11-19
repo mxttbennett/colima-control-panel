@@ -4,6 +4,19 @@ public enum DisplayState: Sendable, Equatable {
     case running, starting, restarting, unhealthy, paused, stopped
 }
 
+extension DisplayState {
+    public var label: String {
+        switch self {
+        case .running: "Running"
+        case .starting: "Starting"
+        case .restarting: "Restarting"
+        case .unhealthy: "Unhealthy"
+        case .paused: "Paused"
+        case .stopped: "Stopped"
+        }
+    }
+}
+
 public struct ContainerRow: Identifiable, Equatable, Sendable {
     public let id: String
     public let name: String

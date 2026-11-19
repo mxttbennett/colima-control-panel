@@ -33,7 +33,7 @@ private struct DetailHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                if store.pending[row.id] != nil { ProgressView().controlSize(.mini).frame(width: 9, height: 9) } else { StatusDot(color: row.display.color) }
+                if store.pending[row.id] != nil { ProgressView().controlSize(.mini).frame(width: 9, height: 9) } else { StatusDot(color: row.display.color, label: row.display.label) }
                 Text(row.name).font(.title3.weight(.semibold)).lineLimit(1).textSelection(.enabled)
                 CopyButton(text: row.name)
                 Spacer()
@@ -121,7 +121,7 @@ struct MultiSelectionPane: View {
             .buttonStyle(.bordered).disabled(busy)
             List(rows) { row in
                 HStack(spacing: 8) {
-                    StatusDot(color: row.display.color)
+                    StatusDot(color: row.display.color, label: row.display.label)
                     Text(row.title).lineLimit(1)
                 }
             }
