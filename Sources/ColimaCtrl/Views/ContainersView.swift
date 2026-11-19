@@ -155,11 +155,21 @@ private struct GroupHeader: View {
 
     var body: some View {
         HStack {
-            Button(collapsed ? "Expand" : "Collapse", systemImage: collapsed ? "chevron.right" : "chevron.down", action: toggle)
-                .labelStyle(.iconOnly).buttonStyle(.plain).font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
-            Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
-            Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
-            Spacer()
+            Button {
+                withAnimation(.snappy) { toggle() }
+            } label: {
+                HStack {
+                    Image(systemName: collapsed ? "chevron.right" : "chevron.down")
+                        .font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
+                    Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
+                    Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(collapsed ? "collapsed" : "expanded")
+            .help(collapsed ? "Expand" : "Collapse")
             if let project {
                 GlassEffectContainer(spacing: 6) {
                     HStack(spacing: 6) {

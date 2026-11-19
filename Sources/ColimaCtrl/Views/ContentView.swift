@@ -33,10 +33,13 @@ struct ContentView: View {
             .toolbar {
                 if ui.section == .containers {
                     ToolbarItem {
-                        Picker("Sort by", selection: $ui.containerSort) {
-                            ForEach(ContainerSort.allCases) { Text($0.rawValue).tag($0) }
+                        Menu("Sort", systemImage: "arrow.up.arrow.down") {
+                            Picker("Sort by", selection: $ui.containerSort) {
+                                ForEach(ContainerSort.allCases) { Text($0.rawValue).tag($0) }
+                            }
+                            .pickerStyle(.inline).labelsHidden()
                         }
-                        .pickerStyle(.menu).help("Sort containers within each project")
+                        .help("Sort containers within each project (now: \(ui.containerSort.rawValue))")
                     }
                     ToolbarItem { Toggle("Running", systemImage: "play.circle", isOn: $ui.runningOnly).help("Show only running containers") }
                 }
