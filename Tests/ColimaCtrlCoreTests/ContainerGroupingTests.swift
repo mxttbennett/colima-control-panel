@@ -2,13 +2,13 @@ import Foundation
 import Testing
 @testable import ColimaCtrlCore
 
-private func row(_ id: String, project: String? = nil, service: String? = nil, directory: String? = nil, state: String = "running", image: String = "img", started: TimeInterval? = nil) throws -> ContainerRow {
+private func row(_ id: String, project: String? = nil, service: String? = nil, directory: String? = nil, state: String = "running", image: String = "img", started: TimeInterval? = nil, hostPort: Int? = nil, name: String? = nil) throws -> ContainerRow {
     let labels = [
         project.map { "\"com.docker.compose.project\":\"\($0)\"" }, service.map { "\"com.docker.compose.service\":\"\($0)\"" },
         directory.map { "\"com.docker.compose.project.working_dir\":\"\($0)\"" },
     ].compactMap { $0 }.joined(separator: ",")
     let json = """
-    {"Id":"\(id)","Names":["/\(id)"],"Image":"\(image)","State":"\(state)","Status":"Up","Created":1,"Labels":{\(labels)}}
+    {"Id":"\(id)","Names":["/\(name ?? id)"],"Image":"\(image)","State":"\(state)","Status":"Up","Created":1,"Labels":{\(labels)},"Ports":[\(hostPort.map { "{\"PrivatePort\":80,\"PublicPort\":\($0),\"Type\":\"tcp\"}" } ?? "")]}
     """
     return ContainerRow(try JSONDecoder().decode(APIContainer.self, from: Data(json.utf8)), startedAt: started.map { Date(timeIntervalSince1970: $0) })
 }
@@ -123,4 +123,19 @@ private func row(_ id: String, project: String? = nil, service: String? = nil, d
     // Assert
     #expect(combined == [1, 12, 23])
     #expect(SeriesMath.sumAligned([]) == [])
+}
+
+@Test func filterMatchesAPublishedPortOrAnIDPrefix() throws {
+    // Arrange
+    let web = try row("abcd1234ef", hostPort: 8080, name: "web")
+    let db = try row("99887766aa", hostPort: 5432, name: "db")
+
+    // Act & Assert
+    #expect(ContainerGrouping.matches(web, query: "8080"))
+    #expect(ContainerGrouping.matches(web, query: "80"))
+    #expect(!ContainerGrouping.matches(db, query: "8080"))
+    #expect(ContainerGrouping.matches(web, query: "abcd"))
+    #expect(!ContainerGrouping.matches(web, query: "bcd1"))
+    #expect(!ContainerGrouping.matches(web, query: "8"))
+    #expect(!ContainerGrouping.matches(web, query: "abc"))
 }
