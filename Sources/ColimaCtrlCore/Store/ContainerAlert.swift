@@ -4,6 +4,7 @@ public struct ContainerAlert: Equatable, Sendable, Identifiable {
     public enum Kind: Equatable, Sendable {
         case exited(code: Int)
         case unhealthy
+        case restartLoop(count: Int)
     }
 
     public let id: String
@@ -14,6 +15,7 @@ public struct ContainerAlert: Equatable, Sendable, Identifiable {
         switch kind {
         case .exited: "\(name) exited"
         case .unhealthy: "\(name) is unhealthy"
+        case .restartLoop: "\(name) keeps restarting"
         }
     }
 
@@ -21,6 +23,7 @@ public struct ContainerAlert: Equatable, Sendable, Identifiable {
         switch kind {
         case .exited(let code): "Exit code \(code)"
         case .unhealthy: "Its health check is failing"
+        case .restartLoop(let count): "It stopped \(count) times in the last few minutes"
         }
     }
 
