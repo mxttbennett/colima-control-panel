@@ -45,6 +45,11 @@ public enum LogText {
         }
     }
 
+    /// Lines that mark a failure: an error level, or stderr text with no level of its own.
+    public static func errorIDs(in lines: [LogLine]) -> [Int] {
+        lines.filter { (level(in: $0.text) ?? ($0.isError ? .error : nil)) == .error }.map(\.id)
+    }
+
     public static func matches(of query: String, in text: String) -> [Range<String.Index>] {
         guard !query.isEmpty else { return [] }
         var found: [Range<String.Index>] = []

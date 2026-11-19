@@ -45,7 +45,7 @@ struct ContainersView: View {
                                 }
                             }
                         } header: {
-                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, directory: group.directory, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
+                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, unhealthyCount: group.unhealthyCount, directory: group.directory, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
                                 let groupRows = store.containers.filter { $0.project == group.project }
                                 let title = "Remove all \(groupRows.count) containers \(group.project.map { "from \($0)" } ?? "that have no project")?"
                                 requestRemoval(groupRows.map(\.id), title: title)
@@ -120,6 +120,7 @@ private struct GroupHeader: View {
     let project: String?
     let rows: [ContainerRow]
     let runningCount: Int
+    let unhealthyCount: Int
     let directory: String?
     let collapsed: Bool
     let toggle: () -> Void
@@ -135,13 +136,14 @@ private struct GroupHeader: View {
                         .zoomFont(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
                     Text(project ?? "No project").zoomFont(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
                     Text("\(runningCount)/\(rows.count) running").zoomFont(.caption).foregroundStyle(.secondary)
+                    if unhealthyCount > 0 { Text("\(unhealthyCount) unhealthy").zoomFont(.caption.weight(.medium)).foregroundStyle(.red) }
                     GroupUsage(rows: rows)
                     Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(project ?? "No project"), \(runningCount) of \(rows.count) running")
+            .accessibilityLabel("\(project ?? "No project"), \(runningCount) of \(rows.count) running" + (unhealthyCount > 0 ? ", \(unhealthyCount) unhealthy" : ""))
             .accessibilityValue(collapsed ? "collapsed" : "expanded")
             .help(collapsed ? "Expand" : "Collapse")
             if let directory, FileManager.default.fileExists(atPath: directory) {
