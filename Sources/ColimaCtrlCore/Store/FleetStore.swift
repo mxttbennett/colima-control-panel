@@ -41,6 +41,7 @@ public final class FleetStore {
     @ObservationIgnored private var demand: Set<StatsDemand> = []
     @ObservationIgnored private var refreshPending = false
     @ObservationIgnored var heavyPending = false
+    @ObservationIgnored private var restartTracker = RestartTracker()
 
     public init(client: DockerClient = DockerClient(socketPath: DockerClient.defaultSocketPath()), vm: ColimaVM = ColimaVM()) {
         self.client = client
@@ -249,6 +250,10 @@ public final class FleetStore {
         let action = event.action.split(separator: ":").first.map(String.init) ?? event.action
         if event.type == "container", ["start", "restart", "die", "stop", "kill", "oom", "pause", "unpause"].contains(action), let id = event.actor?.id {
             startedAt[id] = nil
+        }
+        if event.type == "container", action == "die", let id = event.actor?.id, pending[id] == nil,
+           let count = restartTracker.recordDeath(of: id, at: .now), let row = containers.first(where: { $0.id == id }) {
+            alertHandler?([ContainerAlert(id: id, name: row.name, kind: .restartLoop(count: count))])
         }
         if event.type != "container" || action == "create" || action == "destroy" { heavyPending = true }
         scheduleRefresh()
