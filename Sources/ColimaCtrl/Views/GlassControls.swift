@@ -16,7 +16,7 @@ struct GlassSegmented<Value: Hashable & Identifiable>: View {
                         .zoomFont(.callout.weight(selected ? .semibold : .regular))
                         .foregroundStyle(Color.primary)
                         .padding(.horizontal, 18).padding(.vertical, 6)
-                        .glassEffect(selected ? Glass.regular.tint(Color.primary.opacity(0.10)).interactive() : Glass.identity, in: .capsule)
+                        .glassEffect(selected ? Glass.regular.tint(Brand.blue.opacity(0.4)).interactive() : Glass.identity, in: .capsule)
                         .glassEffectID(selected ? "selection" : "option-\(option.id)", in: namespace)
                         .contentShape(.capsule)
                         .onTapGesture { withAnimation(Motion.smooth) { selection = option } }
@@ -62,13 +62,13 @@ extension ButtonStyle where Self == LiquidButtonStyle {
     static func liquid(tint: Color) -> LiquidButtonStyle { LiquidButtonStyle(tint: tint) }
 }
 
-/// Soft neutral light behind the window so glass has something to refract.
+/// Soft blue light behind the window so glass has something to refract.
 struct AmbientBackground: View {
     var body: some View {
         ZStack {
             Color(nsColor: .windowBackgroundColor)
-            RadialGradient(colors: [Color.primary.opacity(0.04), .clear], center: .topTrailing, startRadius: 0, endRadius: 760)
-            RadialGradient(colors: [Color.primary.opacity(0.03), .clear], center: .bottomLeading, startRadius: 0, endRadius: 700)
+            RadialGradient(colors: [Brand.blue.opacity(0.08), .clear], center: .topTrailing, startRadius: 0, endRadius: 760)
+            RadialGradient(colors: [Brand.blue.opacity(0.05), .clear], center: .bottomLeading, startRadius: 0, endRadius: 700)
         }
         .ignoresSafeArea()
     }

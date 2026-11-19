@@ -37,7 +37,7 @@ struct PaletteView: View {
                             }
                             .padding(.horizontal, 10).padding(.vertical, 7)
                             .background {
-                if index == selection { Color.clear.glassEffect(.regular.tint(Color.primary.opacity(0.08)), in: .rect(cornerRadius: 10)) }
+                if index == selection { Color.clear.glassEffect(.regular.tint(Brand.blue.opacity(0.35)), in: .rect(cornerRadius: 10)) }
             }
                             .contentShape(Rectangle())
                             .onTapGesture { run(results, at: index) }
