@@ -35,7 +35,7 @@ private struct DetailHeader: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 if store.pending[row.id] != nil { ProgressView().controlSize(.mini).frame(width: 9, height: 9) } else { StatusDot(color: row.display.color, label: row.display.label) }
-                Text(row.name).font(.title3.weight(.semibold)).lineLimit(1).textSelection(.enabled)
+                Text(row.name).zoomFont(.title3.weight(.semibold)).lineLimit(1).textSelection(.enabled)
                 CopyButton(text: row.name)
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
@@ -49,7 +49,7 @@ private struct DetailHeader: View {
                     Text(row.status)
                 }
             }
-            .font(.callout).foregroundStyle(.secondary)
+            .zoomFont(.callout).foregroundStyle(.secondary)
             GlassEffectContainer(spacing: 8) {
               HStack(spacing: 8) {
                 Group {
@@ -104,12 +104,12 @@ struct MultiSelectionPane: View {
         let busy = ids.contains { store.pending[$0] != nil }
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("\(rows.count) containers selected").font(.title3.weight(.semibold))
+                Text("\(rows.count) containers selected").zoomFont(.title3.weight(.semibold))
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
             Text("\(rows.filter(\.isRunning).count) running, \(rows.filter { !$0.isRunning }.count) stopped")
-                .font(.callout).foregroundStyle(.secondary)
+                .zoomFont(.callout).foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 Button("Start") { store.perform(.start, on: ids) }
                 Button("Restart") { store.perform(.restart, on: ids) }

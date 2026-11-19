@@ -32,13 +32,14 @@ struct NetworksView: View {
                 }
             }
             TableColumn("Driver", value: \.driver) { Text($0.driver).foregroundStyle(.secondary) }.width(130)
-            TableColumn("Subnet", value: \.subnet) { Text($0.subnet).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary) }.width(150)
+            TableColumn("Subnet", value: \.subnet) { Text($0.subnet).zoomFont(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary) }.width(150)
             TableColumn("Containers", value: \.containers) { line in
                 Text(line.containers, format: .number).monospacedDigit()
             }.width(90)
         }
         .scrollContentBackground(.hidden)
         .deselectsOnReclick()
+        .zoomFont(.system(size: 13))
         .contextMenu(forSelectionType: String.self) { ids in
             let picked = rows.filter { ids.contains($0.id) }
             if let line = picked.first, picked.count == 1 {

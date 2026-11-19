@@ -13,7 +13,7 @@ struct GlassSegmented<Value: Hashable & Identifiable>: View {
                 ForEach(options) { option in
                     let selected = option == selection
                     Text(title(option))
-                        .font(.callout.weight(selected ? .semibold : .regular))
+                        .zoomFont(.callout.weight(selected ? .semibold : .regular))
                         .foregroundStyle(Color.primary)
                         .padding(.horizontal, 18).padding(.vertical, 6)
                         .glassEffect(selected ? Glass.regular.tint(Brand.blue.opacity(0.4)).interactive() : Glass.identity, in: .capsule)
@@ -48,7 +48,7 @@ private struct LiquidButtonBody: View {
         let compact = size == .small || size == .mini
         let glass: Glass = tint.map { Glass.regular.tint($0.opacity(0.22)) } ?? .regular
         configuration.label
-            .font(compact ? .caption.weight(.medium) : .callout.weight(.medium))
+            .zoomFont(compact ? .caption.weight(.medium) : .callout.weight(.medium))
             .foregroundStyle(tint ?? Color.primary)
             .padding(.horizontal, compact ? 10 : 14).padding(.vertical, compact ? 4 : 6)
             .glassEffect(glass.interactive(), in: .capsule)

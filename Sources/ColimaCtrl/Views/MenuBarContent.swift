@@ -21,7 +21,7 @@ struct MenuBarContent: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 if let color = store.health.color { StatusDot(color: color, label: store.health.label) }
-                Text(headline).font(.headline)
+                Text(headline).zoomFont(.headline)
                 if store.profile != "default" { Tag(store.profile) }
                 Spacer()
             }
@@ -33,7 +33,7 @@ struct MenuBarContent: View {
                 Spacer()
                 Text("\(Format.bytes(Int64(store.selfMetrics.memory))) · \(store.selfMetrics.cpu, format: .number.precision(.fractionLength(1)))%").monospacedDigit()
             }
-            .font(.caption)
+            .zoomFont(.caption)
             HStack {
                 Button("Open Colima Control Panel") { show(.containers) }.buttonStyle(.glassProminent)
                 Spacer()
@@ -55,7 +55,7 @@ struct MenuBarContent: View {
                 ForEach(running.prefix(10)) { row in
                     MenuBarRow(row: row) { show(.containers, container: row.id) }
                 }
-                if running.count > 10 { Text("and \(running.count - 10) more").font(.caption).foregroundStyle(.secondary) }
+                if running.count > 10 { Text("and \(running.count - 10) more").zoomFont(.caption).foregroundStyle(.secondary) }
                 if running.count > 1 {
                     Button("Stop All", systemImage: "stop.fill") { store.stopAllRunning() }
                         .buttonStyle(.liquid).controlSize(.small).padding(.top, 6)
@@ -92,12 +92,12 @@ private struct MenuBarRow: View {
             }
             .buttonStyle(.plain)
             if let pending {
-                Text(pending.label).font(.caption).foregroundStyle(.secondary)
+                Text(pending.label).zoomFont(.caption).foregroundStyle(.secondary)
             } else if hovering {
                 Button("Restart", systemImage: "arrow.clockwise") { store.perform(.restart, on: [row.id]) }.help("Restart \(row.title)")
                 Button("Stop", systemImage: "stop.fill") { store.perform(.stop, on: [row.id]) }.help("Stop \(row.title)")
             } else if let started = row.startedAt {
-                Text(started, style: .relative).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Text(started, style: .relative).zoomFont(.caption).foregroundStyle(.secondary).monospacedDigit()
             }
         }
         .labelStyle(.iconOnly).buttonStyle(.borderless)

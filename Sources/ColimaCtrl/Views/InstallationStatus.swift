@@ -49,7 +49,7 @@ struct InstallationStatus: View {
         HStack(alignment: .firstTextBaseline) {
             Text(title).foregroundStyle(.secondary)
             Spacer()
-            Text(value).font(.system(size: 12, design: .monospaced)).textSelection(.enabled).multilineTextAlignment(.trailing)
+            Text(value).zoomFont(.system(size: 12, design: .monospaced)).textSelection(.enabled).multilineTextAlignment(.trailing)
         }
     }
 }

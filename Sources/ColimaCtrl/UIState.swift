@@ -48,6 +48,7 @@ final class UIState {
     var showSetup = false
     var showPull = false
     var focusFilter = 0
+    var zoom: Double = 1 { didSet { UserDefaults.standard.set(zoom, forKey: "zoom") } }
     var logFilter = ""
     var confirm: ConfirmRequest?
     /// Container name from `-select`, applied once the container list loads.
@@ -58,6 +59,8 @@ final class UIState {
         if let raw = defaults.string(forKey: "section"), let section = Section(rawValue: raw) { self.section = section }
         if let raw = defaults.string(forKey: "tab"), let tab = DetailTab(rawValue: raw.capitalized) { detailTab = tab }
         pendingSelection = defaults.string(forKey: "select")
+        let savedZoom = defaults.double(forKey: "zoom")
+        if savedZoom > 0 { zoom = Zoom.step(savedZoom, by: 0) }
         containerSort = defaults.string(forKey: "containerSort").flatMap(ContainerSort.init(rawValue:)) ?? .name
     }
 
@@ -84,6 +87,10 @@ final class UIState {
             }
         }
     }
+
+    func zoomIn() { zoom = Zoom.step(zoom, by: 1) }
+    func zoomOut() { zoom = Zoom.step(zoom, by: -1) }
+    func resetZoom() { zoom = 1 }
 
     func closePane() { paneSelection = nil }
 

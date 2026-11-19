@@ -2,6 +2,7 @@ import SwiftUI
 import ColimaCtrlCore
 
 struct SidebarView: View {
+    @Environment(\.uiZoom) private var zoom
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
 
@@ -9,19 +10,19 @@ struct SidebarView: View {
         @Bindable var ui = ui
         List(Section.allCases, selection: $ui.section) { section in
             HStack {
-                Label { Text(section.title) } icon: { SectionIcon(section: section) }
+                Label { Text(section.title).zoomFont(.system(size: 13)) } icon: { SectionIcon(section: section) }
                 Spacer()
                 if section == .containers, let color = store.health.color {
                     StatusDot(color: color, size: 8, label: store.health.label)
                 }
                 if store.info != nil, let count = count(for: section) {
-                    Text(count, format: .number).foregroundStyle(.secondary).monospacedDigit().rollingNumbers(count)
+                    Text(count, format: .number).zoomFont(.system(size: 13)).foregroundStyle(.secondary).monospacedDigit().rollingNumbers(count)
                 }
             }
             .tag(section)
         }
         .safeAreaInset(edge: .bottom) { VMCard().padding(.horizontal, 12).padding(.bottom, 12) }
-        .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+        .navigationSplitViewColumnWidth(min: 190 * zoom, ideal: 220 * zoom, max: 280 * zoom)
     }
 
     private func count(for section: Section) -> Int? {
@@ -67,7 +68,7 @@ private struct ProfileMenu: View {
                     }
                     .pickerStyle(.inline).labelsHidden()
                 } label: {
-                    Label("Profile: \(store.profile)", systemImage: "server.rack").font(.caption)
+                    Label("Profile: \(store.profile)", systemImage: "server.rack").zoomFont(.caption)
                 }
                 .menuStyle(.borderlessButton).fixedSize()
                 .help("Switch Colima profile")
@@ -86,7 +87,7 @@ private struct VMCard: View {
             ProfileMenu()
             if let info = store.info {
                 Text("\(info.cpus) cpu · \(Format.bytes(info.memory)) · Docker \(info.version)")
-                    .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    .zoomFont(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             VMControls()
             if store.connection == .up, store.info != nil { Totals() }
@@ -121,7 +122,7 @@ private struct Totals: View {
             }
             Sparkline(values: totals.memory, maximum: memory, color: Brand.mint).frame(height: 28)
         }
-        .font(.caption)
+        .zoomFont(.caption)
     }
 }
 
@@ -135,7 +136,7 @@ private struct SelfRow: View {
             Spacer()
             Text("\(Format.bytes(Int64(metrics.memory))) · \(metrics.cpu, format: .number.precision(.fractionLength(1)))%").monospacedDigit()
         }
-        .font(.caption)
+        .zoomFont(.caption)
         .help("This app's own memory footprint and CPU use")
     }
 }
@@ -150,7 +151,7 @@ struct VMControls: View {
             if let operation = vm.operation {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.small)
-                    Text(label(for: operation)).font(.caption).foregroundStyle(.secondary)
+                    Text(label(for: operation)).zoomFont(.caption).foregroundStyle(.secondary)
                 }
             } else if store.connection == .up {
                 GlassEffectContainer(spacing: 6) {

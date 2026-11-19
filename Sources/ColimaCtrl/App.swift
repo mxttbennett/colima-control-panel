@@ -58,6 +58,11 @@ struct ColimaCtrlApp: App {
                     }
                 }.keyboardShortcut(.delete, modifiers: .command).disabled(ids.isEmpty)
             }
+            CommandGroup(after: .toolbar) {
+                Button("Zoom In") { ui.zoomIn() }.keyboardShortcut("+")
+                Button("Zoom Out") { ui.zoomOut() }.keyboardShortcut("-")
+                Button("Actual Size") { ui.resetZoom() }.keyboardShortcut("0")
+            }
             CommandGroup(after: .textEditing) {
                 Button("Find") { ui.focusFilter += 1 }.keyboardShortcut("f")
             }

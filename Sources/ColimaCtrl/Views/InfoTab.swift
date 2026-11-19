@@ -28,12 +28,12 @@ struct InfoTab: View {
                                 let known = Int(port.container.split(separator: "/").first ?? "").flatMap { KnownPort.lookup(containerPort: $0) }
                                 HStack {
                                     Text(port.container).foregroundStyle(.secondary)
-                                    if let known { Text(known.name).font(.caption).foregroundStyle(.tertiary) }
+                                    if let known { Text(known.name).zoomFont(.caption).foregroundStyle(.tertiary) }
                                     Spacer()
                                     if known?.opensInBrowser ?? true {
-                                        Link(destination: URL(string: "http://localhost:\(port.host)")!) { Text(verbatim: "localhost:\(port.host)") }.font(.system(size: 12, design: .monospaced))
+                                        Link(destination: URL(string: "http://localhost:\(port.host)")!) { Text(verbatim: "localhost:\(port.host)") }.zoomFont(.system(size: 12, design: .monospaced))
                                     } else {
-                                        Text(verbatim: "localhost:\(port.host)").font(.system(size: 12, design: .monospaced))
+                                        Text(verbatim: "localhost:\(port.host)").zoomFont(.system(size: 12, design: .monospaced))
                                     }
                                     CopyButton(text: "localhost:\(port.host)")
                                 }
@@ -118,9 +118,9 @@ private struct GraphCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(title).font(.caption).foregroundStyle(.secondary)
+                Text(title).zoomFont(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text(value).font(.caption.weight(.medium)).monospacedDigit().rollingNumbers(value)
+                Text(value).zoomFont(.caption.weight(.medium)).monospacedDigit().rollingNumbers(value)
             }
             Sparkline(values: values, maximum: maximum, color: color).frame(height: 44)
         }
@@ -140,7 +140,7 @@ struct Card<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            Text(title).zoomFont(.caption.weight(.medium)).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 8) { content }.textSelection(.enabled)
         }
         .padding(14)
@@ -150,6 +150,7 @@ struct Card<Content: View>: View {
 }
 
 struct Field: View {
+    @Environment(\.uiZoom) private var zoom
     let label: String
     let value: String
     let copy: String?
@@ -168,8 +169,8 @@ struct Field: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(label).foregroundStyle(.secondary).frame(width: 78, alignment: .leading)
-            Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
+            Text(label).foregroundStyle(.secondary).frame(width: 78 * zoom, alignment: .leading)
+            Text(value).zoomFont(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             if let copy { CopyButton(text: copy) }
         }
     }
@@ -182,8 +183,8 @@ struct StackedField: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-                Text(value).font(.system(size: 12, design: .monospaced))
+                Text(label).zoomFont(.caption).foregroundStyle(.secondary)
+                Text(value).zoomFont(.system(size: 12, design: .monospaced))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             CopyButton(text: value)
@@ -201,12 +202,12 @@ struct EnvRow: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(key).font(.system(size: 12, design: .monospaced)).frame(maxWidth: 150, alignment: .leading).lineLimit(2)
+            Text(key).zoomFont(.system(size: 12, design: .monospaced)).frame(maxWidth: 150, alignment: .leading).lineLimit(2)
             if hidden {
                 Button("••••••••") { revealed.insert(key) }.buttonStyle(.plain).foregroundStyle(.tertiary).help("Reveal")
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
+                Text(value).zoomFont(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             }
             CopyButton(text: value)
         }

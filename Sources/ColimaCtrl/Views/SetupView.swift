@@ -44,7 +44,7 @@ struct SetupView: View {
     private var header: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Set up Colima").font(.title2.weight(.semibold))
+                Text("Set up Colima").zoomFont(.title2.weight(.semibold))
                 Text(subtitle).foregroundStyle(.secondary)
             }
             Spacer()
@@ -83,10 +83,10 @@ struct SetupView: View {
 
     private var missingHelp: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Colima isn't installed yet.").font(.headline)
+            Text("Colima isn't installed yet.").zoomFont(.headline)
             Text("It runs containers in a small Linux VM. Install it with Homebrew:").foregroundStyle(.secondary)
             HStack {
-                Text("brew install colima docker").font(.system(size: 13, design: .monospaced))
+                Text("brew install colima docker").zoomFont(.system(size: 13, design: .monospaced))
                 CopyButton(text: "brew install colima docker")
                 Spacer()
                 if setup.brewPath != nil {
@@ -96,13 +96,13 @@ struct SetupView: View {
             }
             .padding(10).background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 8))
             if setup.brewPath == nil {
-                Text("Homebrew isn't installed either. Get it from brew.sh, then run the command above.").font(.caption).foregroundStyle(.secondary)
+                Text("Homebrew isn't installed either. Get it from brew.sh, then run the command above.").zoomFont(.caption).foregroundStyle(.secondary)
             }
             if setup.isInstalling { ProgressView().controlSize(.small) }
             if let error = setup.error { Text(error).foregroundStyle(.red) }
             if !setup.log.isEmpty {
                 ScrollView {
-                    Text(setup.log.joined(separator: "\n")).font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                    Text(setup.log.joined(separator: "\n")).zoomFont(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(maxHeight: 120)
@@ -116,7 +116,7 @@ struct SetupView: View {
         VStack(alignment: .leading, spacing: 16) {
             if let current = setup.current {
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("Colima is already configured", systemImage: "gearshape.2").font(.headline)
+                    Label("Colima is already configured", systemImage: "gearshape.2").zoomFont(.headline)
                     Text("It currently uses \(current.cpus) CPU cores, \(current.memory) GiB of memory and a \(current.disk) GiB disk.").foregroundStyle(.secondary)
                 }
                 Picker("", selection: $changing) {
@@ -127,7 +127,7 @@ struct SetupView: View {
                 if changing { ResourceEditor(resources: $draft, host: setup.host, minimumDisk: current.disk) }
             } else {
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("No configuration yet", systemImage: "sparkles").font(.headline)
+                    Label("No configuration yet", systemImage: "sparkles").zoomFont(.headline)
                     Text("This Mac has \(setup.host.cores) cores and \(setup.host.memoryGiB) GiB of memory. These suggestions leave plenty for macOS. Adjust them if you like.").foregroundStyle(.secondary)
                 }
                 ResourceEditor(resources: $draft, host: setup.host, minimumDisk: nil)
@@ -141,7 +141,7 @@ struct SetupView: View {
 
     private var finishStep: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Colima will use").font(.headline)
+            Text("Colima will use").zoomFont(.headline)
             HStack(spacing: 12) {
                 summary("\(effective.cpus)", "CPU cores")
                 summary("\(effective.memory) GiB", "memory")
@@ -151,14 +151,14 @@ struct SetupView: View {
             Divider()
             @Bindable var prefs = prefs
             Toggle("Show the number of running containers on the Dock icon", isOn: $prefs.dockBadge)
-            Text("Optional. You can change it later in Settings.").font(.caption).foregroundStyle(.secondary)
+            Text("Optional. You can change it later in Settings.").zoomFont(.caption).foregroundStyle(.secondary)
         }
     }
 
     private func summary(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.title3.weight(.semibold))
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(value).zoomFont(.title3.weight(.semibold))
+            Text(label).zoomFont(.caption).foregroundStyle(.secondary)
         }
         .padding(12).frame(maxWidth: .infinity, alignment: .leading)
         .contentCard()
