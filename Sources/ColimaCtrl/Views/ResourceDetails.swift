@@ -204,3 +204,67 @@ struct NetworkDetailView: View {
         }
     }
 }
+
+struct ResourceMultiSelectionPane: View {
+    @Environment(FleetStore.self) private var store
+    @Environment(UIState.self) private var ui
+    let section: Section
+
+    private struct Item: Identifiable {
+        let id: String
+        let title: String
+        let detail: String
+        let removable: Bool
+    }
+
+    private var noun: String { section == .volumes ? "volumes" : section == .images ? "images" : "networks" }
+
+    private var items: [Item] {
+        switch section {
+        case .volumes:
+            store.volumes.filter { ui.selectedVolumeIDs.contains($0.name) }.map { Item(id: $0.name, title: $0.name, detail: Format.bytes($0.size), removable: $0.refs == 0) }
+        case .images:
+            store.images.filter { ui.selectedImageIDs.contains($0.id) }.map { Item(id: $0.id, title: $0.title, detail: Format.bytes($0.size), removable: $0.containers == 0) }
+        case .networks:
+            store.networks.filter { ui.selectedNetworkIDs.contains($0.id) }.map { Item(id: $0.id, title: $0.name, detail: $0.driver, removable: !$0.isBuiltIn) }
+        default: []
+        }
+    }
+
+    var body: some View {
+        let items = items
+        let removable = items.filter(\.removable)
+        VStack(spacing: 0) {
+            PaneHeader(title: "\(items.count) \(noun) selected", subtitle: removable.count == items.count ? nil : "\(removable.count) can be removed", copy: items.map(\.title).joined(separator: "\n")) {
+                Button("Remove \(removable.count)", role: .destructive) { confirmRemoval(removable.map(\.id)) }
+                    .buttonStyle(.liquid(tint: .red)).disabled(removable.isEmpty)
+            }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 6) {
+                    ForEach(items) { item in
+                        HStack {
+                            Text(item.title).lineLimit(1).truncationMode(.middle)
+                            Spacer()
+                            Text(item.detail).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                        }
+                        .opacity(item.removable ? 1 : 0.55)
+                    }
+                }
+                .padding(.horizontal, 16).padding(.bottom, 16)
+            }
+        }
+    }
+
+    private func confirmRemoval(_ ids: [String]) {
+        ui.confirm = ConfirmRequest(
+            title: "Remove \(ids.count) \(noun)?", message: section == .volumes ? "Their data is lost." : "This can't be undone.", button: "Remove \(ids.count)"
+        ) {
+            switch section {
+            case .volumes: store.remove(volumes: ids)
+            case .images: store.remove(images: ids)
+            default: store.remove(networks: ids)
+            }
+            ui.closePane()
+        }
+    }
+}

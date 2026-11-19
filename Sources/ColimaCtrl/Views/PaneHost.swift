@@ -83,10 +83,18 @@ struct PaneHost<Content: View>: View {
     private func exists(_ target: PaneTarget) -> Bool {
         switch target.section {
         case .containers: target.id == UIState.multiSelection || store.containers.contains { $0.id == target.id }
-        case .volumes: store.volumes.contains { $0.name == target.id }
-        case .images: store.images.contains { $0.id == target.id }
-        case .networks: store.networks.contains { $0.id == target.id }
+        case .volumes: target.id == UIState.multiSelection || store.volumes.contains { $0.name == target.id }
+        case .images: target.id == UIState.multiSelection || store.images.contains { $0.id == target.id }
+        case .networks: target.id == UIState.multiSelection || store.networks.contains { $0.id == target.id }
         case .system: false
+        }
+    }
+
+    @ViewBuilder private func resourceDetail(_ target: PaneTarget) -> some View {
+        switch target.section {
+        case .volumes: VolumeDetailView(name: target.id)
+        case .images: ImageDetailView(id: target.id)
+        default: NetworkDetailView(id: target.id)
         }
     }
 
@@ -94,9 +102,8 @@ struct PaneHost<Content: View>: View {
         switch target.section {
         case .containers:
             if target.id == UIState.multiSelection { MultiSelectionPane() } else { ContainerDetailView(id: target.id) }
-        case .volumes: VolumeDetailView(name: target.id)
-        case .images: ImageDetailView(id: target.id)
-        case .networks: NetworkDetailView(id: target.id)
+        case .volumes, .images, .networks:
+            if target.id == UIState.multiSelection { ResourceMultiSelectionPane(section: target.section) } else { resourceDetail(target) }
         case .system: EmptyView()
         }
     }

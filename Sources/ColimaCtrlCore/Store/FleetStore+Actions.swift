@@ -84,8 +84,7 @@ extension FleetStore {
     }
 
     public func remove(volume name: String) {
-        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name
-        run("Remove volume \(name)") { try await $0.send("DELETE", "/volumes/\(encoded)") }
+        run("Remove volume \(name)") { try await $0.send("DELETE", Self.volumePath(name)) }
     }
 
     /// Pulls an image, reporting progress as the engine streams it, then refreshes the image list.
@@ -117,6 +116,42 @@ extension FleetStore {
 
     public func inspectNetwork(_ id: String) async throws -> NetworkDetail {
         NetworkDetail(try await client.get("/networks/\(id)", as: APINetworkInspect.self))
+    }
+
+    public func remove(volumes names: [String]) {
+        guard !names.isEmpty else { return }
+        run("Remove \(names.count) volumes") { try await Self.deleteAll(names.map(Self.volumePath), client: $0) }
+    }
+
+    public func remove(images ids: [String]) {
+        guard !ids.isEmpty else { return }
+        run("Remove \(ids.count) images") { try await Self.deleteAll(ids.map { "/images/\($0)" }, client: $0) }
+    }
+
+    public func remove(networks ids: [String]) {
+        guard !ids.isEmpty else { return }
+        run("Remove \(ids.count) networks") { try await Self.deleteAll(ids.map { "/networks/\($0)" }, client: $0) }
+    }
+
+    nonisolated static func volumePath(_ name: String) -> String {
+        "/volumes/" + (name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name)
+    }
+
+    /// Sends every delete even when one fails, then reports the first failure.
+    nonisolated static func deleteAll(_ paths: [String], client: DockerClient) async throws {
+        let failures = await withTaskGroup(of: String?.self) { group in
+            for path in paths {
+                group.addTask {
+                    do { try await client.send("DELETE", path); return nil } catch { return error.localizedDescription }
+                }
+            }
+            var messages: [String] = []
+            for await message in group { if let message { messages.append(message) } }
+            return messages
+        }
+        if let first = failures.first {
+            throw DockerError.http(status: 409, message: failures.count == 1 && paths.count == 1 ? first : "\(failures.count) of \(paths.count) failed: \(first)")
+        }
     }
 
     public func remove(network id: String) {
