@@ -20,6 +20,8 @@ public final class FleetStore {
     /// In-flight actions keyed by container id (or `PruneKind.pendingKey`), cleared once the follow-up refresh finishes.
     public internal(set) var pending: [String: PendingOp] = [:]
     public var statsInterval: Duration = .seconds(3)
+    /// Called on the main actor when a container exits with an error or turns unhealthy.
+    public var alertHandler: (@MainActor ([ContainerAlert]) -> Void)?
 
     public let stats = StatsHistory()
     public let selfMetrics = SelfMetrics()
@@ -127,6 +129,10 @@ public final class FleetStore {
         let api = try await client.get("/containers/json?all=1", as: [APIContainer].self)
         await loadStartTimes(for: api.filter { $0.state == "running" && startedAt[$0.id] == nil }.map(\.id))
         let rows = api.map { ContainerRow($0, startedAt: startedAt[$0.id]) }
+        if hasLoaded, let alertHandler {
+            let alerts = ContainerAlert.diff(old: containers, new: rows, ignoring: Set(pending.keys))
+            if !alerts.isEmpty { alertHandler(alerts) }
+        }
         if rows != containers { containers = rows }
         let ids = Set(rows.map(\.id))
         stats.prune(keeping: ids)

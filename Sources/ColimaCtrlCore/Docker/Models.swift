@@ -36,6 +36,11 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
     public var isRunning: Bool { state == "running" || state == "restarting" || state == "paused" }
     public var title: String { service ?? name }
 
+    public var exitCode: Int? {
+        guard status.hasPrefix("Exited ("), let close = status.firstIndex(of: ")") else { return nil }
+        return Int(status[status.index(status.startIndex, offsetBy: 8)..<close])
+    }
+
     public var display: DisplayState {
         switch state {
         case "restarting": .restarting
