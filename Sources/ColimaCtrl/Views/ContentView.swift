@@ -94,6 +94,7 @@ struct ContentView: View {
             ui.selectedContainerIDs = [match.id]
         }
         .tint(Brand.blue)
+        .preferredColorScheme(prefs.appearance.colorScheme)
         .environment(\.uiZoom, ui.zoom)
         .font(.system(size: 13 * ui.zoom))
         .background {

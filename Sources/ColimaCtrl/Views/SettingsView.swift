@@ -19,6 +19,7 @@ struct SettingsView: View {
         }
         .frame(width: 540, height: 600)
         .tint(Brand.blue)
+        .preferredColorScheme(prefs.appearance.colorScheme)
         .task { await setup.refresh() }
     }
 }
@@ -33,6 +34,9 @@ private struct GeneralTab: View {
         @Bindable var prefs = prefs
         Form {
             SwiftUI.Section("Appearance") {
+                Picker("Theme", selection: $prefs.appearance) {
+                    ForEach(AppearanceChoice.allCases) { Text($0.rawValue).tag($0) }
+                }
                 Toggle("Show running containers on the Dock icon", isOn: $prefs.dockBadge)
                 Toggle("Show menu bar icon", isOn: $prefs.showMenuBarIcon)
                 Toggle("Show running count next to the menu bar icon", isOn: $prefs.menuBarCount)

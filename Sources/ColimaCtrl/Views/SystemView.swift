@@ -32,8 +32,8 @@ private struct DiskBar: View {
     let disk: DiskUsage
 
     private var segments: [(name: String, size: Int64, color: Color)] {
-        [("Images", disk.images.size, Brand.blue), ("Containers", disk.containers.size, Brand.blue.opacity(0.7)),
-         ("Volumes", disk.volumes.size, Brand.blue.opacity(0.45)), ("Build cache", disk.buildCache.size, Brand.blue.opacity(0.25))]
+        [("Images", disk.images.size, Brand.blue), ("Containers", disk.containers.size, Brand.blue.mix(with: .primary, by: 0.3)),
+         ("Volumes", disk.volumes.size, Brand.blue.mix(with: .primary, by: 0.55)), ("Build cache", disk.buildCache.size, Color.primary.opacity(0.3))]
     }
 
     var body: some View {
