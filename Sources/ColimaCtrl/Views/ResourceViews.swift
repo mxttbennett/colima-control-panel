@@ -311,7 +311,7 @@ private struct Summary: View {
             Text(detail).font(.caption).foregroundStyle(.secondary)
             if let action, let prune {
                 HStack(spacing: 8) {
-                    Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.glass).controlSize(.small).tint(.red)
+                    Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.liquid(tint: .red)).controlSize(.small)
                         .disabled(store.pending[action.1.pendingKey] != nil)
                     if store.pending[action.1.pendingKey] != nil { ProgressView().controlSize(.small) }
                 }
@@ -344,11 +344,13 @@ private struct PullImageSheet: View {
             if let failure { Text(failure).font(.caption).foregroundStyle(.red).textSelection(.enabled) }
             HStack {
                 Spacer()
-                Button("Cancel") { task?.cancel(); dismiss() }.keyboardShortcut(.cancelAction)
-                Button("Pull", action: start).keyboardShortcut(.defaultAction).disabled(!ImageReference(reference).isValid || task != nil)
+                Button("Cancel") { task?.cancel(); dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.liquid)
+                Button("Pull", action: start).keyboardShortcut(.defaultAction).buttonStyle(.glassProminent).disabled(!ImageReference(reference).isValid || task != nil)
             }
         }
         .padding(20).frame(width: 460)
+        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .presentationBackground(.clear)
         .onAppear { focused = true }
         .onDisappear { task?.cancel() }
     }

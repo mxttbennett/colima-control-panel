@@ -149,9 +149,9 @@ private struct GroupHeader: View {
                     Button("Start All") { store.perform(.start, project: project) }
                     Button("Restart All") { store.perform(.restart, project: project) }
                     Button("Stop All") { store.perform(.stop, project: project) }
-                    Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll)
+                    Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll).buttonStyle(.liquid(tint: .red))
                 }
-                .buttonStyle(.glass).controlSize(.small)
+                .buttonStyle(.liquid).controlSize(.small)
                 .disabled(rows.contains { store.pending[$0.id] != nil })
             }
         }

@@ -11,10 +11,8 @@ struct ContainerDetailView: View {
         if let row = store.containers.first(where: { $0.id == id }) {
             VStack(spacing: 0) {
                 DetailHeader(row: row)
-                Picker("", selection: $ui.detailTab) {
-                    ForEach(DetailTab.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented).labelsHidden().padding(.horizontal, 16).padding(.bottom, 10)
+                GlassSegmented(options: DetailTab.allCases, selection: $ui.detailTab) { $0.rawValue }
+                    .frame(maxWidth: .infinity).padding(.horizontal, 16).padding(.bottom, 10)
                 switch ui.detailTab {
                 case .info: InfoTab(row: row).id(row.id)
                 case .logs: LogsTab(containerID: row.id).id(row.id)
@@ -49,7 +47,8 @@ private struct DetailHeader: View {
                 }
             }
             .font(.callout).foregroundStyle(.secondary)
-            HStack(spacing: 8) {
+            GlassEffectContainer(spacing: 8) {
+              HStack(spacing: 8) {
                 Group {
                     if row.isRunning {
                         Button("Restart") { store.perform(.restart, on: [row.id]) }
@@ -58,10 +57,11 @@ private struct DetailHeader: View {
                     } else {
                         Button("Start") { store.perform(.start, on: [row.id]) }
                     }
-                    Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red)
+                    Button("Remove", role: .destructive) { confirmRemove = true }.buttonStyle(.liquid(tint: .red))
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.liquid)
                 .disabled(store.pending[row.id] != nil)
+              }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -116,9 +116,9 @@ struct MultiSelectionPane: View {
                         store.remove(containers: ids)
                         ui.closePane()
                     }
-                }.tint(.red)
+                }.buttonStyle(.liquid(tint: .red))
             }
-            .buttonStyle(.bordered).disabled(busy)
+            .buttonStyle(.liquid).disabled(busy)
             List(rows) { row in
                 HStack(spacing: 8) {
                     StatusDot(color: row.display.color, label: row.display.label)

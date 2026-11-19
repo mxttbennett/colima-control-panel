@@ -159,7 +159,7 @@ struct VMControls: View {
                         Button("Stop") { confirming = .stop }
                     }
                     .frame(maxWidth: .infinity)
-                    .buttonStyle(.glass).controlSize(.small)
+                    .buttonStyle(.liquid).controlSize(.small)
                 }
             } else if store.connection == .down {
                 Button("Start Colima") { vm.run(.start) }.buttonStyle(.glassProminent).controlSize(.small)

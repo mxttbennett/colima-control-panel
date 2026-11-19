@@ -17,7 +17,7 @@ struct PaneHeader<Actions: View>: View {
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
             if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
-            HStack(spacing: 8) { actions }.buttonStyle(.bordered)
+            GlassEffectContainer(spacing: 8) { HStack(spacing: 8) { actions }.buttonStyle(.liquid) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -73,7 +73,7 @@ struct VolumeDetailView: View {
         if let row = store.volumes.first(where: { $0.name == name }) {
             VStack(spacing: 0) {
                 PaneHeader(title: row.name, subtitle: row.project, copy: row.name) {
-                    Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red)
+                    Button("Remove", role: .destructive) { confirmRemove = true }.buttonStyle(.liquid(tint: .red))
                 }
                 PaneBody {
                     Card("Overview") {
@@ -114,7 +114,7 @@ struct ImageDetailView: View {
         if let row = store.images.first(where: { $0.id == id }) {
             VStack(spacing: 0) {
                 PaneHeader(title: row.title, subtitle: String(row.id.replacingOccurrences(of: "sha256:", with: "").prefix(12)), copy: row.tags.first ?? row.id) {
-                    Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red)
+                    Button("Remove", role: .destructive) { confirmRemove = true }.buttonStyle(.liquid(tint: .red))
                 }
                 PaneBody {
                     Card("Overview") {
@@ -160,7 +160,7 @@ struct NetworkDetailView: View {
         if let row = store.networks.first(where: { $0.id == id }) {
             VStack(spacing: 0) {
                 PaneHeader(title: row.name, subtitle: row.isBuiltIn ? "Built-in network" : nil, copy: row.name) {
-                    if !row.isBuiltIn { Button("Remove", role: .destructive) { confirmRemove = true }.tint(.red) }
+                    if !row.isBuiltIn { Button("Remove", role: .destructive) { confirmRemove = true }.buttonStyle(.liquid(tint: .red)) }
                 }
                 PaneBody {
                     Card("Overview") {
