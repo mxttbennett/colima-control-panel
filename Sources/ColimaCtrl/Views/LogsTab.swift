@@ -11,6 +11,7 @@ struct LogsTab: View {
     @State private var appliedFilter = ""
     @State private var follow = true
     @State private var jump: LogJump?
+    @State private var range = LogRange.recent
     @AppStorage("logWrap") private var wrap = true
     @AppStorage("logTimestamps") private var timestamps = true
     @AppStorage("logFilterOnly") private var filterOnly = true
@@ -30,6 +31,9 @@ struct LogsTab: View {
                     Toggle("Wrap lines", isOn: $wrap)
                     Toggle("Show timestamps", isOn: $timestamps)
                     Toggle("Hide lines that don't match the filter", isOn: $filterOnly)
+                    Picker("Load", selection: $range) {
+                        ForEach(LogRange.allCases) { Text($0.title).tag($0) }
+                    }
                     Picker("Show", selection: $levelRaw) {
                         ForEach(LogLevelFilter.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }
                     }
@@ -55,6 +59,7 @@ struct LogsTab: View {
             model = created
         }
         .onDisappear { model?.stop() }
+        .onChange(of: range) { model?.reload(range: range) }
         .task(id: ui.logFilter) {
             if ui.logFilter.isEmpty { appliedFilter = ""; return }
             if ui.logFilter == appliedFilter { return }
