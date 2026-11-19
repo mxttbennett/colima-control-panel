@@ -130,6 +130,7 @@ private struct GroupHeader: View {
                         .font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
                     Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
                     Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
+                    GroupUsage(rows: rows)
                     Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())
@@ -158,6 +159,28 @@ private struct GroupHeader: View {
         }
         .textCase(nil)
         .padding(.vertical, 4)
+    }
+}
+
+/// Combined memory, CPU and a CPU graph for the running containers of one project.
+private struct GroupUsage: View {
+    @Environment(FleetStore.self) private var store
+    let rows: [ContainerRow]
+
+    var body: some View {
+        let series = rows.filter { $0.state == "running" }.map { store.stats.series(for: $0.id) }
+        if !series.isEmpty {
+            let cpu = SeriesMath.sumAligned(series.map(\.cpu))
+            let memory = SeriesMath.sumAligned(series.map(\.memory))
+            HStack(spacing: 8) {
+                Text(Format.bytes(Int64(memory.last ?? 0))).rollingNumbers(Int((memory.last ?? 0) / 1_000_000))
+                Text("\(cpu.last ?? 0, format: .number.precision(.fractionLength(1)))%").rollingNumbers(Int((cpu.last ?? 0) * 10))
+                Sparkline(values: cpu, maximum: max(10, cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 56, height: 16)
+            }
+            .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
+            .padding(.leading, 6)
+            .help("Combined memory and CPU of the running containers in this project")
+        }
     }
 }
 

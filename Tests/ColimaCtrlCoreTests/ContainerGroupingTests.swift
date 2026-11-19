@@ -112,3 +112,15 @@ private func row(_ id: String, project: String? = nil, service: String? = nil, d
     #expect(groups.first?.directory == "/work/p")
     #expect(ContainerGrouping.groups(rows: [try row("solo")], query: "", runningOnly: false, sort: .name).first?.directory == nil)
 }
+
+@Test func combinedSeriesAlignOnTheLatestSamples() {
+    // Arrange
+    let lists: [[Double]] = [[1, 2, 3], [10, 20], []]
+
+    // Act
+    let combined = SeriesMath.sumAligned(lists)
+
+    // Assert
+    #expect(combined == [1, 12, 23])
+    #expect(SeriesMath.sumAligned([]) == [])
+}
