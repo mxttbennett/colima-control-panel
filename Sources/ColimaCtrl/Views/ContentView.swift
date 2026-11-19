@@ -96,6 +96,7 @@ struct ContentView: View {
         .tint(Brand.blue)
         .preferredColorScheme(prefs.appearance.colorScheme)
         .environment(\.uiZoom, ui.zoom)
+        .controlSize(Zoom.controlSize(for: ui.zoom))
         .font(.system(size: 13 * ui.zoom))
         .background {
             Button("Zoom In") { ui.zoomIn() }.keyboardShortcut("=").opacity(0).frame(width: 0, height: 0).accessibilityHidden(true)
