@@ -39,6 +39,22 @@ struct ColimaCtrlApp: App {
         }
         .defaultSize(width: 1120, height: 720)
         .commands {
+            CommandMenu("Container") {
+                let ids = ui.section == .containers ? Array(ui.selectedContainerIDs) : []
+                Button("Show Info") { if let id = ids.first { ui.show(id) } }.keyboardShortcut("i").disabled(ids.count != 1)
+                Button("Show Logs") { if let id = ids.first { ui.show(id, tab: .logs) } }.keyboardShortcut("l").disabled(ids.count != 1)
+                Divider()
+                Button("Start") { store.perform(.start, on: ids) }.keyboardShortcut("r", modifiers: [.command, .shift]).disabled(ids.isEmpty)
+                Button("Restart") { store.perform(.restart, on: ids) }.keyboardShortcut("r").disabled(ids.isEmpty)
+                Button("Stop") { store.perform(.stop, on: ids) }.keyboardShortcut(".").disabled(ids.isEmpty)
+                Divider()
+                Button("Remove…") {
+                    ui.confirm = ConfirmRequest(title: ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?", message: "Running containers are force-stopped.", button: ids.count == 1 ? "Remove Container" : "Remove \(ids.count) Containers") {
+                        store.remove(containers: ids)
+                        ui.closePane()
+                    }
+                }.keyboardShortcut(.delete, modifiers: .command).disabled(ids.isEmpty)
+            }
             CommandMenu("Go") {
                 Button("Command Palette") { ui.showPalette = true }.keyboardShortcut("k")
                 Divider()

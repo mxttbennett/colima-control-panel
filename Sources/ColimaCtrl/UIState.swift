@@ -23,6 +23,11 @@ enum DetailTab: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+enum ContainerSort: String, CaseIterable, Identifiable {
+    case name = "Name", cpu = "CPU", memory = "Memory", uptime = "Uptime"
+    var id: String { rawValue }
+}
+
 struct ConfirmRequest {
     let title: String
     let message: String
@@ -43,6 +48,7 @@ final class UIState {
     var detailTab: DetailTab = .info
     var filter = ""
     var runningOnly = false
+    var containerSort: ContainerSort { didSet { UserDefaults.standard.set(containerSort.rawValue, forKey: "containerSort") } }
     var showPalette = false
     var showSetup = false
     var confirm: ConfirmRequest?
@@ -54,6 +60,7 @@ final class UIState {
         if let raw = defaults.string(forKey: "section"), let section = Section(rawValue: raw) { self.section = section }
         if let raw = defaults.string(forKey: "tab"), let tab = DetailTab(rawValue: raw.capitalized) { detailTab = tab }
         pendingSelection = defaults.string(forKey: "select")
+        containerSort = defaults.string(forKey: "containerSort").flatMap(ContainerSort.init(rawValue:)) ?? .name
     }
 
     /// The row whose detail panel is open in the current section.

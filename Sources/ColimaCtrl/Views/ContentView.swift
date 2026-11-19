@@ -32,6 +32,12 @@ struct ContentView: View {
             .searchFocused($searchFocused)
             .toolbar {
                 if ui.section == .containers {
+                    ToolbarItem {
+                        Picker("Sort by", selection: $ui.containerSort) {
+                            ForEach(ContainerSort.allCases) { Text($0.rawValue).tag($0) }
+                        }
+                        .pickerStyle(.menu).help("Sort containers within each project")
+                    }
                     ToolbarItem { Toggle("Running", systemImage: "play.circle", isOn: $ui.runningOnly).help("Show only running containers") }
                 }
                 ToolbarItem { Button("Command Palette", systemImage: "command") { ui.showPalette = true }.help("Command palette (⌘K)") }

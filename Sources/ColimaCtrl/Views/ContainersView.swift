@@ -5,6 +5,17 @@ struct ContainersView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
     @State private var pendingRemoval: PendingContainerRemoval?
+    @AppStorage("collapsedProjects") private var collapsedRaw = ""
+
+    private var collapsed: Set<String> { Set(collapsedRaw.split(separator: "\n").map(String.init)) }
+
+    private func isCollapsed(_ project: String?) -> Bool { ui.filter.isEmpty && collapsed.contains(project ?? "") }
+
+    private func toggleCollapsed(_ project: String?) {
+        var set = collapsed
+        if !set.insert(project ?? "").inserted { set.remove(project ?? "") }
+        collapsedRaw = set.sorted().joined(separator: "\n")
+    }
 
     var body: some View {
         @Bindable var ui = ui
@@ -18,18 +29,20 @@ struct ContainersView: View {
                 List(selection: $ui.selectedContainerIDs) {
                     ForEach(groups, id: \.project) { group in
                         SwiftUI.Section {
-                            ForEach(group.rows) { row in
-                                ContainerRowView(row: row)
-                                    .contentShape(Rectangle())
-                                    .tag(row.id)
-                                    .contextMenu {
-                                        ContainerMenu(row: row, selectedIDs: ui.selectedContainerIDs) { ids in
-                                            requestRemoval(ids, title: removalTitle(for: ids))
+                            if !isCollapsed(group.project) {
+                                ForEach(group.rows) { row in
+                                    ContainerRowView(row: row)
+                                        .contentShape(Rectangle())
+                                        .tag(row.id)
+                                        .contextMenu {
+                                            ContainerMenu(row: row, selectedIDs: ui.selectedContainerIDs) { ids in
+                                                requestRemoval(ids, title: removalTitle(for: ids))
+                                            }
                                         }
-                                    }
+                                }
                             }
                         } header: {
-                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount) {
+                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
                                 guard let project = group.project else { return }
                                 let projectRows = store.containers.filter { $0.project == project }
                                 let title = "Remove all \(projectRows.count) containers from \(project)?"
@@ -40,6 +53,15 @@ struct ContainersView: View {
                 }
                 .listStyle(.inset)
                 .scrollContentBackground(.hidden)
+                .onKeyPress(.return) {
+                    guard let id = ui.selectedContainerID, ui.selectedContainerIDs.count == 1 else { return .ignored }
+                    ui.show(id, tab: .logs)
+                    return .handled
+                }
+                .onDeleteCommand {
+                    let ids = Array(ui.selectedContainerIDs)
+                    requestRemoval(ids, title: removalTitle(for: ids))
+                }
             }
         }
         .onChange(of: ui.selectedContainerIDs) {
@@ -76,6 +98,27 @@ struct ContainersView: View {
         ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?"
     }
 
+    private func sorted(_ rows: [ContainerRow]) -> [ContainerRow] {
+        let byName = { (a: ContainerRow, b: ContainerRow) in a.title.localizedStandardCompare(b.title) == .orderedAscending }
+        switch ui.containerSort {
+        case .name:
+            return rows.sorted(by: byName)
+        case .cpu:
+            return rows.sorted { (store.stats.series(for: $0.id).latestCPU, $1.title) > (store.stats.series(for: $1.id).latestCPU, $0.title) }
+        case .memory:
+            return rows.sorted { (store.stats.series(for: $0.id).latestMemory, $1.title) > (store.stats.series(for: $1.id).latestMemory, $0.title) }
+        case .uptime:
+            return rows.sorted { a, b in
+                switch (a.startedAt, b.startedAt) {
+                case let (x?, y?): x < y
+                case (_?, nil): true
+                case (nil, _?): false
+                case (nil, nil): byName(a, b)
+                }
+            }
+        }
+    }
+
     private struct ProjectGroup { let project: String?; let rows: [ContainerRow]; let runningCount: Int }
 
     private func grouped() -> [ProjectGroup] {
@@ -90,7 +133,7 @@ struct ContainersView: View {
         let byProject = Dictionary(grouping: rows, by: \.project)
         return byProject.keys.sorted { ($0 == nil ? 1 : 0, $0 ?? "") < ($1 == nil ? 1 : 0, $1 ?? "") }.map { key in
             let rows = byProject[key]!
-            return ProjectGroup(project: key, rows: rows.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }, runningCount: rows.filter(\.isRunning).count)
+            return ProjectGroup(project: key, rows: sorted(rows), runningCount: rows.filter(\.isRunning).count)
         }
     }
 
@@ -106,10 +149,14 @@ private struct GroupHeader: View {
     let project: String?
     let rows: [ContainerRow]
     let runningCount: Int
+    let collapsed: Bool
+    let toggle: () -> Void
     let removeAll: () -> Void
 
     var body: some View {
         HStack {
+            Button(collapsed ? "Expand" : "Collapse", systemImage: collapsed ? "chevron.right" : "chevron.down", action: toggle)
+                .labelStyle(.iconOnly).buttonStyle(.plain).font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
             Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
             Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
             Spacer()
@@ -145,12 +192,38 @@ struct ContainerMenu: View {
         } else {
             Button("Start") { store.perform(.start, on: [row.id]) }.disabled(store.pending[row.id] != nil)
         }
+        Button("Show Info") { ui.show(row.id) }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
+        if row.isRunning { Button("Open Shell in Terminal") { openShell() } }
+        ForEach(row.ports, id: \.self) { port in
+            Button("Open localhost:\(String(port)) in Browser") { NSWorkspace.shared.open(URL(string: "http://localhost:\(port)")!) }
+        }
         Divider()
-        Button("Copy Name") { NSPasteboard.general.clearContents(); NSPasteboard.general.setString(row.name, forType: .string) }
+        Button("Copy Name") { copy(row.name) }
+        Button("Copy ID") { copy(row.id) }
+        Button("Copy Image") { copy(row.image) }
         Divider()
         Button(selectedIDs.contains(row.id) && selectedIDs.count > 1 ? "Remove \(selectedIDs.count) Selected" : "Remove", role: .destructive) {
             onRemove(selectedIDs.contains(row.id) ? Array(selectedIDs) : [row.id])
+        }
+    }
+}
+
+extension ContainerMenu {
+    func copy(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    func openShell() {
+        let script = ShellCommand.dockerExecScript(socketPath: store.client.socketPath, containerID: row.id)
+        let url = FileManager.default.temporaryDirectory.appending(path: "ccp-shell-\(row.id.prefix(12)).command")
+        do {
+            try script.write(to: url, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+            NSWorkspace.shared.open(url)
+        } catch {
+            store.lastError = "Open shell: \(error.localizedDescription)"
         }
     }
 }
@@ -216,8 +289,10 @@ private struct RowGraph: View {
     var body: some View {
         let series = store.stats.series(for: id)
         HStack(spacing: 8) {
+            Text(Format.bytes(Int64(series.latestMemory)))
+                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 56, alignment: .trailing)
             Text("\(series.latestCPU, format: .number.precision(.fractionLength(1)))%")
-                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
+                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
             Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64, height: 18)
         }
     }
