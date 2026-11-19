@@ -91,7 +91,7 @@ struct PaletteView: View {
 
     private func commands() -> [Command] {
         var list = Section.allCases.map { section in
-            Command(id: "go-\(section.rawValue)", title: "Go to \(section.title)", hint: "view") { ui.section = section }
+            Command(id: "go-\(section.rawValue)", title: "Go to \(section.title)", hint: "\u{2318}\(section.shortcut)") { ui.section = section }
         }
         switch store.connection {
         case .up:

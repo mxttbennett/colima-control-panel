@@ -71,8 +71,8 @@ struct ColimaCtrlApp: App {
             CommandMenu("Go") {
                 Button("Command Palette") { ui.showPalette = true }.keyboardShortcut("k")
                 Divider()
-                ForEach(Array(Section.allCases.enumerated()), id: \.element) { index, section in
-                    Button(section.title) { ui.section = section }.keyboardShortcut(KeyEquivalent(Character("\(index + 1)")))
+                ForEach(Section.allCases) { section in
+                    Button(section.title) { ui.section = section }.keyboardShortcut(KeyEquivalent(Character("\(section.shortcut)")))
                 }
             }
         }
