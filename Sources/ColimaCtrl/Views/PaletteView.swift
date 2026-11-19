@@ -12,7 +12,6 @@ struct PaletteView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
     @Environment(ColimaSetup.self) private var setup
-    @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @AppStorage("paletteRecent") private var recentRaw = ""
     @State private var selection = 0
@@ -59,26 +58,23 @@ struct PaletteView: View {
         }
         .frame(width: 560, height: 400)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
-        .presentationBackground(.clear)
         .onAppear { focused = true }
         .onKeyPress(.downArrow) { selection = min(selection + 1, max(0, results.count - 1)); return .handled }
         .onKeyPress(.upArrow) { selection = max(selection - 1, 0); return .handled }
-        .onKeyPress(.escape) { dismiss(); return .handled }
+        .onKeyPress(.escape) { ui.showPalette = false; return .handled }
+        .onExitCommand { ui.showPalette = false }
+        .accessibilityAddTraits(.isModal)
     }
 
     private func run(_ results: [Command], at index: Int) {
         guard results.indices.contains(index) else { return }
         recentRaw = RecentCommands.bump(recentList, results[index].id).joined(separator: "\n")
-        dismiss()
+        ui.showPalette = false
         results[index].run()
     }
 
-    /// The palette sheet is still dismissing when a command runs, so the dialog waits for it to clear.
     private func confirm(_ title: String, _ message: String, _ button: String, action: @escaping @MainActor () -> Void) {
-        Task {
-            try? await Task.sleep(for: .milliseconds(250))
-            ui.confirm = ConfirmRequest(title: title, message: message, button: button, action: action)
-        }
+        ui.confirm = ConfirmRequest(title: title, message: message, button: button, action: action)
     }
 
     private var recentList: [String] { recentRaw.split(separator: "\n").map(String.init) }
