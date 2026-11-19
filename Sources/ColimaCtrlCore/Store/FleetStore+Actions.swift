@@ -87,6 +87,20 @@ extension FleetStore {
         run("Remove volume \(name)") { try await $0.send("DELETE", "/volumes/\(encoded)") }
     }
 
+    /// Pulls an image, reporting progress as the engine streams it, then refreshes the image list.
+    public func pull(image reference: ImageReference, onProgress: @MainActor (PullProgress) -> Void) async throws {
+        var progress = PullProgress()
+        var splitter = LineSplitter()
+        onProgress(progress)
+        for try await chunk in client.stream("POST", "/images/create?\(reference.query)") {
+            for line in splitter.feed(chunk) { progress.feed(line) }
+            onProgress(progress)
+        }
+        if let message = progress.error { throw DockerError.http(status: 500, message: message) }
+        heavyPending = true
+        await refresh(heavy: true)
+    }
+
     public func prune(_ kind: PruneKind) {
         run("Prune", marking: [kind.pendingKey], as: .pruning) { try await $0.send("POST", kind.path) }
     }
