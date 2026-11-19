@@ -161,3 +161,20 @@ private func log(_ events: APIEvent...) -> ActivityLog {
     // Assert
     #expect(log.events.isEmpty)
 }
+
+@Test func failuresAreCountedAfterTheLastEventYouSaw() {
+    // Arrange
+    var log = log(
+        event("container", "die", id: "a", ["name": "one", "exitCode": "1"]),
+        event("container", "start", id: "b", ["name": "two"]),
+    )
+    let seen = log.events.first?.id ?? -1
+
+    // Act
+    log.record(event("container", "oom", id: "c", ["name": "three"]))
+    log.record(event("container", "die", id: "d", ["name": "four", "exitCode": "0"]))
+
+    // Assert
+    #expect(log.failureCount() == 2)
+    #expect(log.failureCount(after: seen) == 1)
+}

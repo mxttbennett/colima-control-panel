@@ -18,7 +18,9 @@ struct ContentView: View {
         case .images: return count(store.images.count, "image")
         case .networks: return count(store.networks.count, "network")
         case .system: return ""
-        case .activity: return store.activity.events.isEmpty ? "" : count(store.activity.events.count, "event")
+        case .activity:
+            let failed = store.activity.failureCount()
+            return store.activity.events.isEmpty ? "" : count(store.activity.events.count, "event") + (failed > 0 ? " · \(failed) failed" : "")
         }
     }
 
@@ -66,6 +68,7 @@ struct ContentView: View {
                     ToolbarItem { Toggle("Running", systemImage: "play.circle", isOn: $ui.runningOnly).help("Show only running containers") }
                 }
                 if ui.section == .activity {
+                    ToolbarItem { Toggle("Failures", systemImage: "exclamationmark.triangle", isOn: $ui.activityFailuresOnly).help("Show only failures") }
                     ToolbarItem { Button("Clear", systemImage: "trash") { store.clearActivity() }.help("Clear the activity log").disabled(store.activity.events.isEmpty) }
                 }
                 ToolbarItem { Button("Command Palette", systemImage: "command") { ui.showPalette = true }.help("Command palette (⌘K)") }
