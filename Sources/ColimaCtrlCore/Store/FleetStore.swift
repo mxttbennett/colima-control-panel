@@ -23,6 +23,8 @@ public final class FleetStore {
     /// Called on the main actor when a container exits with an error or turns unhealthy.
     public var alertHandler: (@MainActor ([ContainerAlert]) -> Void)?
 
+    /// Recent Docker events since this app connected, newest first.
+    public private(set) var activity = ActivityLog()
     public let stats = StatsHistory()
     public let selfMetrics = SelfMetrics()
     public private(set) var vm: ColimaVM
@@ -71,6 +73,7 @@ public final class FleetStore {
         disk = nil
         info = nil
         pending = [:]
+        activity.clear()
         startedAt = [:]
         lastSamples = [:]
         inspectCache = [:]
@@ -246,7 +249,10 @@ public final class FleetStore {
         }
     }
 
+    public func clearActivity() { activity.clear() }
+
     private func handle(_ event: APIEvent) {
+        activity.record(event)
         let action = event.action.split(separator: ":").first.map(String.init) ?? event.action
         if event.type == "container", ["start", "restart", "die", "stop", "kill", "oom", "pause", "unpause"].contains(action), let id = event.actor?.id {
             startedAt[id] = nil

@@ -31,7 +31,7 @@ struct SidebarView: View {
         case .volumes: store.volumes.count
         case .images: store.images.count
         case .networks: store.networks.count
-        case .system: nil
+        case .system, .activity: nil
         }
     }
 }

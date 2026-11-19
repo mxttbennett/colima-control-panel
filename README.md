@@ -40,6 +40,7 @@ Move the app to `/Applications` to keep it. Builds use an ad hoc signature, so m
 - Open a shell in Terminal from the Shell button or the context menu.
 - Inspect images, volumes, and networks, sort the tables, and remove or prune them with confirmation. Pull an image from the Images toolbar.
 - The System view shows disk use by category and how much each prune would reclaim.
+- The Activity view lists recent Docker events (starts, stops, exits, health changes, pulls) with times, since the app connected. Double-click a container row to open it.
 - Get a notification when a container exits with an error or turns unhealthy while the app is in the background. Turn it off in Settings.
 - The menu bar popover lists running containers. Hover a row to restart or stop it, or use Stop All.
 
@@ -49,7 +50,7 @@ Move the app to `/Applications` to keep it. Builds use an ad hoc signature, so m
 | --- | --- |
 | ⌘K | Command palette: views, Colima, containers, projects, pull, prune, profile, sort |
 | `/` | Filter the current list |
-| ⌘1 to ⌘5 | Containers, Volumes, Images, Networks, System |
+| ⌘1 to ⌘6 | Containers, Volumes, Images, Networks, System, Activity |
 | ⌘I, ⌘L | Show the selected container's info or logs |
 | ⌘R, ⇧⌘R, ⌘. | Restart, start, or stop the selection |
 | ⌘⌫ | Remove the selection, with confirmation |

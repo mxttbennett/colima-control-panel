@@ -4,7 +4,7 @@ import SwiftUI
 import ColimaCtrlCore
 
 enum Section: String, CaseIterable, Identifiable {
-    case containers, volumes, images, networks, system
+    case containers, volumes, images, networks, system, activity
 
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
@@ -15,6 +15,7 @@ enum Section: String, CaseIterable, Identifiable {
         case .images: "square.stack.3d.up"
         case .networks: "point.3.connected.trianglepath.dotted"
         case .system: "waveform.path.ecg"
+        case .activity: "clock.arrow.circlepath"
         }
     }
 }
@@ -73,7 +74,7 @@ final class UIState {
             case .volumes: Self.pane(for: selectedVolumeIDs)
             case .images: Self.pane(for: selectedImageIDs)
             case .networks: Self.pane(for: selectedNetworkIDs)
-            case .system: nil
+            case .system, .activity: nil
             }
         }
         set {
@@ -84,7 +85,7 @@ final class UIState {
             case .volumes: selectedVolumeIDs = newValue.map { [$0] } ?? []
             case .images: selectedImageIDs = newValue.map { [$0] } ?? []
             case .networks: selectedNetworkIDs = newValue.map { [$0] } ?? []
-            case .system: break
+            case .system, .activity: break
             }
         }
     }
