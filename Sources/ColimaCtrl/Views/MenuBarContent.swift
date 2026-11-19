@@ -25,6 +25,7 @@ struct MenuBarContent: View {
                 if store.profile != "default" { Tag(store.profile) }
                 Spacer()
             }
+            if store.connection == .up, !running.isEmpty { UsageSummary(unhealthy: running.filter { $0.display == .unhealthy }.count) }
             VMControls()
             if store.connection == .up { containerList(running) }
             Divider()
@@ -71,6 +72,23 @@ struct MenuBarContent: View {
         if let container { ui.show(container) }
         openWindow(id: "main")
         NSApp.activate()
+    }
+}
+
+/// Everything running, added up: memory, CPU and how many containers are unhealthy.
+private struct UsageSummary: View {
+    @Environment(FleetStore.self) private var store
+    let unhealthy: Int
+
+    var body: some View {
+        let totals = store.stats.totals
+        HStack(spacing: 8) {
+            Text(Format.bytes(Int64(totals.latestMemory))).rollingNumbers(Int(totals.latestMemory / 1_000_000))
+            Text("\(totals.latestCPU, format: .number.precision(.fractionLength(1)))% CPU").rollingNumbers(Int(totals.latestCPU * 10))
+            if unhealthy > 0 { Text("\(unhealthy) unhealthy").foregroundStyle(.red) }
+        }
+        .zoomFont(.caption).monospacedDigit().foregroundStyle(.secondary)
+        .help("Memory and CPU of every running container")
     }
 }
 
