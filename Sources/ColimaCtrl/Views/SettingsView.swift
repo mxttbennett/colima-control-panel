@@ -39,6 +39,8 @@ private struct GeneralTab: View {
                     .disabled(!prefs.showMenuBarIcon)
             }
             SwiftUI.Section("Behavior") {
+                Toggle("Notify when a container fails or turns unhealthy", isOn: $prefs.notifyOnFailures)
+                Text("Only while Colima Control Panel is in the background. Actions you start from the app never notify.").font(.caption).foregroundStyle(.secondary)
                 Toggle("Open at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in
                         do {

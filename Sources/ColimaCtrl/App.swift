@@ -9,6 +9,7 @@ struct ColimaCtrlApp: App {
     @State private var prefs: Preferences
     @State private var setup = ColimaSetup()
     private let badge: BadgeController
+    private let notifier: AlertNotifier
 
     init() {
         let store = FleetStore()
@@ -21,6 +22,9 @@ struct ColimaCtrlApp: App {
         _prefs = State(initialValue: prefs)
         _ui = State(initialValue: ui)
         badge = BadgeController(store: store, prefs: prefs)
+        let notifier = AlertNotifier(prefs: prefs, ui: ui)
+        self.notifier = notifier
+        store.alertHandler = { notifier.post($0) }
         AppDelegate.store = store
         AppDelegate.vm = store.vm
         AppDelegate.prefs = prefs
