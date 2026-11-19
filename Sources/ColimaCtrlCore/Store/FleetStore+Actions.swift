@@ -60,7 +60,8 @@ extension FleetStore {
         perform(.stop, on: runningIDs)
     }
 
-    public func perform(_ action: ContainerAction, project: String) {
+    /// A nil project means the containers that belong to no Compose project.
+    public func perform(_ action: ContainerAction, project: String?) {
         perform(action, on: containers.filter { $0.project == project }.map(\.id))
     }
 

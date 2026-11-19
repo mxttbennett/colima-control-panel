@@ -47,10 +47,9 @@ struct ContainersView: View {
                             }
                         } header: {
                             GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
-                                guard let project = group.project else { return }
-                                let projectRows = store.containers.filter { $0.project == project }
-                                let title = "Remove all \(projectRows.count) containers from \(project)?"
-                                requestRemoval(projectRows.map(\.id), title: title)
+                                let groupRows = store.containers.filter { $0.project == group.project }
+                                let title = "Remove all \(groupRows.count) containers \(group.project.map { "from \($0)" } ?? "that have no project")?"
+                                requestRemoval(groupRows.map(\.id), title: title)
                             }
                         }
                     }
@@ -135,17 +134,15 @@ private struct GroupHeader: View {
             .buttonStyle(.plain)
             .accessibilityValue(collapsed ? "collapsed" : "expanded")
             .help(collapsed ? "Expand" : "Collapse")
-            if let project {
-                GlassEffectContainer(spacing: 6) {
-                    HStack(spacing: 6) {
-                        Button("Start All") { store.perform(.start, project: project) }
-                        Button("Restart All") { store.perform(.restart, project: project) }
-                        Button("Stop All") { store.perform(.stop, project: project) }
-                        Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll)
-                    }
-                    .buttonStyle(.glass).controlSize(.small)
-                    .disabled(rows.contains { store.pending[$0.id] != nil })
+            GlassEffectContainer(spacing: 6) {
+                HStack(spacing: 6) {
+                    Button("Start All") { store.perform(.start, project: project) }
+                    Button("Restart All") { store.perform(.restart, project: project) }
+                    Button("Stop All") { store.perform(.stop, project: project) }
+                    Button("Remove All", systemImage: "trash", role: .destructive, action: removeAll)
                 }
+                .buttonStyle(.glass).controlSize(.small)
+                .disabled(rows.contains { store.pending[$0.id] != nil })
             }
         }
         .textCase(nil)

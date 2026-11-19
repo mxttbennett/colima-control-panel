@@ -7,8 +7,8 @@ struct PaneTarget: Equatable {
 }
 
 /// Hosts the main content and slides the selected row's detail in from the right.
-/// The panel overlays the content instead of resizing it, so opening or closing never re-lays-out the list underneath,
-/// and it stays mounted briefly after closing so reopening the same row costs a slide, not a rebuild.
+/// The content makes room for the panel, so row buttons and graphs stay visible beside it,
+/// and the panel stays mounted briefly after closing so reopening the same row costs a slide, not a rebuild.
 private let paneDefaultWidth: Double = 400
 
 struct PaneHost<Content: View>: View {
@@ -50,6 +50,8 @@ struct PaneHost<Content: View>: View {
         let open = target != nil
         ZStack(alignment: .trailing) {
             content
+                .padding(.trailing, open ? width : 0)
+                .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: open)
             if let mounted, exists(mounted) {
                 pane(mounted)
                     .frame(width: width)
