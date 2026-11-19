@@ -28,7 +28,11 @@ struct ContainersView: View {
             if !store.hasLoaded {
                 ProgressView("Loading containers…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if groups.isEmpty {
-                ContentUnavailableView(store.containers.isEmpty ? "No containers" : "Nothing matches", systemImage: "shippingbox")
+                if store.containers.isEmpty {
+                    ContentUnavailableView("No containers", systemImage: "shippingbox")
+                } else {
+                    NoMatches(what: "containers")
+                }
             } else {
                 List(selection: $ui.selectedContainerIDs) {
                     ForEach(groups, id: \.project) { group in
@@ -350,6 +354,22 @@ private struct RowGraph: View {
                 .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
                 .rollingNumbers(Int(series.latestCPU * 10))
             Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64, height: 18)
+        }
+    }
+}
+
+/// Shown when a filter hides everything; the button is the way back.
+struct NoMatches: View {
+    @Environment(UIState.self) private var ui
+    let what: String
+
+    var body: some View {
+        ContentUnavailableView {
+            Label("No \(what) match", systemImage: "line.3.horizontal.decrease.circle")
+        } description: {
+            Text(ui.filter.isEmpty ? "The running-only filter is hiding them." : "Nothing matches \u{201C}\(ui.filter)\u{201D}.")
+        } actions: {
+            Button("Clear Filter") { ui.filter = ""; ui.runningOnly = false }.buttonStyle(.liquid)
         }
     }
 }

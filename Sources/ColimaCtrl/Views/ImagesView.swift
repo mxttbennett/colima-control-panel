@@ -54,7 +54,7 @@ struct ImagesView: View {
             Button("Remove", role: .destructive) { store.remove(images: removals.map(\.id)) }
         }
         .overlay {
-            if !store.hasLoaded { ProgressView("Loading images…") } else if rows.isEmpty { ContentUnavailableView("No images", systemImage: "square.stack.3d.up") }
+            if !store.hasLoaded { ProgressView("Loading images…") } else if rows.isEmpty { if store.images.isEmpty { ContentUnavailableView("No images", systemImage: "square.stack.3d.up") } else { NoMatches(what: "images") } }
         }
     }
 }

@@ -34,7 +34,7 @@ struct ConfirmRequest {
 final class UIState {
     static let multiSelection = "multi-selection"
 
-    var section: Section = .containers
+    var section: Section = .containers { didSet { UserDefaults.standard.set(section.rawValue, forKey: "section") } }
     var selectedContainerID: String?
     var selectedContainerIDs: Set<String> = []
     var selectedVolumeIDs: Set<String> = []
@@ -47,6 +47,8 @@ final class UIState {
     var showPalette = false
     var showSetup = false
     var showPull = false
+    var focusFilter = 0
+    var logFilter = ""
     var confirm: ConfirmRequest?
     /// Container name from `-select`, applied once the container list loads.
     var pendingSelection: String?
