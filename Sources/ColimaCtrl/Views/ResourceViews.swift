@@ -13,6 +13,16 @@ extension PruneKind {
     }
 
     var warning: String { self == .volumes ? "Their data is lost." : "This can't be undone." }
+
+    var paletteName: String {
+        switch self {
+        case .containers: "stopped containers"
+        case .imagesDangling: "dangling images"
+        case .imagesUnused: "unused images"
+        case .volumes: "unused volumes"
+        case .buildCache: "build cache"
+        }
+    }
 }
 
 private struct PruneConfirmation: ViewModifier {
@@ -98,7 +108,6 @@ struct ImagesView: View {
     @State private var sortOrder = [KeyPathComparator(\ImageRow.size, order: .reverse)]
     @State private var prune: PruneKind?
     @State private var removal: ImageRow?
-    @State private var showPull = false
 
     var body: some View {
         let rows = store.images.filter { ui.filter.isEmpty || $0.title.localizedCaseInsensitiveContains(ui.filter) }.sorted(using: sortOrder)
@@ -111,9 +120,9 @@ struct ImagesView: View {
             TableColumn("") { image in Button("Remove", systemImage: "trash") { removal = image }.labelStyle(.iconOnly).buttonStyle(.borderless).foregroundStyle(.red) }.width(36)
         }
         .scrollContentBackground(.hidden)
-        .sheet(isPresented: $showPull) { PullImageSheet() }
+        .sheet(isPresented: $ui.showPull) { PullImageSheet() }
         .toolbar {
-            ToolbarItem { Button("Pull Image", systemImage: "arrow.down.circle") { showPull = true }.help("Pull an image from a registry") }
+            ToolbarItem { Button("Pull Image", systemImage: "arrow.down.circle") { ui.showPull = true }.help("Pull an image from a registry") }
             ToolbarItem {
                 Menu("Prune", systemImage: "trash") {
                     Button("Dangling images") { prune = .imagesDangling }

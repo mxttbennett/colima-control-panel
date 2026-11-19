@@ -46,7 +46,7 @@ struct ContainersView: View {
                                 }
                             }
                         } header: {
-                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
+                            GroupHeader(project: group.project, rows: group.rows, runningCount: group.runningCount, directory: group.directory, collapsed: isCollapsed(group.project), toggle: { toggleCollapsed(group.project) }) {
                                 let groupRows = store.containers.filter { $0.project == group.project }
                                 let title = "Remove all \(groupRows.count) containers \(group.project.map { "from \($0)" } ?? "that have no project")?"
                                 requestRemoval(groupRows.map(\.id), title: title)
@@ -113,6 +113,7 @@ private struct GroupHeader: View {
     let project: String?
     let rows: [ContainerRow]
     let runningCount: Int
+    let directory: String?
     let collapsed: Bool
     let toggle: () -> Void
     let removeAll: () -> Void
@@ -134,6 +135,14 @@ private struct GroupHeader: View {
             .buttonStyle(.plain)
             .accessibilityValue(collapsed ? "collapsed" : "expanded")
             .help(collapsed ? "Expand" : "Collapse")
+            if let directory, FileManager.default.fileExists(atPath: directory) {
+                Menu("Project folder", systemImage: "folder") {
+                    Button("Reveal in Finder") { NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: directory)]) }
+                    Button("Open in Terminal") { openInTerminal(directory) }
+                    Button("Copy Path") { Clipboard.copy(directory) }
+                }
+                .labelStyle(.iconOnly).menuStyle(.borderlessButton).fixedSize().help(directory)
+            }
             GlassEffectContainer(spacing: 6) {
                 HStack(spacing: 6) {
                     Button("Start All") { store.perform(.start, project: project) }
@@ -179,6 +188,12 @@ struct ContainerMenu: View {
             onRemove(selectedIDs.contains(row.id) ? Array(selectedIDs) : [row.id])
         }
     }
+}
+
+@MainActor
+func openInTerminal(_ directory: String) {
+    guard let terminal = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Terminal") else { return }
+    NSWorkspace.shared.open([URL(filePath: directory)], withApplicationAt: terminal, configuration: NSWorkspace.OpenConfiguration())
 }
 
 @MainActor

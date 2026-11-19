@@ -9,6 +9,8 @@ public struct ProjectGroup: Equatable, Sendable {
     public let project: String?
     public let rows: [ContainerRow]
     public var runningCount: Int { rows.filter(\.isRunning).count }
+    /// The folder Compose ran from, read from the containers' labels.
+    public var directory: String? { rows.lazy.compactMap(\.projectDirectory).first }
 }
 
 public enum ContainerGrouping {
