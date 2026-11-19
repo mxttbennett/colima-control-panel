@@ -169,12 +169,12 @@ struct SystemView: View {
             if let disk = store.disk {
                 let columns = [GridItem(.adaptive(minimum: 220), spacing: 14)]
                 LazyVGrid(columns: columns, spacing: 14) {
-                    SelfCard()
                     Summary(title: "Docker disk", value: disk.total, detail: "images, containers, volumes, build cache")
                     Summary(title: "Images", value: disk.images.size, detail: detail(disk.images), action: ("Prune unused", .imagesUnused), prune: $prune)
                     Summary(title: "Containers", value: disk.containers.size, detail: detail(disk.containers), action: ("Prune stopped", .containers), prune: $prune)
                     Summary(title: "Volumes", value: disk.volumes.size, detail: detail(disk.volumes), action: ("Prune unused", .volumes), prune: $prune)
                     Summary(title: "Build cache", value: disk.buildCache.size, detail: "\(disk.buildCache.count) entries · \(Format.bytes(disk.buildCache.reclaimable)) reclaimable", action: ("Prune", .buildCache), prune: $prune)
+                    SelfCard()
                 }
                 .padding(20)
             } else {
