@@ -32,8 +32,8 @@ private struct DiskBar: View {
     let disk: DiskUsage
 
     private var segments: [(name: String, size: Int64, color: Color)] {
-        [("Images", disk.images.size, Section.images.color), ("Containers", disk.containers.size, Section.containers.color),
-         ("Volumes", disk.volumes.size, Section.volumes.color), ("Build cache", disk.buildCache.size, Brand.pink)]
+        [("Images", disk.images.size, Brand.blue), ("Containers", disk.containers.size, Brand.blue.opacity(0.7)),
+         ("Volumes", disk.volumes.size, Brand.blue.opacity(0.45)), ("Build cache", disk.buildCache.size, Brand.blue.opacity(0.25))]
     }
 
     var body: some View {
@@ -64,7 +64,7 @@ private struct DiskBar: View {
             }
             if disk.reclaimable >= 1_000_000_000, Double(disk.reclaimable) / Double(total) >= 0.25 {
                 Label("\(Format.bytes(disk.reclaimable)) can be reclaimed with the prune buttons below", systemImage: "arrow.3.trianglepath")
-                    .zoomFont(.caption).foregroundStyle(Brand.orange)
+                    .zoomFont(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(16)
@@ -83,7 +83,7 @@ private struct SelfCard: View {
             Text("This app").zoomFont(.caption).foregroundStyle(.secondary)
             Text(Format.bytes(Int64(metrics.memory))).zoomFont(.title2.weight(.semibold))
             Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU").zoomFont(.caption).foregroundStyle(.secondary)
-            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: Brand.green).frame(height: 30).padding(.top, 6)
+            Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: .secondary).frame(height: 30).padding(.top, 6)
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
