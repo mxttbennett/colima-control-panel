@@ -44,17 +44,52 @@ private struct SectionIcon: View {
     }
 }
 
+@MainActor
+func switchColimaProfile(_ profile: String, store: FleetStore, setup: ColimaSetup, ui: UIState) {
+    guard profile != store.profile else { return }
+    ui.resetSelection()
+    store.switchProfile(to: profile)
+    setup.switchProfile(to: profile)
+}
+
+private struct ProfileMenu: View {
+    @Environment(FleetStore.self) private var store
+    @Environment(ColimaSetup.self) private var setup
+    @Environment(UIState.self) private var ui
+    @State private var profiles = ColimaProfile.available()
+
+    var body: some View {
+        Group {
+            if profiles.count > 1 {
+                Menu {
+                    Picker("Profile", selection: Binding(get: { store.profile }, set: { switchColimaProfile($0, store: store, setup: setup, ui: ui) })) {
+                        ForEach(profiles, id: \.self) { Text($0).tag($0) }
+                    }
+                    .pickerStyle(.inline).labelsHidden()
+                } label: {
+                    Label("Profile: \(store.profile)", systemImage: "server.rack").font(.caption)
+                }
+                .menuStyle(.borderlessButton).fixedSize()
+                .help("Switch Colima profile")
+            }
+        }
+        .onAppear { profiles = ColimaProfile.available() }
+        .onChange(of: store.connection) { profiles = ColimaProfile.available() }
+    }
+}
+
 private struct VMCard: View {
     @Environment(FleetStore.self) private var store
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            ProfileMenu()
             if let info = store.info {
                 Text("\(info.cpus) cpu · \(Format.bytes(info.memory)) · Docker \(info.version)")
                     .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             VMControls()
-            if store.connection == .up { Totals() }
+            if store.connection == .up, store.info != nil { Totals() }
             Divider()
             SelfRow()
         }

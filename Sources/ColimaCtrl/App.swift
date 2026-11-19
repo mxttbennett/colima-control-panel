@@ -26,7 +26,6 @@ struct ColimaCtrlApp: App {
         self.notifier = notifier
         store.alertHandler = { notifier.post($0) }
         AppDelegate.store = store
-        AppDelegate.vm = store.vm
         AppDelegate.prefs = prefs
         store.start()
         if prefs.keepCCPWithColima {

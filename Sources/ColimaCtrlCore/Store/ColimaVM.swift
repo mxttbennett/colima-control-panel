@@ -22,7 +22,7 @@ public final class ColimaVM {
     }
 
     init(profile: String?, binary: String?) {
-        self.profile = profile ?? ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? UserDefaults.standard.string(forKey: "colimaProfile") ?? "default"
+        self.profile = profile ?? ColimaProfile.current()
         self.binary = binary
     }
 

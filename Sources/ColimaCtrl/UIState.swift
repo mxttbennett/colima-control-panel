@@ -89,6 +89,15 @@ final class UIState {
 
     func closePane() { paneSelection = nil }
 
+    func resetSelection() {
+        selectedContainerID = nil
+        selectedContainerIDs = []
+        selectedVolumeID = nil
+        selectedImageID = nil
+        selectedNetworkID = nil
+        filter = ""
+    }
+
     func show(_ container: String, tab: DetailTab = .info) {
         section = .containers
         selectedContainerID = container

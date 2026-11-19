@@ -5,11 +5,10 @@ import ColimaCtrlCore
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     static weak var store: FleetStore?
-    static var vm: ColimaVM?
     static var prefs: Preferences?
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard Self.prefs?.keepCCPWithColima == true, let vm = Self.vm else { return .terminateNow }
+        guard Self.prefs?.keepCCPWithColima == true, let vm = Self.store?.vm else { return .terminateNow }
         Task { @MainActor in
             if await vm.stopIfRunning() {
                 sender.reply(toApplicationShouldTerminate: true)
