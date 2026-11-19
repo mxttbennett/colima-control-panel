@@ -23,6 +23,7 @@ public final class LogModel {
     @ObservationIgnored private var nextID = 0
     @ObservationIgnored private var pending: [(String, Bool)] = []
     @ObservationIgnored private var flushScheduled = false
+    @ObservationIgnored private var generation = 0
 
     public init(client: DockerClient, containerID: String, capacity: Int = LogModel.defaultCapacity) {
         self.client = client
@@ -30,18 +31,21 @@ public final class LogModel {
         self.capacity = capacity
     }
 
-    public func start(tail: Int = 300) {
+    public func start(range: LogRange = .recent) {
         guard task == nil else { return }
+        generation += 1
+        let current = generation
+        let query = range.query(now: .now, capacity: capacity)
         task = Task.detached(priority: .userInitiated) { [client, containerID, weak self] in
             do {
                 let tty = try await client.get("/containers/\(containerID)/json", as: APITtyProbe.self).config.tty ?? false
-                let path = "/containers/\(containerID)/logs?follow=1&stdout=1&stderr=1&timestamps=1&tail=\(tail)"
+                let path = "/containers/\(containerID)/logs?follow=1&stdout=1&stderr=1&timestamps=1&\(query)"
                 var demuxer = LogDemuxer()
                 var splitters = [LogFrame.Stream.out: LineSplitter(), .err: LineSplitter()]
                 for try await chunk in client.stream("GET", path) {
                     let frames = tty ? [LogFrame(stream: .out, data: chunk)] : demuxer.feed(chunk)
                     for frame in frames {
-                        for line in splitters[frame.stream]!.feed(frame.data) { await self?.enqueue(line, isError: frame.stream == .err) }
+                        for line in splitters[frame.stream]!.feed(frame.data) { await self?.enqueue(line, isError: frame.stream == .err, generation: current) }
                     }
                 }
             } catch {
@@ -64,8 +68,16 @@ public final class LogModel {
         task = nil
     }
 
+    /// Reloads the log from a different range; lines still in flight from the old load are dropped.
+    public func reload(range: LogRange) {
+        stop()
+        clear()
+        start(range: range)
+    }
+
     /// Lines arrive in bursts; one flush per 80 ms keeps the view from re-rendering per line.
-    private func enqueue(_ line: String, isError: Bool) {
+    private func enqueue(_ line: String, isError: Bool, generation: Int) {
+        guard generation == self.generation else { return }
         pending.append((line, isError))
         guard !flushScheduled else { return }
         flushScheduled = true
