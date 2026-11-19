@@ -37,9 +37,9 @@ final class UIState {
     var section: Section = .containers
     var selectedContainerID: String?
     var selectedContainerIDs: Set<String> = []
-    var selectedVolumeID: String?
-    var selectedImageID: String?
-    var selectedNetworkID: String?
+    var selectedVolumeIDs: Set<String> = []
+    var selectedImageIDs: Set<String> = []
+    var selectedNetworkIDs: Set<String> = []
     var detailTab: DetailTab = .info
     var filter = ""
     var runningOnly = false
@@ -64,9 +64,9 @@ final class UIState {
         get {
             switch section {
             case .containers: selectedContainerIDs.count > 1 ? Self.multiSelection : selectedContainerID
-            case .volumes: selectedVolumeID
-            case .images: selectedImageID
-            case .networks: selectedNetworkID
+            case .volumes: Self.pane(for: selectedVolumeIDs)
+            case .images: Self.pane(for: selectedImageIDs)
+            case .networks: Self.pane(for: selectedNetworkIDs)
             case .system: nil
             }
         }
@@ -75,9 +75,9 @@ final class UIState {
             case .containers:
                 selectedContainerID = newValue
                 if newValue == nil { selectedContainerIDs = [] }
-            case .volumes: selectedVolumeID = newValue
-            case .images: selectedImageID = newValue
-            case .networks: selectedNetworkID = newValue
+            case .volumes: selectedVolumeIDs = newValue.map { [$0] } ?? []
+            case .images: selectedImageIDs = newValue.map { [$0] } ?? []
+            case .networks: selectedNetworkIDs = newValue.map { [$0] } ?? []
             case .system: break
             }
         }
@@ -85,12 +85,14 @@ final class UIState {
 
     func closePane() { paneSelection = nil }
 
+    private static func pane(for ids: Set<String>) -> String? { ids.count > 1 ? multiSelection : ids.first }
+
     func resetSelection() {
         selectedContainerID = nil
         selectedContainerIDs = []
-        selectedVolumeID = nil
-        selectedImageID = nil
-        selectedNetworkID = nil
+        selectedVolumeIDs = []
+        selectedImageIDs = []
+        selectedNetworkIDs = []
         filter = ""
     }
 

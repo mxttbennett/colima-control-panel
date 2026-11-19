@@ -38,11 +38,6 @@ struct ContainersView: View {
                                     ContainerRowView(row: row)
                                         .contentShape(Rectangle())
                                         .tag(row.id)
-                                        .contextMenu {
-                                            ContainerMenu(row: row, selectedIDs: ui.selectedContainerIDs) { ids in
-                                                requestRemoval(ids, title: removalTitle(for: ids))
-                                            }
-                                        }
                                 }
                             }
                         } header: {
@@ -56,6 +51,10 @@ struct ContainersView: View {
                 }
                 .listStyle(.inset)
                 .scrollContentBackground(.hidden)
+                .contextMenu(forSelectionType: String.self) { ids in
+                    ContainerMenu(ids: ids) { removed in requestRemoval(removed, title: removalTitle(for: removed)) }
+                }
+                .deselectsOnReclick()
                 .motion(Motion.smooth, value: groups.flatMap(\.rows).map(\.id))
                 .motion(Motion.smooth, value: ui.containerSort)
                 .onKeyPress(.return) {
@@ -165,16 +164,25 @@ private struct GroupHeader: View {
 struct ContainerMenu: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
-    let row: ContainerRow
-    let selectedIDs: Set<String>
+    let ids: Set<String>
     let onRemove: ([String]) -> Void
 
     var body: some View {
+        let rows = store.containers.filter { ids.contains($0.id) }
+        if let row = rows.first, rows.count == 1 {
+            single(row)
+        } else if rows.count > 1 {
+            many(rows)
+        }
+    }
+
+    @ViewBuilder private func single(_ row: ContainerRow) -> some View {
+        let busy = store.pending[row.id] != nil
         if row.isRunning {
-            Button("Restart") { store.perform(.restart, on: [row.id]) }.disabled(store.pending[row.id] != nil)
-            Button("Stop") { store.perform(.stop, on: [row.id]) }.disabled(store.pending[row.id] != nil)
+            Button("Restart") { store.perform(.restart, on: [row.id]) }.disabled(busy)
+            Button("Stop") { store.perform(.stop, on: [row.id]) }.disabled(busy)
         } else {
-            Button("Start") { store.perform(.start, on: [row.id]) }.disabled(store.pending[row.id] != nil)
+            Button("Start") { store.perform(.start, on: [row.id]) }.disabled(busy)
         }
         Button("Show Info") { ui.show(row.id) }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
@@ -187,9 +195,23 @@ struct ContainerMenu: View {
         Button("Copy ID") { Clipboard.copy(row.id) }
         Button("Copy Image") { Clipboard.copy(row.image) }
         Divider()
-        Button(selectedIDs.contains(row.id) && selectedIDs.count > 1 ? "Remove \(selectedIDs.count) Selected" : "Remove", role: .destructive) {
-            onRemove(selectedIDs.contains(row.id) ? Array(selectedIDs) : [row.id])
+        Button("Remove", role: .destructive) { onRemove([row.id]) }
+    }
+
+    /// Entries that only make sense for one container are left out, and each action covers the containers it applies to.
+    @ViewBuilder private func many(_ rows: [ContainerRow]) -> some View {
+        let running = rows.filter(\.isRunning).map(\.id)
+        let stopped = rows.filter { !$0.isRunning }.map(\.id)
+        let busy = rows.contains { store.pending[$0.id] != nil }
+        if !stopped.isEmpty { Button("Start \(stopped.count) Stopped") { store.perform(.start, on: stopped) }.disabled(busy) }
+        if !running.isEmpty {
+            Button("Restart \(running.count) Running") { store.perform(.restart, on: running) }.disabled(busy)
+            Button("Stop \(running.count) Running") { store.perform(.stop, on: running) }.disabled(busy)
         }
+        Divider()
+        Button("Copy \(rows.count) Names") { Clipboard.copy(rows.map(\.name).joined(separator: "\n")) }
+        Divider()
+        Button("Remove \(rows.count) Containers…", role: .destructive) { onRemove(rows.map(\.id)) }
     }
 }
 
