@@ -32,3 +32,13 @@ public struct KnownPort: Equatable, Sendable {
     private static func web(_ name: String) -> KnownPort { KnownPort(name: name, opensInBrowser: true) }
     private static func other(_ name: String) -> KnownPort { KnownPort(name: name, opensInBrowser: false) }
 }
+
+extension ContainerRow {
+    /// One sentence for VoiceOver: name, state, uptime or last status, and each published port with what it is.
+    public func spokenSummary(now: Date = .now) -> String {
+        var parts = [title, display.label.lowercased()]
+        if state == "running", let startedAt { parts.append("up \(Uptime.text(since: startedAt, now: now))") } else if !isRunning { parts.append(status) }
+        for mapping in portMappings { parts.append("port \(mapping.host)" + (mapping.service.map { " \($0.name)" } ?? "")) }
+        return parts.joined(separator: ", ")
+    }
+}

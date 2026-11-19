@@ -141,6 +141,7 @@ private struct GroupHeader: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("\(project ?? "No project"), \(runningCount) of \(rows.count) running")
             .accessibilityValue(collapsed ? "collapsed" : "expanded")
             .help(collapsed ? "Expand" : "Collapse")
             if let directory, FileManager.default.fileExists(atPath: directory) {
@@ -267,6 +268,19 @@ func openContainerShell(_ row: ContainerRow, store: FleetStore) {
     }
 }
 
+/// Lets VoiceOver open or copy each published port from the row's actions menu.
+private struct PortActions: ViewModifier {
+    let mappings: [PortMapping]
+
+    func body(content: Content) -> some View {
+        mappings.reduce(AnyView(content)) { view, mapping in
+            AnyView(view.accessibilityAction(named: Text(verbatim: mapping.opensInBrowser ? "Open port \(mapping.host)" : "Copy port \(mapping.host)")) {
+                if mapping.opensInBrowser { NSWorkspace.shared.open(URL(string: "http://localhost:\(mapping.host)")!) } else { Clipboard.copy("localhost:\(mapping.host)") }
+            })
+        }
+    }
+}
+
 private struct ContainerRowView: View {
     @Environment(FleetStore.self) private var store
     let row: ContainerRow
@@ -293,6 +307,9 @@ private struct ContainerRowView: View {
             if row.state == "running" { RowGraph(id: row.id) }
         }
         .padding(.vertical, 3)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(pending.map { "\(row.title), \($0.label)" } ?? row.spokenSummary())
+        .modifier(PortActions(mappings: row.portMappings))
         .opacity(pending == nil ? 1 : 0.6)
         .animation(.snappy, value: pending)
     }
