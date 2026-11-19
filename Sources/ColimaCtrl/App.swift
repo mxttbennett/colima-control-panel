@@ -59,6 +59,7 @@ struct ColimaCtrlApp: App {
                     }
                 }.keyboardShortcut(.delete, modifiers: .command).disabled(ids.isEmpty)
             }
+            CommandGroup(after: .appInfo) { CheckForUpdatesButton(ui: ui) }
             CommandGroup(after: .toolbar) {
                 Button("Zoom In") { ui.zoomIn() }.keyboardShortcut("+")
                 Button("Zoom Out") { ui.zoomOut() }.keyboardShortcut("-")

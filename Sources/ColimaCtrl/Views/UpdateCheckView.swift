@@ -9,6 +9,7 @@ struct UpdateCheckView: View {
         case found(UpdateOutcome, ReleaseInfo)
     }
 
+    @Environment(UIState.self) private var ui
     @State private var phase = Phase.idle
 
     var body: some View {
@@ -21,6 +22,14 @@ struct UpdateCheckView: View {
             result
             Text("Contacts github.com only when you click.").zoomFont(.caption).foregroundStyle(.secondary)
         }
+        .onAppear(perform: runRequestedCheck)
+        .onChange(of: ui.pendingUpdateCheck) { runRequestedCheck() }
+    }
+
+    private func runRequestedCheck() {
+        guard ui.pendingUpdateCheck else { return }
+        ui.pendingUpdateCheck = false
+        if !isChecking { check() }
     }
 
     private var isChecking: Bool {
@@ -62,6 +71,20 @@ struct UpdateCheckView: View {
             } catch {
                 phase = .failed
             }
+        }
+    }
+}
+
+struct CheckForUpdatesButton: View {
+    let ui: UIState
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some View {
+        Button("Check for Updates\u{2026}") {
+            UserDefaults.standard.set("about", forKey: "settingsTab")
+            ui.pendingUpdateCheck = true
+            NSApp.activate()
+            openSettings()
         }
     }
 }
