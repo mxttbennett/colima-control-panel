@@ -38,7 +38,7 @@ struct StatusDot: View {
     var label: String?
 
     var body: some View {
-        let dot = Circle().fill(color).frame(width: size, height: size)
+        let dot = Circle().fill(color).frame(width: size, height: size).motion(Motion.smooth, value: color)
         if let label {
             dot.help(label).accessibilityLabel(label)
         } else {

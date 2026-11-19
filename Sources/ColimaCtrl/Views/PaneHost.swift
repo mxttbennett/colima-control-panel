@@ -53,12 +53,11 @@ struct PaneHost<Content: View>: View {
         ZStack(alignment: .trailing) {
             content
                 .padding(.trailing, open ? width + paneInset * 2 : 0)
-                .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: open)
+                .animation(reduceMotion ? nil : Motion.smooth, value: open)
             if let mounted, exists(mounted) {
                 pane(mounted)
                     .frame(width: width)
                     .frame(maxHeight: .infinity)
-                    .overlay(alignment: .top) { Rectangle().fill(mounted.section.color.opacity(0.85)).frame(height: 3) }
                     .clipShape(.rect(cornerRadius: paneCornerRadius))
                     .glassEffect(.regular, in: .rect(cornerRadius: paneCornerRadius))
                     .shadow(color: .black.opacity(0.10), radius: 14, y: 4)
@@ -66,7 +65,7 @@ struct PaneHost<Content: View>: View {
                     .padding(paneInset)
                     .offset(x: open && mounted == target ? 0 : width + paneInset * 2 + 1)
                     .allowsHitTesting(open && mounted == target)
-                    .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: open)
+                    .animation(reduceMotion ? nil : Motion.smooth, value: open)
             }
         }
         .background { AmbientBackground() }

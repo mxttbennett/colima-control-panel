@@ -18,13 +18,18 @@ struct ContentView: View {
                 } else if store.connection == .down || store.vm.isBusy && store.connection != .up {
                     DownView()
                 } else {
-                    switch ui.section {
-                    case .containers: ContainersView()
-                    case .volumes: VolumesView()
-                    case .images: ImagesView()
-                    case .networks: NetworksView()
-                    case .system: SystemView()
+                    Group {
+                        switch ui.section {
+                        case .containers: ContainersView()
+                        case .volumes: VolumesView()
+                        case .images: ImagesView()
+                        case .networks: NetworksView()
+                        case .system: SystemView()
+                        }
                     }
+                    .id(ui.section)
+                    .transition(.opacity)
+                    .motion(Motion.quick, value: ui.section)
                 }
             }
             .navigationTitle(ui.section.title)

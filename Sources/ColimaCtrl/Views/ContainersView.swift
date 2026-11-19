@@ -56,6 +56,8 @@ struct ContainersView: View {
                 }
                 .listStyle(.inset)
                 .scrollContentBackground(.hidden)
+                .motion(Motion.smooth, value: groups.flatMap(\.rows).map(\.id))
+                .motion(Motion.smooth, value: ui.containerSort)
                 .onKeyPress(.return) {
                     guard let id = ui.selectedContainerID, ui.selectedContainerIDs.count == 1 else { return .ignored }
                     ui.show(id, tab: .logs)
@@ -273,8 +275,10 @@ private struct RowGraph: View {
         HStack(spacing: 8) {
             Text(Format.bytes(Int64(series.latestMemory)))
                 .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 56, alignment: .trailing)
+                .rollingNumbers(Int(series.latestMemory / 1_000_000))
             Text("\(series.latestCPU, format: .number.precision(.fractionLength(1)))%")
                 .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
+                .rollingNumbers(Int(series.latestCPU * 10))
             Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64, height: 18)
         }
     }

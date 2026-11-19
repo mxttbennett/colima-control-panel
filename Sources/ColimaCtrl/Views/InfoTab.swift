@@ -55,6 +55,7 @@ struct InfoTab: View {
                 }
             }
             .padding(.horizontal, 16).padding(.bottom, 16)
+            .motion(Motion.smooth, value: inspect != nil)
         }
         .task(id: "\(row.id):\(row.state):\(row.health ?? "")") {
             if inspect == nil { inspect = store.cachedInspect(row.id) }
@@ -72,7 +73,7 @@ private struct EnvironmentCard: View {
         let shown = filter.isEmpty ? env : env.filter { $0.key.localizedCaseInsensitiveContains(filter) || $0.value.localizedCaseInsensitiveContains(filter) }
         Card("Environment") {
             HStack(spacing: 8) {
-                TextField("Filter variables", text: $filter).textFieldStyle(.roundedBorder).controlSize(.small)
+                TextField("Filter variables", text: $filter).textFieldStyle(.plain).controlSize(.small).padding(.horizontal, 10).padding(.vertical, 4).glassEffect(.regular, in: .capsule)
                 Button(revealed.count < env.count ? "Reveal all" : "Hide secrets", systemImage: "eye") {
                     revealed = revealed.count < env.count ? Set(env.map(\.key)) : []
                 }
@@ -113,7 +114,7 @@ private struct GraphCard: View {
             HStack {
                 Text(title).font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text(value).font(.caption.weight(.medium)).monospacedDigit()
+                Text(value).font(.caption.weight(.medium)).monospacedDigit().rollingNumbers(value)
             }
             Sparkline(values: values, maximum: maximum, color: color).frame(height: 44)
         }
