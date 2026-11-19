@@ -14,11 +14,14 @@ struct PaletteView: View {
     @Environment(ColimaSetup.self) private var setup
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
+    @AppStorage("paletteRecent") private var recentRaw = ""
     @State private var selection = 0
     @FocusState private var focused: Bool
 
     var body: some View {
         let results = filtered()
+        let recent = Set(recentList)
+        let hasRecent = results.contains { recent.contains($0.id) }
         VStack(spacing: 0) {
             TextField("Jump to a view, or act on a container", text: $query)
                 .textFieldStyle(.plain).zoomFont(.title3).padding(16)
@@ -31,6 +34,11 @@ struct PaletteView: View {
                     LazyVStack(spacing: 2) {
                         ForEach(Array(results.enumerated()), id: \.element.id) { index, command in
                             HStack {
+                                if hasRecent {
+                                    Image(systemName: "clock").foregroundStyle(.secondary).frame(width: 16)
+                                        .opacity(recent.contains(command.id) ? 1 : 0)
+                                        .accessibilityLabel(recent.contains(command.id) ? "Recent" : "")
+                                }
                                 Text(command.title).lineLimit(1)
                                 Spacer()
                                 Text(command.hint).foregroundStyle(.secondary).zoomFont(.caption)
@@ -60,6 +68,7 @@ struct PaletteView: View {
 
     private func run(_ results: [Command], at index: Int) {
         guard results.indices.contains(index) else { return }
+        recentRaw = RecentCommands.bump(recentList, results[index].id).joined(separator: "\n")
         dismiss()
         results[index].run()
     }
@@ -72,9 +81,12 @@ struct PaletteView: View {
         }
     }
 
+    private var recentList: [String] { recentRaw.split(separator: "\n").map(String.init) }
+
     private func filtered() -> [Command] {
         let words = query.lowercased().split(separator: " ")
-        return Array(commands().filter { command in words.allSatisfy { command.title.lowercased().contains($0) } }.prefix(40))
+        let matches = commands().filter { command in words.allSatisfy { command.title.lowercased().contains($0) } }
+        return Array(RecentCommands.order(matches, recent: recentList) { $0.id }.prefix(40))
     }
 
     private func commands() -> [Command] {
