@@ -64,6 +64,7 @@ private struct GeneralTab: View {
                 Picker("Open container details on", selection: $prefs.defaultDetailTab) {
                     ForEach(DetailTab.allCases) { Text($0.rawValue).tag($0) }
                 }
+                Text("Used when the panel opens. Selecting another container keeps the tab you are on.").font(.caption).foregroundStyle(.secondary)
                 Picker("Keep log lines per container", selection: $prefs.logCapacity) {
                     ForEach([1000, 5000, 20000, 50000], id: \.self) { Text($0, format: .number).tag($0) }
                 }

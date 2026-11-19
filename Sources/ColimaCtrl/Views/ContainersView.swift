@@ -71,8 +71,8 @@ struct ContainersView: View {
         .onChange(of: ui.selectedContainerIDs) {
             if ui.selectedContainerIDs.count == 1, let id = ui.selectedContainerIDs.first {
                 guard ui.selectedContainerID != id else { return }
+                if ui.selectedContainerID == nil { ui.detailTab = prefs.defaultDetailTab }
                 ui.selectedContainerID = id
-                ui.detailTab = prefs.defaultDetailTab
             } else if ui.selectedContainerIDs.isEmpty {
                 ui.selectedContainerID = nil
             }
