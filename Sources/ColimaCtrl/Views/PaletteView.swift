@@ -123,6 +123,11 @@ struct PaletteView: View {
             if row.isRunning {
                 list.append(Command(id: "restart-\(row.id)", title: "Restart \(name)", hint: "action") { store.perform(.restart, on: [row.id]) })
                 list.append(Command(id: "stop-\(row.id)", title: "Stop \(name)", hint: "action") { store.perform(.stop, on: [row.id]) })
+                if row.isPaused {
+                    list.append(Command(id: "resume-\(row.id)", title: "Resume \(name)", hint: "action") { store.perform(.resume, on: [row.id]) })
+                } else {
+                    list.append(Command(id: "pause-\(row.id)", title: "Pause \(name)", hint: "action") { store.perform(.pause, on: [row.id]) })
+                }
             } else {
                 list.append(Command(id: "start-\(row.id)", title: "Start \(name)", hint: "action") { store.perform(.start, on: [row.id]) })
             }

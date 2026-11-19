@@ -213,6 +213,11 @@ struct ContainerMenu: View {
         if row.isRunning {
             Button("Restart") { store.perform(.restart, on: [row.id]) }.disabled(busy)
             Button("Stop") { store.perform(.stop, on: [row.id]) }.disabled(busy)
+            if row.isPaused {
+                Button("Resume") { store.perform(.resume, on: [row.id]) }.disabled(busy)
+            } else {
+                Button("Pause") { store.perform(.pause, on: [row.id]) }.disabled(busy)
+            }
         } else {
             Button("Start") { store.perform(.start, on: [row.id]) }.disabled(busy)
         }
@@ -249,12 +254,16 @@ struct ContainerMenu: View {
     @ViewBuilder private func many(_ rows: [ContainerRow]) -> some View {
         let running = rows.filter(\.isRunning).map(\.id)
         let stopped = rows.filter { !$0.isRunning }.map(\.id)
+        let pausable = rows.filter(\.canPause).map(\.id)
+        let paused = rows.filter(\.isPaused).map(\.id)
         let busy = rows.contains { store.pending[$0.id] != nil }
         if !stopped.isEmpty { Button("Start \(stopped.count) Stopped") { store.perform(.start, on: stopped) }.disabled(busy) }
         if !running.isEmpty {
             Button("Restart \(running.count) Running") { store.perform(.restart, on: running) }.disabled(busy)
             Button("Stop \(running.count) Running") { store.perform(.stop, on: running) }.disabled(busy)
         }
+        if !pausable.isEmpty { Button("Pause \(pausable.count) Running") { store.perform(.pause, on: pausable) }.disabled(busy) }
+        if !paused.isEmpty { Button("Resume \(paused.count) Paused") { store.perform(.resume, on: paused) }.disabled(busy) }
         Divider()
         Button("Copy \(rows.count) Names") { Clipboard.copy(rows.map(\.name).joined(separator: "\n")) }
         Divider()

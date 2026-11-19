@@ -56,7 +56,11 @@ private struct DetailHeader: View {
                     if row.isRunning {
                         Button("Restart") { store.perform(.restart, on: [row.id]) }
                         Button("Stop") { store.perform(.stop, on: [row.id]) }
-                        Button("Shell", systemImage: "terminal") { openContainerShell(row, store: store) }.help("Open a shell in Terminal")
+                        if row.isPaused {
+                            Button("Resume", systemImage: "play.fill") { store.perform(.resume, on: [row.id]) }.help("Resume the paused container")
+                        } else {
+                            Button("Shell", systemImage: "terminal") { openContainerShell(row, store: store) }.help("Open a shell in Terminal")
+                        }
                     } else {
                         Button("Start") { store.perform(.start, on: [row.id]) }
                     }

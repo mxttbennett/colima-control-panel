@@ -36,6 +36,8 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
     public var startedAt: Date?
 
     public var isRunning: Bool { state == "running" || state == "restarting" || state == "paused" }
+    public var isPaused: Bool { state == "paused" }
+    public var canPause: Bool { state == "running" }
     public var title: String { service ?? name }
 
     public var exitCode: Int? {

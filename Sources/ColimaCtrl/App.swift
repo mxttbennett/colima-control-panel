@@ -51,6 +51,11 @@ struct ColimaCtrlApp: App {
                 Button("Start") { store.perform(.start, on: ids) }.keyboardShortcut("r", modifiers: [.command, .shift]).disabled(ids.isEmpty)
                 Button("Restart") { store.perform(.restart, on: ids) }.keyboardShortcut("r").disabled(ids.isEmpty)
                 Button("Stop") { store.perform(.stop, on: ids) }.keyboardShortcut(".").disabled(ids.isEmpty)
+                let selected = store.containers.filter { ids.contains($0.id) }
+                let pausable = selected.filter(\.canPause).map(\.id)
+                let paused = selected.filter(\.isPaused).map(\.id)
+                Button("Pause") { store.perform(.pause, on: pausable) }.disabled(pausable.isEmpty)
+                Button("Resume") { store.perform(.resume, on: paused) }.disabled(paused.isEmpty)
                 Divider()
                 Button("Remove…") {
                     ui.confirm = ConfirmRequest(title: ids.count == 1 ? "Remove this container?" : "Remove \(ids.count) selected containers?", message: "Running containers are force-stopped.", button: ids.count == 1 ? "Remove Container" : "Remove \(ids.count) Containers") {
