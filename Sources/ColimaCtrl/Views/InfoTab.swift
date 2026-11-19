@@ -18,6 +18,8 @@ struct InfoTab: View {
                         Field("Command", inspect.command, copy: true)
                         if let created = inspect.created { Field("Created", Format.ago(created)) }
                         Field("Restart", inspect.restartPolicy)
+                        if inspect.restartCount > 0 { Field("Restarts", "\(inspect.restartCount)") }
+                        if !row.isRunning, let exitCode = inspect.exitCode { Field("Exit code", exitText(exitCode, oomKilled: inspect.oomKilled)) }
                         if let health = inspect.health { Field("Health", health) }
                     }
                     if !inspect.ports.isEmpty {
@@ -44,13 +46,10 @@ struct InfoTab: View {
                             ForEach(inspect.attachments) { Field($0.network, $0.address.isEmpty ? "–" : $0.address, copy: !$0.address.isEmpty) }
                         }
                     }
-                    if !inspect.env.isEmpty {
-                        Card("Environment") {
-                            ForEach(Array(inspect.env.enumerated()), id: \.offset) { _, pair in
-                                EnvRow(key: pair.key, value: pair.value, revealed: $revealed)
-                            }
-                        }
+                    if !inspect.labels.isEmpty {
+                        Card("Labels") { ForEach(inspect.labels) { StackedField(label: $0.key, value: $0.value) } }
                     }
+                    if !inspect.env.isEmpty { EnvironmentCard(env: inspect.env, revealed: $revealed) }
                 } else {
                     ProgressView().frame(maxWidth: .infinity).padding(.top, 20)
                 }
@@ -60,6 +59,36 @@ struct InfoTab: View {
         .task(id: "\(row.id):\(row.state):\(row.health ?? "")") {
             if inspect == nil { inspect = store.cachedInspect(row.id) }
             if let fresh = try? await store.inspect(row.id), fresh != inspect { inspect = fresh }
+        }
+    }
+}
+
+private func exitText(_ code: Int, oomKilled: Bool) -> String {
+    var text = "\(code)"
+    if code == 0 { text += " (success)" } else if oomKilled { text += " (out of memory)" } else if code > 128 { text += " (signal \(code - 128))" }
+    return text
+}
+
+private struct EnvironmentCard: View {
+    let env: [(key: String, value: String)]
+    @Binding var revealed: Set<String>
+    @State private var filter = ""
+
+    var body: some View {
+        let shown = filter.isEmpty ? env : env.filter { $0.key.localizedCaseInsensitiveContains(filter) || $0.value.localizedCaseInsensitiveContains(filter) }
+        Card("Environment") {
+            HStack(spacing: 8) {
+                TextField("Filter variables", text: $filter).textFieldStyle(.roundedBorder).controlSize(.small)
+                Button(revealed.count < env.count ? "Reveal all" : "Hide secrets", systemImage: "eye") {
+                    revealed = revealed.count < env.count ? Set(env.map(\.key)) : []
+                }
+                .labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary).help("Reveal or hide secret values")
+                CopyButton(text: ContainerInspect.envFile(shown)).help("Copy the shown variables as KEY=value lines")
+            }
+            ForEach(Array(shown.enumerated()), id: \.offset) { _, pair in
+                EnvRow(key: pair.key, value: pair.value, revealed: $revealed)
+            }
+            if shown.isEmpty { Text("Nothing matches").foregroundStyle(.secondary) }
         }
     }
 }
@@ -141,6 +170,22 @@ struct Field: View {
             Text(label).foregroundStyle(.secondary).frame(width: 78, alignment: .leading)
             Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             if let copy { CopyButton(text: copy) }
+        }
+    }
+}
+
+struct StackedField: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.caption).foregroundStyle(.secondary)
+                Text(value).font(.system(size: 12, design: .monospaced))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            CopyButton(text: value)
         }
     }
 }

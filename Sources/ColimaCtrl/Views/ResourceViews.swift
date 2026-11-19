@@ -118,26 +118,39 @@ struct ImagesView: View {
     }
 }
 
+private struct NetworkLine: Identifiable {
+    let network: NetworkRow
+    let containers: Int
+    var id: String { network.id }
+    var name: String { network.name }
+    var driver: String { "\(network.driver) · \(network.scope)" }
+    var subnet: String { network.subnetKey }
+}
+
 struct NetworksView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
+    @State private var sortOrder = [KeyPathComparator(\NetworkLine.name)]
 
     var body: some View {
-        let rows = store.networks.filter { ui.filter.isEmpty || $0.name.localizedCaseInsensitiveContains(ui.filter) || ($0.subnet ?? "").contains(ui.filter) }
         let containerCounts = store.containers.reduce(into: [String: Int]()) { counts, row in row.networks.forEach { counts[$0, default: 0] += 1 } }
+        let rows = store.networks
+            .filter { ui.filter.isEmpty || $0.name.localizedCaseInsensitiveContains(ui.filter) || ($0.subnet ?? "").contains(ui.filter) }
+            .map { NetworkLine(network: $0, containers: containerCounts[$0.name] ?? 0) }
+            .sorted(using: sortOrder)
         @Bindable var ui = ui
-        Table(rows, selection: $ui.selectedNetworkID) {
-            TableColumn("Network") { network in
+        Table(rows, selection: $ui.selectedNetworkID, sortOrder: $sortOrder) {
+            TableColumn("Network", value: \.name) { line in
                 HStack(spacing: 6) {
-                    Text(network.name)
-                    if network.isBuiltIn { Tag("built-in") }
-                    if network.isInternal { Tag("internal") }
+                    Text(line.network.name)
+                    if line.network.isBuiltIn { Tag("built-in") }
+                    if line.network.isInternal { Tag("internal") }
                 }
             }
-            TableColumn("Driver") { Text("\($0.driver) · \($0.scope)").foregroundStyle(.secondary) }.width(130)
-            TableColumn("Subnet") { Text($0.subnet ?? "").font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary) }.width(150)
-            TableColumn("Containers") { network in
-                Text(containerCounts[network.name] ?? 0, format: .number).monospacedDigit()
+            TableColumn("Driver", value: \.driver) { Text($0.driver).foregroundStyle(.secondary) }.width(130)
+            TableColumn("Subnet", value: \.subnet) { Text($0.subnet).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary) }.width(150)
+            TableColumn("Containers", value: \.containers) { line in
+                Text(line.containers, format: .number).monospacedDigit()
             }.width(90)
         }
         .scrollContentBackground(.hidden)
