@@ -21,8 +21,8 @@ struct InfoTab: View {
                         if inspect.restartCount > 0 { Field("Restarts", "\(inspect.restartCount)") }
                         if !row.isRunning, let exitCode = inspect.exitCode { Field("Exit code", ContainerInspect.exitDescription(code: exitCode, oomKilled: inspect.oomKilled)) }
                         if let limits = limitsText(inspect) { Field("Limits", limits) }
-                        if let health = inspect.health { Field("Health", health) }
                     }
+                    if let health = inspect.health { HealthCard(status: health, inspect: inspect) }
                     if !inspect.ports.isEmpty {
                         Card("Ports") {
                             ForEach(inspect.ports) { port in
@@ -225,5 +225,22 @@ struct EnvRow: View {
 private extension NSRegularExpression {
     func firstMatch(in text: String) -> NSTextCheckingResult? {
         firstMatch(in: text, range: NSRange(text.startIndex..., in: text))
+    }
+}
+
+private struct HealthCard: View {
+    let status: String
+    let inspect: ContainerInspect
+
+    var body: some View {
+        Card("Health check") {
+            Field("Status", status.capitalized)
+            if inspect.failingStreak > 0 { Field("Failures", "\(inspect.failingStreak) in a row") }
+            if let latest = inspect.healthChecks.last {
+                Field("Last check", latest.date.map(Format.ago) ?? "–")
+                Field("Exit code", latest.exitCode == 0 ? "0 (healthy)" : "\(latest.exitCode)")
+                if !latest.output.isEmpty { StackedField(label: "Output", value: String(latest.output.prefix(600))) }
+            }
+        }
     }
 }
