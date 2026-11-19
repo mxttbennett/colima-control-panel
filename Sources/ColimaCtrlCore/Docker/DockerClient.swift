@@ -34,6 +34,13 @@ public struct DockerClient: Sendable {
         do { return try JSONDecoder().decode(T.self, from: body) } catch { throw DockerError.decode("\(error)") }
     }
 
+    /// The response body as the engine sent it.
+    public func getData(_ path: String) async throws -> Data {
+        let (status, body) = try await request("GET", path)
+        guard (200..<300).contains(status) else { throw DockerError.http(status: status, message: Self.message(from: body)) }
+        return body
+    }
+
     /// Sends a write and throws Docker's own message on failure. 304 counts as success.
     public func send(_ method: String, _ path: String) async throws {
         let (status, body) = try await request(method, path)

@@ -158,6 +158,14 @@ extension FleetStore {
         run("Remove network") { try await $0.send("DELETE", "/networks/\(id)") }
     }
 
+    /// The engine's inspect JSON, indented with sorted keys for pasting into a ticket or a diff.
+    public func inspectJSON(_ id: String) async throws -> String {
+        let data = try await client.getData("/containers/\(id)/json")
+        let object = try JSONSerialization.jsonObject(with: data)
+        let pretty = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+        return String(decoding: pretty, as: UTF8.self)
+    }
+
     public func cachedInspect(_ id: String) -> ContainerInspect? { inspectCache[id] }
 
     public func inspect(_ id: String) async throws -> ContainerInspect {

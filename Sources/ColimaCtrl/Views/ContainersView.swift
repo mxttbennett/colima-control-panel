@@ -230,8 +230,19 @@ struct ContainerMenu: View {
         Button("Copy Name") { Clipboard.copy(row.name) }
         Button("Copy ID") { Clipboard.copy(row.id) }
         Button("Copy Image") { Clipboard.copy(row.image) }
+        Button("Copy as JSON") { Task { await copy(row, json: true) } }
+        Button("Copy as docker run") { Task { await copy(row, json: false) } }
         Divider()
         Button("Remove", role: .destructive) { onRemove([row.id]) }
+    }
+
+    private func copy(_ row: ContainerRow, json: Bool) async {
+        do {
+            let text = json ? try await store.inspectJSON(row.id) : DockerRunCommand.make(name: row.name, inspect: try await store.inspect(row.id))
+            Clipboard.copy(text)
+        } catch {
+            store.lastError = "Copy \(row.name): \(error.localizedDescription)"
+        }
     }
 
     /// Entries that only make sense for one container are left out, and each action covers the containers it applies to.

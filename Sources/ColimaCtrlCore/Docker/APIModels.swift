@@ -142,7 +142,9 @@ struct APIInspect: Decodable, Sendable {
             enum CodingKeys: String, CodingKey { case name = "Name" }
         }
         let restartPolicy: Restart?
-        enum CodingKeys: String, CodingKey { case restartPolicy = "RestartPolicy" }
+        let memory: Int64?
+        let nanoCpus: Int64?
+        enum CodingKeys: String, CodingKey { case restartPolicy = "RestartPolicy", memory = "Memory", nanoCpus = "NanoCpus" }
     }
     struct Mount: Decodable, Sendable {
         let type: String
