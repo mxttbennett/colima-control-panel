@@ -120,7 +120,8 @@ struct APIInspect: Decodable, Sendable {
     struct Config: Decodable, Sendable {
         let image: String
         let env: [String]?
-        enum CodingKeys: String, CodingKey { case image = "Image", env = "Env" }
+        let labels: [String: String]?
+        enum CodingKeys: String, CodingKey { case image = "Image", env = "Env", labels = "Labels" }
     }
     struct State: Decodable, Sendable {
         struct Health: Decodable, Sendable {
@@ -129,7 +130,9 @@ struct APIInspect: Decodable, Sendable {
         }
         let startedAt: String
         let health: Health?
-        enum CodingKeys: String, CodingKey { case startedAt = "StartedAt", health = "Health" }
+        let exitCode: Int?
+        let oomKilled: Bool?
+        enum CodingKeys: String, CodingKey { case startedAt = "StartedAt", health = "Health", exitCode = "ExitCode", oomKilled = "OOMKilled" }
     }
     struct HostConfig: Decodable, Sendable {
         struct Restart: Decodable, Sendable {
@@ -169,8 +172,9 @@ struct APIInspect: Decodable, Sendable {
     let hostConfig: HostConfig?
     let mounts: [Mount]?
     let networkSettings: NetworkSettings?
+    let restartCount: Int?
     enum CodingKeys: String, CodingKey {
-        case id = "Id", created = "Created", path = "Path", args = "Args", config = "Config", state = "State"
+        case id = "Id", created = "Created", path = "Path", args = "Args", config = "Config", state = "State", restartCount = "RestartCount"
         case hostConfig = "HostConfig", mounts = "Mounts", networkSettings = "NetworkSettings"
     }
 }

@@ -108,6 +108,7 @@ public struct NetworkRow: Identifiable, Equatable, Sendable {
     public let subnet: String?
 
     public var isBuiltIn: Bool { ["bridge", "host", "none"].contains(name) }
+    public var subnetKey: String { subnet ?? "" }
 }
 
 public struct DiskBucket: Equatable, Sendable {
@@ -154,10 +155,20 @@ public struct ContainerInspect: Equatable, Sendable {
     public let mounts: [Mount]
     public let ports: [PortBinding]
     public let attachments: [Attachment]
+    public let labels: [KeyValue]
+    public let restartCount: Int
+    public let exitCode: Int?
+    public let oomKilled: Bool
+
+    /// `KEY=value` lines, the format `docker run --env-file` reads.
+    public static func envFile(_ pairs: [(key: String, value: String)]) -> String {
+        pairs.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")
+    }
 
     public static func == (lhs: ContainerInspect, rhs: ContainerInspect) -> Bool {
         lhs.id == rhs.id && lhs.image == rhs.image && lhs.command == rhs.command && lhs.health == rhs.health
             && lhs.mounts == rhs.mounts && lhs.ports == rhs.ports && lhs.attachments == rhs.attachments
+            && lhs.labels == rhs.labels && lhs.restartCount == rhs.restartCount && lhs.exitCode == rhs.exitCode && lhs.oomKilled == rhs.oomKilled
             && lhs.env.map { "\($0.key)=\($0.value)" } == rhs.env.map { "\($0.key)=\($0.value)" }
     }
 }
@@ -180,7 +191,11 @@ extension ContainerInspect {
             },
             mounts: (api.mounts ?? []).map { Mount(type: $0.type, source: $0.name ?? $0.source ?? "", destination: $0.destination, readOnly: $0.rw == false) },
             ports: Array(Set(bindings.map(\.id)).compactMap { id in bindings.first { $0.id == id } }).sorted { $0.id < $1.id },
-            attachments: (api.networkSettings?.networks ?? [:]).map { Attachment(network: $0.key, address: $0.value.ipAddress ?? "") }.sorted { $0.network < $1.network }
+            attachments: (api.networkSettings?.networks ?? [:]).map { Attachment(network: $0.key, address: $0.value.ipAddress ?? "") }.sorted { $0.network < $1.network },
+            labels: (api.config.labels ?? [:]).map { KeyValue(key: $0.key, value: $0.value) }.sorted { $0.key < $1.key },
+            restartCount: api.restartCount ?? 0,
+            exitCode: api.state.exitCode,
+            oomKilled: api.state.oomKilled ?? false
         )
     }
 }

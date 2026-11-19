@@ -63,3 +63,34 @@ private func container(state: String = "running", status: String = "Up 2 minutes
     #expect(inspect.env.map(\.key) == ["PATH", "EMPTY"] && inspect.env[1].value == "")
     #expect(inspect.attachments.first?.address == "172.17.0.2")
 }
+
+@Test func inspectDecodesLabelsRestartCountAndExitState() throws {
+    // Arrange
+    let json = """
+    {"Id":"abc","Created":"2026-10-25T21:32:20Z","Path":"app","Args":[],"RestartCount":3,
+     "Config":{"Image":"app","Env":["PATH=/bin","EMPTY="],"Labels":{"z":"1","com.docker.compose.project":"demo"}},
+     "State":{"StartedAt":"2026-10-25T21:32:21Z","ExitCode":137,"OOMKilled":true}}
+    """
+
+    // Act
+    let inspect = ContainerInspect(try JSONDecoder().decode(APIInspect.self, from: Data(json.utf8)))
+
+    // Assert
+    #expect(inspect.labels.map(\.key) == ["com.docker.compose.project", "z"])
+    #expect(inspect.restartCount == 3)
+    #expect(inspect.exitCode == 137)
+    #expect(inspect.oomKilled)
+    #expect(ContainerInspect.envFile(inspect.env) == "PATH=/bin\nEMPTY=")
+}
+
+@Test func networksSortBySubnetWithMissingSubnetsFirst() {
+    // Arrange
+    let withSubnet = NetworkRow(id: "1", name: "a", driver: "bridge", scope: "local", isInternal: false, subnet: "172.17.0.0/16")
+    let without = NetworkRow(id: "2", name: "b", driver: "host", scope: "local", isInternal: false, subnet: nil)
+
+    // Act
+    let sorted = [withSubnet, without].sorted { $0.subnetKey < $1.subnetKey }
+
+    // Assert
+    #expect(sorted.map(\.id) == ["2", "1"])
+}
