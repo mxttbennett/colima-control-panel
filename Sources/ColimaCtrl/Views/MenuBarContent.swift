@@ -58,7 +58,7 @@ struct MenuBarContent: View {
                 if running.count > 10 { Text("and \(running.count - 10) more").font(.caption).foregroundStyle(.secondary) }
                 if running.count > 1 {
                     Button("Stop All", systemImage: "stop.fill") { store.stopAllRunning() }
-                        .buttonStyle(.glass).controlSize(.small).padding(.top, 6)
+                        .buttonStyle(.liquid).controlSize(.small).padding(.top, 6)
                         .disabled(running.contains { store.pending[$0.id] != nil })
                 }
             }

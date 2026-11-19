@@ -36,7 +36,9 @@ struct PaletteView: View {
                                 Text(command.hint).foregroundStyle(.secondary).font(.caption)
                             }
                             .padding(.horizontal, 10).padding(.vertical, 7)
-                            .background(index == selection ? Color.accentColor.opacity(0.2) : .clear, in: .rect(cornerRadius: 8))
+                            .background {
+                if index == selection { Color.clear.glassEffect(.regular.tint(Brand.blue.opacity(0.35)), in: .rect(cornerRadius: 10)) }
+            }
                             .contentShape(Rectangle())
                             .onTapGesture { run(results, at: index) }
                             .id(command.id)
@@ -48,6 +50,8 @@ struct PaletteView: View {
             }
         }
         .frame(width: 560, height: 400)
+        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .presentationBackground(.clear)
         .onAppear { focused = true }
         .onKeyPress(.downArrow) { selection = min(selection + 1, max(0, results.count - 1)); return .handled }
         .onKeyPress(.upArrow) { selection = max(selection - 1, 0); return .handled }
