@@ -47,6 +47,7 @@ struct ColimaCtrlApp: App {
                 let ids = ui.section == .containers ? Array(ui.selectedContainerIDs) : []
                 Button("Show Info") { if let id = ids.first { ui.show(id) } }.keyboardShortcut("i").disabled(ids.count != 1)
                 Button("Show Logs") { if let id = ids.first { ui.show(id, tab: .logs) } }.keyboardShortcut("l").disabled(ids.count != 1)
+                Button("Rename…") { ui.renaming = store.containers.first { $0.id == ids.first } }.disabled(ids.count != 1)
                 Divider()
                 Button("Start") { store.perform(.start, on: ids) }.keyboardShortcut("r", modifiers: [.command, .shift]).disabled(ids.isEmpty)
                 Button("Restart") { store.perform(.restart, on: ids) }.keyboardShortcut("r").disabled(ids.isEmpty)

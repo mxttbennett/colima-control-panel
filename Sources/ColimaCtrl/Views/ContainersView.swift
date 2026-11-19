@@ -223,6 +223,7 @@ struct ContainerMenu: View {
         }
         Button("Show Info") { ui.show(row.id) }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
+        Button("Rename…") { ui.renaming = row }.disabled(busy)
         if row.isRunning { Button("Open Shell in Terminal") { openContainerShell(row, store: store) } }
         ForEach(row.portMappings, id: \.self) { mapping in
             if mapping.opensInBrowser {

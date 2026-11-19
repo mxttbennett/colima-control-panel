@@ -78,6 +78,7 @@ struct ContentView: View {
                 return .handled
             }
         }
+        .sheet(item: $ui.renaming) { RenameContainerSheet(row: $0) }
         .overlay {
             if ui.showPalette {
                 ZStack(alignment: .top) {
