@@ -159,6 +159,12 @@ public struct DiskUsage: Equatable, Sendable {
     public var reclaimable: Int64 { images.reclaimable + containers.reclaimable + volumes.reclaimable + buildCache.reclaimable }
 }
 
+public struct HealthCheck: Equatable, Sendable {
+    public let date: Date?
+    public let exitCode: Int
+    public let output: String
+}
+
 public struct ContainerInspect: Equatable, Sendable {
     public struct Mount: Equatable, Sendable, Identifiable {
         public var id: String { destination }
@@ -184,6 +190,9 @@ public struct ContainerInspect: Equatable, Sendable {
     public let created: Date?
     public let restartPolicy: String
     public let health: String?
+    public let failingStreak: Int
+    /// The engine keeps the last few checks, newest last.
+    public let healthChecks: [HealthCheck]
     public let env: [(key: String, value: String)]
     public let mounts: [Mount]
     public let ports: [PortBinding]
@@ -202,6 +211,7 @@ public struct ContainerInspect: Equatable, Sendable {
 
     public static func == (lhs: ContainerInspect, rhs: ContainerInspect) -> Bool {
         lhs.id == rhs.id && lhs.image == rhs.image && lhs.command == rhs.command && lhs.health == rhs.health
+            && lhs.failingStreak == rhs.failingStreak && lhs.healthChecks == rhs.healthChecks
             && lhs.mounts == rhs.mounts && lhs.ports == rhs.ports && lhs.attachments == rhs.attachments
             && lhs.memoryLimit == rhs.memoryLimit && lhs.cpuLimit == rhs.cpuLimit && lhs.labels == rhs.labels && lhs.restartCount == rhs.restartCount && lhs.exitCode == rhs.exitCode && lhs.oomKilled == rhs.oomKilled
             && lhs.env.map { "\($0.key)=\($0.value)" } == rhs.env.map { "\($0.key)=\($0.value)" }
@@ -220,6 +230,10 @@ extension ContainerInspect {
             created: DockerDate.parse(api.created),
             restartPolicy: api.hostConfig?.restartPolicy?.name.nilIfEmpty ?? "no",
             health: api.state.health?.status,
+            failingStreak: api.state.health?.failingStreak ?? 0,
+            healthChecks: (api.state.health?.log ?? []).map {
+                HealthCheck(date: $0.end.flatMap(DockerDate.parse), exitCode: $0.exitCode ?? 0, output: ($0.output ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
+            },
             env: (api.config.env ?? []).map { line in
                 let parts = line.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
                 return (String(parts[0]), parts.count > 1 ? String(parts[1]) : "")

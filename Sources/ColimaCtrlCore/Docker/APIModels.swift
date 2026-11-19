@@ -127,8 +127,16 @@ struct APIInspect: Decodable, Sendable {
     }
     struct State: Decodable, Sendable {
         struct Health: Decodable, Sendable {
+            struct Check: Decodable, Sendable {
+                let end: String?
+                let exitCode: Int?
+                let output: String?
+                enum CodingKeys: String, CodingKey { case end = "End", exitCode = "ExitCode", output = "Output" }
+            }
             let status: String
-            enum CodingKeys: String, CodingKey { case status = "Status" }
+            let failingStreak: Int?
+            let log: [Check]?
+            enum CodingKeys: String, CodingKey { case status = "Status", failingStreak = "FailingStreak", log = "Log" }
         }
         let startedAt: String
         let health: Health?

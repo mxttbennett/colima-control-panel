@@ -135,3 +135,24 @@ private func container(state: String = "running", status: String = "Up 2 minutes
     #expect(ContainerAction.pause.endpoint == "pause")
     #expect(ContainerAction.restart.endpoint == "restart")
 }
+
+@Test func inspectDecodesTheHealthCheckLog() throws {
+    // Arrange
+    let json = """
+    {"Id":"abc","Created":"2026-10-25T21:32:20Z","Path":"app","Args":[],
+     "Config":{"Image":"app"},
+     "State":{"StartedAt":"2026-10-25T21:32:21Z","Health":{"Status":"unhealthy","FailingStreak":3,"Log":[
+       {"End":"2026-10-25T21:33:00.123456789Z","ExitCode":0,"Output":"ok\\n"},
+       {"End":"2026-10-25T21:33:30Z","ExitCode":1,"Output":"  curl: (7) connection refused\\n"}]}}}
+    """
+
+    // Act
+    let inspect = ContainerInspect(try JSONDecoder().decode(APIInspect.self, from: Data(json.utf8)))
+
+    // Assert
+    #expect(inspect.health == "unhealthy")
+    #expect(inspect.failingStreak == 3)
+    #expect(inspect.healthChecks.map(\.exitCode) == [0, 1])
+    #expect(inspect.healthChecks.last?.output == "curl: (7) connection refused")
+    #expect(inspect.healthChecks.last?.date != nil)
+}
