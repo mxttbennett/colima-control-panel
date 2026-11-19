@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 enum Format {
@@ -8,5 +9,12 @@ enum Format {
 
     static func ago(_ date: Date) -> String {
         date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated))
+    }
+}
+
+enum Clipboard {
+    static func copy(_ text: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
     }
 }

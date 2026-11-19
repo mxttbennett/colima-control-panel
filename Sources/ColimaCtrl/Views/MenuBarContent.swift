@@ -22,6 +22,7 @@ struct MenuBarContent: View {
             HStack(spacing: 8) {
                 if let color = store.health.color { StatusDot(color: color, label: store.health.label) }
                 Text(headline).font(.headline)
+                if store.profile != "default" { Tag(store.profile) }
                 Spacer()
             }
             VMControls()

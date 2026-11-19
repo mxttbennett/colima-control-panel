@@ -69,6 +69,16 @@ struct VolumesView: View {
             TableColumn("") { volume in Button("Remove", systemImage: "trash") { removal = volume }.labelStyle(.iconOnly).buttonStyle(.borderless).foregroundStyle(.red) }.width(36)
         }
         .scrollContentBackground(.hidden)
+        .contextMenu(forSelectionType: String.self) { names in
+            if let name = names.first, let volume = rows.first(where: { $0.name == name }) {
+                Button("Copy Name") { Clipboard.copy(volume.name) }
+                if let user = store.containers.first(where: { $0.volumes.contains(name) }) {
+                    Button("Show Container \(user.title)") { ui.show(user.id) }
+                }
+                Divider()
+                Button("Delete…", role: .destructive) { removal = volume }
+            }
+        }
         .toolbar { ToolbarItem { Button("Prune unused", systemImage: "trash") { prune = .volumes }.tint(.red).help("Delete all unused volumes") } }
         .pruneConfirmation($prune)
         .confirmationDialog("Delete volume \(removal?.name ?? "")?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
@@ -134,6 +144,7 @@ struct NetworksView: View {
     @Environment(FleetStore.self) private var store
     @Environment(UIState.self) private var ui
     @State private var sortOrder = [KeyPathComparator(\NetworkLine.name)]
+    @State private var removal: NetworkRow?
 
     var body: some View {
         let containerCounts = store.containers.reduce(into: [String: Int]()) { counts, row in row.networks.forEach { counts[$0, default: 0] += 1 } }
@@ -157,6 +168,22 @@ struct NetworksView: View {
             }.width(90)
         }
         .scrollContentBackground(.hidden)
+        .contextMenu(forSelectionType: String.self) { ids in
+            if let id = ids.first, let line = rows.first(where: { $0.id == id }) {
+                Button("Copy Name") { Clipboard.copy(line.name) }
+                Button("Copy ID") { Clipboard.copy(line.id) }
+                if let subnet = line.network.subnet { Button("Copy Subnet") { Clipboard.copy(subnet) } }
+                if !line.network.isBuiltIn {
+                    Divider()
+                    Button("Remove…", role: .destructive) { removal = line.network }
+                }
+            }
+        }
+        .confirmationDialog("Remove network \(removal?.name ?? "")?", isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
+            Button("Remove", role: .destructive) { if let removal { store.remove(network: removal.id) } }
+        } message: {
+            Text("Containers using it must be stopped first.")
+        }
         .overlay {
             if !store.hasLoaded { ProgressView("Loading networks…") } else if rows.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") }
         }
