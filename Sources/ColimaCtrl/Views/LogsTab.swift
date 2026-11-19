@@ -79,6 +79,7 @@ private struct LogList: View {
     let wrap: Bool
     let timestamps: Bool
     let filterOnly: Bool
+    @Environment(\.uiZoom) private var zoom
     @State private var position = 0
     @State private var atBottom = true
     @State private var userScrolling = false
@@ -93,7 +94,7 @@ private struct LogList: View {
                 LazyVStack(alignment: .leading, spacing: 1) {
                     ForEach(visible) { line in
                         row(line, current: line.id == current)
-                            .font(.system(size: 11.5, design: .monospaced))
+                            .zoomFont(.system(size: 11.5, design: .monospaced))
                             .fixedSize(horizontal: !wrap, vertical: true)
                             .frame(maxWidth: wrap ? .infinity : nil, alignment: .leading)
                             .id(line.id)
@@ -141,12 +142,12 @@ private struct LogList: View {
     }
 
     private func row(_ line: LogLine, current: Bool) -> Text {
-        let body = Text(Self.styled(line, filter: filter, current: current)).foregroundStyle(line.isError ? Color.red : Color.primary)
+        let body = Text(Self.styled(line, filter: filter, current: current, size: 11.5 * zoom)).foregroundStyle(line.isError ? Color.red : Color.primary)
         guard timestamps else { return body }
         return Text("\(Text(Self.time(line.timestamp)).foregroundStyle(.tertiary)) \(body)")
     }
 
-    private static func styled(_ line: LogLine, filter: String, current: Bool) -> AttributedString {
+    private static func styled(_ line: LogLine, filter: String, current: Bool, size: CGFloat) -> AttributedString {
         let text = line.text
         var result = AttributedString(text)
 
@@ -164,7 +165,7 @@ private struct LogList: View {
                 case .debug: slice.foregroundColor = .secondary
                 case .info: slice.foregroundColor = .blue
                 }
-                slice.font = .system(size: 11.5, weight: .semibold, design: .monospaced)
+                slice.font = .system(size: size, weight: .semibold, design: .monospaced)
             }
         }
         for link in LogText.links(in: text) { apply(link.range) { $0.link = link.url } }
@@ -187,7 +188,7 @@ private struct MatchBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(count == 0 ? "No matches" : "\(min(position, count - 1) + 1) of \(count)").font(.caption).monospacedDigit()
+            Text(count == 0 ? "No matches" : "\(min(position, count - 1) + 1) of \(count)").zoomFont(.caption).monospacedDigit()
             Button("Previous Match", systemImage: "chevron.up") { step(-1) }.keyboardShortcut("g", modifiers: [.command, .shift]).help("Previous match (⇧⌘G)").disabled(count == 0)
             Button("Next Match", systemImage: "chevron.down") { step(1) }.keyboardShortcut("g", modifiers: .command).help("Next match (⌘G)").disabled(count == 0)
         }

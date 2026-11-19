@@ -21,7 +21,7 @@ struct PaletteView: View {
         let results = filtered()
         VStack(spacing: 0) {
             TextField("Jump to a view, or act on a container", text: $query)
-                .textFieldStyle(.plain).font(.title3).padding(16)
+                .textFieldStyle(.plain).zoomFont(.title3).padding(16)
                 .focused($focused)
                 .onSubmit { run(results, at: selection) }
                 .onChange(of: query) { selection = 0 }
@@ -33,7 +33,7 @@ struct PaletteView: View {
                             HStack {
                                 Text(command.title).lineLimit(1)
                                 Spacer()
-                                Text(command.hint).foregroundStyle(.secondary).font(.caption)
+                                Text(command.hint).foregroundStyle(.secondary).zoomFont(.caption)
                             }
                             .padding(.horizontal, 10).padding(.vertical, 7)
                             .background {

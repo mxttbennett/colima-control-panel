@@ -20,11 +20,11 @@ struct ResourceEditor: View {
                 Slider(value: binding(\.disk), in: Double(minimumDisk ?? 20)...Double(max(500, minimumDisk ?? 0)), step: 10)
             }
             if minimumDisk != nil {
-                Text("Colima can grow the disk but not shrink it.").font(.caption).foregroundStyle(.secondary)
+                Text("Colima can grow the disk but not shrink it.").zoomFont(.caption).foregroundStyle(.secondary)
             }
             if resources.memory * 2 > host.memoryGiB || resources.cpus * 3 > host.cores * 2 {
                 Label("That is more than half of this Mac. Other apps may feel slower while containers are busy.", systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(.orange)
+                    .zoomFont(.caption).foregroundStyle(.orange)
             }
         }
     }

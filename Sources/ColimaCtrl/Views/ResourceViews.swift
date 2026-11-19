@@ -50,7 +50,7 @@ struct Tag: View {
     init(_ text: String) { self.text = text }
 
     var body: some View {
-        Text(text).font(.caption).foregroundStyle(.secondary)
+        Text(text).zoomFont(.caption).foregroundStyle(.secondary)
             .padding(.horizontal, 7).padding(.vertical, 2)
             .background(.quaternary, in: .capsule)
     }
@@ -71,7 +71,7 @@ struct VolumesView: View {
             TableColumn("Volume", value: \.name) { volume in
                 VStack(alignment: .leading, spacing: 1) {
                     Text(volume.name).lineLimit(1).truncationMode(.middle)
-                    if let project = volume.project { Text(project).font(.caption).foregroundStyle(.secondary) }
+                    if let project = volume.project { Text(project).zoomFont(.caption).foregroundStyle(.secondary) }
                 }
             }
             TableColumn("Status") { Tag($0.refs > 0 ? "in use · \($0.refs)" : "unused") }.width(100)
@@ -80,6 +80,7 @@ struct VolumesView: View {
         }
         .scrollContentBackground(.hidden)
         .deselectsOnReclick()
+        .zoomFont(.system(size: 13))
         .contextMenu(forSelectionType: String.self) { names in
             let picked = rows.filter { names.contains($0.name) }
             if let volume = picked.first, picked.count == 1 {

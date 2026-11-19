@@ -11,12 +11,12 @@ struct PaneHeader<Actions: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(title).font(.title3.weight(.semibold)).lineLimit(2).textSelection(.enabled)
+                Text(title).zoomFont(.title3.weight(.semibold)).lineLimit(2).textSelection(.enabled)
                 CopyButton(text: copy)
                 Spacer()
                 Button("Close", systemImage: "xmark") { ui.closePane() }.labelStyle(.iconOnly).buttonStyle(.plain).foregroundStyle(.secondary)
             }
-            if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
+            if let subtitle { Text(subtitle).zoomFont(.callout).foregroundStyle(.secondary).lineLimit(1).textSelection(.enabled) }
             GlassEffectContainer(spacing: 8) { HStack(spacing: 8) { actions }.buttonStyle(.liquid) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -40,7 +40,7 @@ struct UsedBy: View {
                             StatusDot(color: container.display.color, size: 8, label: container.display.label)
                             Text(container.title).lineLimit(1)
                             Spacer()
-                            Text(container.name).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                            Text(container.name).zoomFont(.caption).foregroundStyle(.secondary).lineLimit(1)
                         }
                         .contentShape(Rectangle())
                     }
@@ -134,7 +134,7 @@ struct ImageDetailView: View {
                     }
                     UsedBy(title: "Used by", containers: store.containers.filter { $0.imageID == id })
                     if let detail, !detail.exposedPorts.isEmpty {
-                        Card("Exposed ports") { ForEach(detail.exposedPorts, id: \.self) { Text($0).font(.system(size: 12, design: .monospaced)) } }
+                        Card("Exposed ports") { ForEach(detail.exposedPorts, id: \.self) { Text($0).zoomFont(.system(size: 12, design: .monospaced)) } }
                     }
                     if let detail, !detail.env.isEmpty {
                         Card("Environment") { ForEach(detail.env) { EnvRow(key: $0.key, value: $0.value, revealed: $revealed) } }
@@ -183,7 +183,7 @@ struct NetworkDetailView: View {
                                     HStack {
                                         Text(member.name).lineLimit(1)
                                         Spacer()
-                                        Text(member.address).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                                        Text(member.address).zoomFont(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
                                     }
                                     .contentShape(Rectangle())
                                 }
@@ -245,7 +245,7 @@ struct ResourceMultiSelectionPane: View {
                         HStack {
                             Text(item.title).lineLimit(1).truncationMode(.middle)
                             Spacer()
-                            Text(item.detail).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                            Text(item.detail).zoomFont(.caption).foregroundStyle(.secondary).monospacedDigit()
                         }
                         .opacity(item.removable ? 1 : 0.55)
                     }

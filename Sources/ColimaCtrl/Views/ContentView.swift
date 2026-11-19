@@ -6,6 +6,7 @@ struct ContentView: View {
     @Environment(UIState.self) private var ui
     @Environment(Preferences.self) private var prefs
     @FocusState private var searchFocused: Bool
+    @State private var showZoomBadge = false
 
     private func count(_ number: Int, _ noun: String) -> String { "\(number) \(noun)\(number == 1 ? "" : "s")" }
 
@@ -93,6 +94,27 @@ struct ContentView: View {
             ui.selectedContainerIDs = [match.id]
         }
         .tint(Brand.blue)
+        .environment(\.uiZoom, ui.zoom)
+        .font(.system(size: 13 * ui.zoom))
+        .background {
+            Button("Zoom In") { ui.zoomIn() }.keyboardShortcut("=").opacity(0).frame(width: 0, height: 0).accessibilityHidden(true)
+        }
+        .overlay(alignment: .top) {
+            if showZoomBadge {
+                Text("\(Int((ui.zoom * 100).rounded()))%").monospacedDigit().zoomFont(.headline)
+                    .padding(.horizontal, 14).padding(.vertical, 6)
+                    .glassEffect(.regular, in: .capsule)
+                    .padding(.top, 10)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+        }
+        .onChange(of: ui.zoom) {
+            withAnimation(Motion.quick) { showZoomBadge = true }
+            Task {
+                try? await Task.sleep(for: .seconds(1))
+                withAnimation(Motion.smooth) { showZoomBadge = false }
+            }
+        }
         .frame(minWidth: 940, minHeight: 580)
     }
 

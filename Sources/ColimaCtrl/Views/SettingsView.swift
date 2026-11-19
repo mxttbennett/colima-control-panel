@@ -40,7 +40,7 @@ private struct GeneralTab: View {
             }
             SwiftUI.Section("Behavior") {
                 Toggle("Notify when a container fails or turns unhealthy", isOn: $prefs.notifyOnFailures)
-                Text("Only while Colima Control Panel is in the background. Actions you start from the app never notify.").font(.caption).foregroundStyle(.secondary)
+                Text("Only while Colima Control Panel is in the background. Actions you start from the app never notify.").zoomFont(.caption).foregroundStyle(.secondary)
                 Toggle("Open at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in
                         do {
@@ -51,28 +51,28 @@ private struct GeneralTab: View {
                             launchAtLogin = SMAppService.mainApp.status == .enabled
                         }
                     }
-                if let loginError { Text(loginError).font(.caption).foregroundStyle(.red) }
+                if let loginError { Text(loginError).zoomFont(.caption).foregroundStyle(.red) }
                 Toggle("Keep CCP running with Colima", isOn: Binding(
                     get: { prefs.keepCCPWithColima },
                     set: updateColimaLifecycle
                 ))
-                Text("Starts Colima when CCP opens, opens CCP when Colima starts, and stops Colima when you quit CCP.").font(.caption).foregroundStyle(.secondary)
-                if let error = prefs.colimaWatcherError { Text(error).font(.caption).foregroundStyle(.red) }
+                Text("Starts Colima when CCP opens, opens CCP when Colima starts, and stops Colima when you quit CCP.").zoomFont(.caption).foregroundStyle(.secondary)
+                if let error = prefs.colimaWatcherError { Text(error).zoomFont(.caption).foregroundStyle(.red) }
                 if prefs.keepCCPWithColima, ColimaWatcherService.service.status == .requiresApproval {
-                    Text("Allow Colima Control Panel in System Settings → General → Login Items & Extensions.").font(.caption).foregroundStyle(.secondary)
+                    Text("Allow Colima Control Panel in System Settings → General → Login Items & Extensions.").zoomFont(.caption).foregroundStyle(.secondary)
                 }
                 Picker("Open container details on", selection: $prefs.defaultDetailTab) {
                     ForEach(DetailTab.allCases) { Text($0.rawValue).tag($0) }
                 }
-                Text("Used when the panel opens. Selecting another container keeps the tab you are on.").font(.caption).foregroundStyle(.secondary)
+                Text("Used when the panel opens. Selecting another container keeps the tab you are on.").zoomFont(.caption).foregroundStyle(.secondary)
                 Picker("Keep log lines per container", selection: $prefs.logCapacity) {
                     ForEach([1000, 5000, 20000, 50000], id: \.self) { Text($0, format: .number).tag($0) }
                 }
-                Text("Applies the next time you open a container's logs. Larger buffers use more memory.").font(.caption).foregroundStyle(.secondary)
+                Text("Applies the next time you open a container's logs. Larger buffers use more memory.").zoomFont(.caption).foregroundStyle(.secondary)
                 Picker("Refresh graphs every", selection: $prefs.statsSeconds) {
                     ForEach([2, 3, 5, 10], id: \.self) { Text("\($0) seconds").tag($0) }
                 }
-                Text("Graphs only refresh while the window or menu bar popover is showing. Longer intervals use less CPU.").font(.caption).foregroundStyle(.secondary)
+                Text("Graphs only refresh while the window or menu bar popover is showing. Longer intervals use less CPU.").zoomFont(.caption).foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
@@ -117,7 +117,7 @@ private struct ColimaTab: View {
                 }
                 HStack {
                     if setup.configURL.path.isEmpty == false {
-                        Text(setup.configURL.path).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                        Text(setup.configURL.path).zoomFont(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                     }
                     Spacer()
                     Button("Check again") { Task { await setup.refresh() } }
@@ -127,7 +127,7 @@ private struct ColimaTab: View {
             }
             SwiftUI.Section("Resources") {
                 if setup.current == nil {
-                    Text("Colima has no configuration yet. Saving creates the VM and starts it.").font(.caption).foregroundStyle(.secondary)
+                    Text("Colima has no configuration yet. Saving creates the VM and starts it.").zoomFont(.caption).foregroundStyle(.secondary)
                 }
                 ResourceEditor(resources: $draft, host: setup.host, minimumDisk: setup.current?.disk)
                 HStack {
@@ -141,7 +141,7 @@ private struct ColimaTab: View {
                             .buttonStyle(.borderedProminent).disabled(setup.current != nil && !changed)
                     }
                 }
-                if let note { Text(note).font(.caption).foregroundStyle(.secondary) }
+                if let note { Text(note).zoomFont(.caption).foregroundStyle(.secondary) }
             }
             SwiftUI.Section("Setup") {
                 Button("Run setup again…") {
@@ -176,7 +176,7 @@ private struct AboutTab: View {
     var body: some View {
         VStack(spacing: 14) {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 96, height: 96)
-            Text("Colima Control Panel").font(.title2.weight(.semibold))
+            Text("Colima Control Panel").zoomFont(.title2.weight(.semibold))
             Text("Version \(version)").foregroundStyle(.secondary)
             Text("A native dashboard and menu bar companion for Colima.").foregroundStyle(.secondary).multilineTextAlignment(.center)
             HStack {
@@ -190,7 +190,7 @@ private struct AboutTab: View {
                 openWindow(id: "main")
                 NSApp.activate()
             }
-            Text("Shows the first-run setup again.").font(.caption).foregroundStyle(.secondary)
+            Text("Shows the first-run setup again.").zoomFont(.caption).foregroundStyle(.secondary)
             Spacer()
         }
         .padding(30)

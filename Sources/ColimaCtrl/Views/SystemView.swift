@@ -40,9 +40,9 @@ private struct DiskBar: View {
         let total = max(disk.total, 1)
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Docker disk").font(.caption).foregroundStyle(.secondary)
+                Text("Docker disk").zoomFont(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Text(Format.bytes(disk.total)).font(.title2.weight(.semibold)).rollingNumbers(disk.total)
+                Text(Format.bytes(disk.total)).zoomFont(.title2.weight(.semibold)).rollingNumbers(disk.total)
             }
             GeometryReader { proxy in
                 HStack(spacing: 2) {
@@ -58,13 +58,13 @@ private struct DiskBar: View {
                 ForEach(segments, id: \.name) { segment in
                     HStack(spacing: 6) {
                         Circle().fill(segment.color).frame(width: 8, height: 8)
-                        Text("\(segment.name) \(Format.bytes(segment.size))").font(.caption).foregroundStyle(.secondary)
+                        Text("\(segment.name) \(Format.bytes(segment.size))").zoomFont(.caption).foregroundStyle(.secondary)
                     }
                 }
             }
             if disk.reclaimable >= 1_000_000_000, Double(disk.reclaimable) / Double(total) >= 0.25 {
                 Label("\(Format.bytes(disk.reclaimable)) can be reclaimed with the prune buttons below", systemImage: "arrow.3.trianglepath")
-                    .font(.caption).foregroundStyle(Brand.orange)
+                    .zoomFont(.caption).foregroundStyle(Brand.orange)
             }
         }
         .padding(16)
@@ -80,9 +80,9 @@ private struct SelfCard: View {
     var body: some View {
         let metrics = store.selfMetrics
         VStack(alignment: .leading, spacing: 4) {
-            Text("This app").font(.caption).foregroundStyle(.secondary)
-            Text(Format.bytes(Int64(metrics.memory))).font(.title2.weight(.semibold))
-            Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU").font(.caption).foregroundStyle(.secondary)
+            Text("This app").zoomFont(.caption).foregroundStyle(.secondary)
+            Text(Format.bytes(Int64(metrics.memory))).zoomFont(.title2.weight(.semibold))
+            Text("\(metrics.cpu, format: .number.precision(.fractionLength(1)))% CPU").zoomFont(.caption).foregroundStyle(.secondary)
             Sparkline(values: metrics.series.cpu, maximum: max(10, metrics.series.cpu.max() ?? 10), color: Brand.green).frame(height: 30).padding(.top, 6)
         }
         .padding(16)
@@ -109,9 +109,9 @@ private struct Summary: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(Format.bytes(value)).font(.title2.weight(.semibold))
-            Text(detail).font(.caption).foregroundStyle(.secondary)
+            Text(title).zoomFont(.caption).foregroundStyle(.secondary)
+            Text(Format.bytes(value)).zoomFont(.title2.weight(.semibold))
+            Text(detail).zoomFont(.caption).foregroundStyle(.secondary)
             if let action, let prune {
                 HStack(spacing: 8) {
                     Button(action.0) { prune.wrappedValue = action.1 }.buttonStyle(.liquid(tint: .red)).controlSize(.small)

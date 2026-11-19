@@ -59,6 +59,7 @@ struct ContainersView: View {
                     ContainerMenu(ids: ids) { removed in requestRemoval(removed, title: removalTitle(for: removed)) }
                 }
                 .deselectsOnReclick()
+                .zoomFont(.system(size: 13))
                 .motion(Motion.smooth, value: groups.flatMap(\.rows).map(\.id))
                 .motion(Motion.smooth, value: ui.containerSort)
                 .onKeyPress(.return) {
@@ -131,9 +132,9 @@ private struct GroupHeader: View {
             } label: {
                 HStack {
                     Image(systemName: collapsed ? "chevron.right" : "chevron.down")
-                        .font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
-                    Text(project ?? "No project").font(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
-                    Text("\(runningCount)/\(rows.count) running").font(.caption).foregroundStyle(.secondary)
+                        .zoomFont(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(width: 12)
+                    Text(project ?? "No project").zoomFont(.subheadline.weight(.semibold)).foregroundStyle(project == nil ? Color.secondary : Brand.blue)
+                    Text("\(runningCount)/\(rows.count) running").zoomFont(.caption).foregroundStyle(.secondary)
                     GroupUsage(rows: rows)
                     Spacer(minLength: 0)
                 }
@@ -169,6 +170,7 @@ private struct GroupHeader: View {
 /// Combined memory, CPU and a CPU graph for the running containers of one project.
 private struct GroupUsage: View {
     @Environment(FleetStore.self) private var store
+    @Environment(\.uiZoom) private var zoom
     let rows: [ContainerRow]
 
     var body: some View {
@@ -179,9 +181,9 @@ private struct GroupUsage: View {
             HStack(spacing: 8) {
                 Text(Format.bytes(Int64(memory.last ?? 0))).rollingNumbers(Int((memory.last ?? 0) / 1_000_000))
                 Text("\(cpu.last ?? 0, format: .number.precision(.fractionLength(1)))%").rollingNumbers(Int((cpu.last ?? 0) * 10))
-                Sparkline(values: cpu, maximum: max(10, cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 56, height: 16)
+                Sparkline(values: cpu, maximum: max(10, cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 56 * zoom, height: 16 * zoom)
             }
-            .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
+            .zoomFont(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit()
             .padding(.leading, 6)
             .help("Combined memory and CPU of the running containers in this project")
         }
@@ -285,7 +287,7 @@ private struct ContainerRowView: View {
                 Group {
                     if let pending { Text(pending.label) } else { Subtitle(row: row) }
                 }
-                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                .zoomFont(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer(minLength: 8)
             if row.state == "running" { RowGraph(id: row.id) }
@@ -336,24 +338,25 @@ struct PortLink: View {
                 .help("Not a web page. Click to copy localhost:\(mapping.host). \(detail)")
             }
         }
-        .font(.system(size: 12, design: .monospaced))
+        .zoomFont(.system(size: 12, design: .monospaced))
     }
 }
 
 private struct RowGraph: View {
     @Environment(FleetStore.self) private var store
+    @Environment(\.uiZoom) private var zoom
     let id: String
 
     var body: some View {
         let series = store.stats.series(for: id)
         HStack(spacing: 8) {
             Text(Format.bytes(Int64(series.latestMemory)))
-                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 56, alignment: .trailing)
+                .zoomFont(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 56, alignment: .trailing)
                 .rollingNumbers(Int(series.latestMemory / 1_000_000))
             Text("\(series.latestCPU, format: .number.precision(.fractionLength(1)))%")
-                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
+                .zoomFont(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
                 .rollingNumbers(Int(series.latestCPU * 10))
-            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64, height: 18)
+            Sparkline(values: series.cpu, maximum: max(10, series.cpu.max() ?? 10), filled: false, color: Brand.blue).frame(width: 64 * zoom, height: 18 * zoom)
         }
     }
 }

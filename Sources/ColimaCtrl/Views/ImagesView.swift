@@ -20,6 +20,7 @@ struct ImagesView: View {
         }
         .scrollContentBackground(.hidden)
         .deselectsOnReclick()
+        .zoomFont(.system(size: 13))
         .contextMenu(forSelectionType: String.self) { ids in
             let picked = rows.filter { ids.contains($0.id) }
             if let image = picked.first, picked.count == 1 {
@@ -70,13 +71,13 @@ private struct PullImageSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Pull image").font(.title3.weight(.semibold))
+            Text("Pull image").zoomFont(.title3.weight(.semibold))
             TextField("nginx:alpine or registry.example.com/team/app:1.2", text: $reference)
                 .textFieldStyle(.roundedBorder).focused($focused).disabled(task != nil).onSubmit(start)
             if task != nil, let progress {
-                ProgressView(value: progress.fraction) { Text(progress.status).font(.caption).foregroundStyle(.secondary) }
+                ProgressView(value: progress.fraction) { Text(progress.status).zoomFont(.caption).foregroundStyle(.secondary) }
             }
-            if let failure { Text(failure).font(.caption).foregroundStyle(.red).textSelection(.enabled) }
+            if let failure { Text(failure).zoomFont(.caption).foregroundStyle(.red).textSelection(.enabled) }
             HStack {
                 Spacer()
                 Button("Cancel") { task?.cancel(); dismiss() }.keyboardShortcut(.cancelAction).buttonStyle(.liquid)
