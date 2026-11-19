@@ -47,7 +47,7 @@ struct InfoTab: View {
                         }
                     }
                     if !inspect.labels.isEmpty {
-                        Card("Labels") { ForEach(inspect.labels) { Field($0.key, $0.value, copy: true) } }
+                        Card("Labels") { ForEach(inspect.labels) { StackedField(label: $0.key, value: $0.value) } }
                     }
                     if !inspect.env.isEmpty { EnvironmentCard(env: inspect.env, revealed: $revealed) }
                 } else {
@@ -170,6 +170,22 @@ struct Field: View {
             Text(label).foregroundStyle(.secondary).frame(width: 78, alignment: .leading)
             Text(value).font(.system(size: 12, design: .monospaced)).frame(maxWidth: .infinity, alignment: .leading)
             if let copy { CopyButton(text: copy) }
+        }
+    }
+}
+
+struct StackedField: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label).font(.caption).foregroundStyle(.secondary)
+                Text(value).font(.system(size: 12, design: .monospaced))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            CopyButton(text: value)
         }
     }
 }
