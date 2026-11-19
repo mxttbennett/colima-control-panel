@@ -3,43 +3,55 @@ import ColimaCtrlCore
 
 @MainActor
 enum MenuBarIcon {
-    /// A jellyfish in the menu bar's label color. Its core takes the fleet's status color.
+    /// An octopus in the menu bar's label color. Its head takes the fleet's status color.
     static func image(for health: FleetHealth) -> NSImage {
-        let size = NSSize(width: 21, height: 18)
+        let size = NSSize(width: 18, height: 18)
         let image = NSImage(size: size, flipped: false) { _ in
-            NSColor.labelColor.set()
-
-            let bell = NSBezierPath()
-            bell.lineWidth = 1.3
-            bell.lineJoinStyle = .round
-            bell.move(to: NSPoint(x: 2.8, y: 9.4))
-            bell.curve(to: NSPoint(x: 18.2, y: 9.4), controlPoint1: NSPoint(x: 2.8, y: 18.6), controlPoint2: NSPoint(x: 18.2, y: 18.6))
-            bell.curve(to: NSPoint(x: 2.8, y: 9.4), controlPoint1: NSPoint(x: 13.6, y: 8.0), controlPoint2: NSPoint(x: 7.4, y: 8.0))
-            bell.close()
-            bell.stroke()
-
-            let tentacles = NSBezierPath()
-            tentacles.lineWidth = 1.15
-            tentacles.lineCapStyle = .round
-            for (index, x) in [5.4, 8.0, 10.5, 13.0, 15.6].enumerated() {
-                let bend: CGFloat = index % 2 == 0 ? 1.3 : -1.3
-                let reach: CGFloat = index == 2 ? 0.6 : 1.8
-                tentacles.move(to: NSPoint(x: x, y: 8.2))
-                tentacles.curve(to: NSPoint(x: x, y: reach), controlPoint1: NSPoint(x: x + bend, y: 6.0), controlPoint2: NSPoint(x: x - bend, y: 3.2))
-            }
-            tentacles.stroke()
-
-            Self.coreColor(for: health).setFill()
-            NSBezierPath(ovalIn: NSRect(x: 10.5 - 1.7, y: 12.3 - 1.7, width: 3.4, height: 3.4)).fill()
+            drawOctopus(headColor: coreColor(for: health))
             return true
         }
         image.isTemplate = false
         return image
     }
 
+    /// The app icon's arm, scaled to the menu bar and turned around the center for each of the eight arms.
+    static func drawOctopus(headColor: NSColor) {
+        let scale: CGFloat = 8.4 / 400
+        let center = NSPoint(x: 9, y: 9)
+        let controls: [(NSPoint, NSPoint, NSPoint)] = [
+            (NSPoint(x: 470, y: 360), NSPoint(x: 560, y: 290), NSPoint(x: 520, y: 220)),
+            (NSPoint(x: 495, y: 170), NSPoint(x: 540, y: 120), NSPoint(x: 585, y: 150)),
+        ]
+
+        func place(_ point: NSPoint, angle: CGFloat) -> NSPoint {
+            let dx = point.x - 512
+            let dy = point.y - 512
+            let x = dx * cos(angle) - dy * sin(angle)
+            let y = dx * sin(angle) + dy * cos(angle)
+            return NSPoint(x: center.x + x * scale, y: center.y - y * scale)
+        }
+
+        NSColor.labelColor.set()
+        let arms = NSBezierPath()
+        arms.lineWidth = 1.3
+        arms.lineCapStyle = .round
+        arms.lineJoinStyle = .round
+        for index in 0..<8 {
+            let angle = CGFloat(index) * .pi / 4
+            arms.move(to: place(NSPoint(x: 512, y: 440), angle: angle))
+            for (first, second, end) in controls {
+                arms.curve(to: place(end, angle: angle), controlPoint1: place(first, angle: angle), controlPoint2: place(second, angle: angle))
+            }
+        }
+        arms.stroke()
+
+        headColor.setFill()
+        NSBezierPath(ovalIn: NSRect(x: center.x - 3.3, y: center.y - 3.3, width: 6.6, height: 6.6)).fill()
+    }
+
     private static func coreColor(for health: FleetHealth) -> NSColor {
         switch health {
-        case .idle: NSColor.labelColor.withAlphaComponent(0.45)
+        case .idle: NSColor.labelColor.withAlphaComponent(0.55)
         case .healthy: .systemGreen
         case .starting: .systemYellow
         case .unhealthy: .systemRed
