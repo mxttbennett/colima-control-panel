@@ -105,16 +105,20 @@ final class Preferences {
     var setupCompleted: Bool { didSet { UserDefaults.standard.set(setupCompleted, forKey: "setupCompleted") } }
     var statsSeconds: Int { didSet { UserDefaults.standard.set(statsSeconds, forKey: "statsSeconds") } }
     var keepCCPWithColima: Bool { didSet { UserDefaults.standard.set(keepCCPWithColima, forKey: "keepCCPWithColima") } }
+    var logCapacity: Int { didSet { UserDefaults.standard.set(logCapacity, forKey: "logCapacity") } }
+    var defaultDetailTab: DetailTab { didSet { UserDefaults.standard.set(defaultDetailTab.rawValue, forKey: "defaultDetailTab") } }
     var colimaWatcherError: String?
 
     init() {
         let defaults = UserDefaults.standard
-        defaults.register(defaults: ["dockBadge": false, "showMenuBarIcon": true, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3, "keepCCPWithColima": false])
+        defaults.register(defaults: ["dockBadge": false, "showMenuBarIcon": true, "menuBarCount": false, "setupCompleted": false, "statsSeconds": 3, "keepCCPWithColima": false, "logCapacity": LogModel.defaultCapacity, "defaultDetailTab": DetailTab.info.rawValue])
         dockBadge = defaults.bool(forKey: "dockBadge")
         showMenuBarIcon = defaults.bool(forKey: "showMenuBarIcon")
         menuBarCount = defaults.bool(forKey: "menuBarCount")
         setupCompleted = defaults.bool(forKey: "setupCompleted")
         statsSeconds = defaults.integer(forKey: "statsSeconds")
         keepCCPWithColima = defaults.bool(forKey: "keepCCPWithColima")
+        logCapacity = defaults.integer(forKey: "logCapacity")
+        defaultDetailTab = defaults.string(forKey: "defaultDetailTab").flatMap(DetailTab.init(rawValue:)) ?? .info
     }
 }

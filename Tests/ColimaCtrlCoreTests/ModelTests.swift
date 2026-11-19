@@ -105,3 +105,26 @@ private func container(state: String = "running", status: String = "Up 2 minutes
     #expect(stopped.display.label == "Stopped")
     #expect(Set([DisplayState.running, .starting, .restarting, .unhealthy, .paused, .stopped].map(\.label)).count == 6)
 }
+
+@Test func diskUsageSumsReclaimableSpaceAcrossBuckets() {
+    // Arrange
+    let usage = DiskUsage(
+        images: DiskBucket(count: 1, size: 100, reclaimable: 40),
+        containers: DiskBucket(count: 1, size: 10, reclaimable: 5),
+        volumes: DiskBucket(count: 1, size: 50, reclaimable: 20),
+        buildCache: DiskBucket(count: 1, size: 40, reclaimable: 35)
+    )
+
+    // Act & Assert
+    #expect(usage.reclaimable == 100)
+    #expect(usage.total == 200)
+}
+
+@MainActor @Test func logModelKeepsTheRequestedNumberOfLines() {
+    // Arrange
+    let model = LogModel(client: DockerClient(socketPath: "/nonexistent.sock"), containerID: "abc", capacity: 1234)
+
+    // Act & Assert
+    #expect(model.capacity == 1234)
+    #expect(LogModel.defaultCapacity == 5000)
+}
