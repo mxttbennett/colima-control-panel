@@ -106,7 +106,7 @@ struct VolumesView: View {
             Text("Their data is lost.")
         }
         .overlay {
-            if !store.hasLoaded { ProgressView("Loading volumes…") } else if rows.isEmpty { ContentUnavailableView("No volumes", systemImage: "cylinder") }
+            if !store.hasLoaded { ProgressView("Loading volumes…") } else if rows.isEmpty { if store.volumes.isEmpty { ContentUnavailableView("No volumes", systemImage: "cylinder") } else { NoMatches(what: "volumes") } }
         }
     }
 }

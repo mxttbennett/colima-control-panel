@@ -58,6 +58,9 @@ struct ColimaCtrlApp: App {
                     }
                 }.keyboardShortcut(.delete, modifiers: .command).disabled(ids.isEmpty)
             }
+            CommandGroup(after: .textEditing) {
+                Button("Find") { ui.focusFilter += 1 }.keyboardShortcut("f")
+            }
             CommandMenu("Go") {
                 Button("Command Palette") { ui.showPalette = true }.keyboardShortcut("k")
                 Divider()

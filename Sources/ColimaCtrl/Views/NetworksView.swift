@@ -64,7 +64,7 @@ struct NetworksView: View {
             Text("Containers using them must be stopped first.")
         }
         .overlay {
-            if !store.hasLoaded { ProgressView("Loading networks…") } else if rows.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") }
+            if !store.hasLoaded { ProgressView("Loading networks…") } else if rows.isEmpty { if store.networks.isEmpty { ContentUnavailableView("No networks", systemImage: "point.3.connected.trianglepath.dotted") } else { NoMatches(what: "networks") } }
         }
     }
 }

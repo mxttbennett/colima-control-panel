@@ -7,6 +7,19 @@ struct ContentView: View {
     @Environment(Preferences.self) private var prefs
     @FocusState private var searchFocused: Bool
 
+    private func count(_ number: Int, _ noun: String) -> String { "\(number) \(noun)\(number == 1 ? "" : "s")" }
+
+    private var subtitle: String {
+        guard store.hasLoaded else { return "" }
+        switch ui.section {
+        case .containers: return "\(count(store.containers.count, "container")) · \(store.runningCount) running"
+        case .volumes: return count(store.volumes.count, "volume")
+        case .images: return count(store.images.count, "image")
+        case .networks: return count(store.networks.count, "network")
+        case .system: return ""
+        }
+    }
+
     var body: some View {
         @Bindable var ui = ui
         NavigationSplitView {
@@ -33,6 +46,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(ui.section.title)
+            .navigationSubtitle(subtitle)
             .searchable(text: $ui.filter, prompt: "Filter")
             .searchFocused($searchFocused)
             .toolbar {
@@ -71,6 +85,7 @@ struct ContentView: View {
         .onAppear { store.setDemand(.window, true) }
         .onDisappear { store.setDemand(.window, false) }
         .onChange(of: ui.section) { ui.filter = "" }
+        .onChange(of: ui.focusFilter) { searchFocused = true }
         .onChange(of: store.containers) {
             guard let name = ui.pendingSelection, let match = store.containers.first(where: { $0.name == name }) else { return }
             ui.pendingSelection = nil

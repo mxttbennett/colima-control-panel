@@ -77,7 +77,7 @@ struct PaneHost<Content: View>: View {
             try? await Task.sleep(for: keepMounted)
             if !Task.isCancelled { mounted = nil }
         }
-        .onExitCommand { ui.closePane() }
+        .onExitCommand { if ui.filter.isEmpty { ui.closePane() } else { ui.filter = "" } }
     }
 
     private func exists(_ target: PaneTarget) -> Bool {

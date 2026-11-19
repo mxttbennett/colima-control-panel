@@ -5,9 +5,9 @@ import ColimaCtrlCore
 struct LogsTab: View {
     @Environment(FleetStore.self) private var store
     @Environment(Preferences.self) private var prefs
+    @Environment(UIState.self) private var ui
     let containerID: String
     @State private var model: LogModel?
-    @State private var filter = ""
     @State private var appliedFilter = ""
     @State private var follow = true
     @AppStorage("logWrap") private var wrap = true
@@ -15,9 +15,10 @@ struct LogsTab: View {
     @AppStorage("logFilterOnly") private var filterOnly = true
 
     var body: some View {
+        @Bindable var ui = ui
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                TextField("Filter logs", text: $filter).textFieldStyle(.plain).padding(.horizontal, 12).padding(.vertical, 5).glassEffect(.regular, in: .capsule)
+                TextField("Filter logs", text: $ui.logFilter).textFieldStyle(.plain).padding(.horizontal, 12).padding(.vertical, 5).glassEffect(.regular, in: .capsule)
                 Toggle("Follow", isOn: $follow).toggleStyle(.checkbox)
                 Button("Copy", systemImage: "doc.on.doc") { copyVisible() }.labelStyle(.iconOnly).help("Copy the shown lines")
                 Button("Clear", systemImage: "trash") { model?.clear() }.labelStyle(.iconOnly).help("Clear the log view")
@@ -38,15 +39,17 @@ struct LogsTab: View {
             }
         }
         .onAppear {
+            appliedFilter = ui.logFilter
             let created = LogModel(client: store.client, containerID: containerID, capacity: prefs.logCapacity)
             created.start()
             model = created
         }
         .onDisappear { model?.stop() }
-        .task(id: filter) {
-            if filter.isEmpty { appliedFilter = ""; return }
+        .task(id: ui.logFilter) {
+            if ui.logFilter.isEmpty { appliedFilter = ""; return }
+            if ui.logFilter == appliedFilter { return }
             try? await Task.sleep(for: .milliseconds(150))
-            appliedFilter = filter
+            appliedFilter = ui.logFilter
         }
     }
 
