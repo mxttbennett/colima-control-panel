@@ -8,7 +8,7 @@ struct ActivityView: View {
 
     var body: some View {
         let all = store.activity.events
-        let rows = all.filter(matches)
+        let rows = all.filter { matches($0) && (!ui.activityFailuresOnly || $0.isFailure) }
         let live = Set(store.containers.map(\.id))
         Table(rows, selection: $selection) {
             TableColumn("Time") { event in
@@ -50,9 +50,14 @@ struct ActivityView: View {
             if all.isEmpty {
                 ContentUnavailableView("No activity yet", systemImage: "clock.arrow.circlepath", description: Text("Docker events show up here as containers start, stop and change."))
             } else if rows.isEmpty {
-                NoMatches(what: "events")
+                if ui.activityFailuresOnly && ui.filter.isEmpty {
+                    ContentUnavailableView("No failures", systemImage: "checkmark.circle", description: Text("Nothing has failed since the app connected."))
+                } else {
+                    NoMatches(what: "events")
+                }
             }
         }
+        .onChange(of: all.first?.id, initial: true) { ui.seenActivityID = all.first?.id ?? -1 }
     }
 
     private func matches(_ event: ActivityEvent) -> Bool {

@@ -15,6 +15,9 @@ struct SidebarView: View {
                 if section == .containers, let color = store.health.color {
                     StatusDot(color: color, size: 8, label: store.health.label)
                 }
+                if section == .activity, ui.section != .activity, case let unseen = store.activity.failureCount(after: ui.seenActivityID), unseen > 0 {
+                    StatusDot(color: .red, size: 8, label: unseen == 1 ? "1 new failure in Activity" : "\(unseen) new failures in Activity")
+                }
                 if store.info != nil, let count = count(for: section) {
                     Text(count, format: .number).zoomFont(.system(size: 13)).foregroundStyle(.secondary).monospacedDigit().rollingNumbers(count)
                 }

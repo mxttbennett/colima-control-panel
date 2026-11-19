@@ -47,6 +47,9 @@ final class UIState {
     var detailTab: DetailTab = .info
     var filter = ""
     var runningOnly = false
+    var activityFailuresOnly = false
+    /// Newest Activity event id the user has looked at, so the sidebar can flag later failures.
+    var seenActivityID = -1
     var containerSort: ContainerSort { didSet { UserDefaults.standard.set(containerSort.rawValue, forKey: "containerSort") } }
     var showPalette = false
     var pendingUpdateCheck = false

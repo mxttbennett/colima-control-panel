@@ -402,7 +402,7 @@ struct NoMatches: View {
         } description: {
             Text(ui.filter.isEmpty ? "The running-only filter is hiding them." : "Nothing matches \u{201C}\(ui.filter)\u{201D}.")
         } actions: {
-            Button("Clear Filter") { ui.filter = ""; ui.runningOnly = false }.buttonStyle(.liquid)
+            Button("Clear Filter") { ui.filter = ""; ui.runningOnly = false; ui.activityFailuresOnly = false }.buttonStyle(.liquid)
         }
     }
 }

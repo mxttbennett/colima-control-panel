@@ -26,6 +26,11 @@ public struct ActivityLog: Sendable {
 
     public mutating func clear() { events = [] }
 
+    /// Failures recorded after the event with `id`; pass -1 to count them all.
+    public func failureCount(after id: Int = -1) -> Int {
+        events.reduce(0) { $0 + ($1.id > id && $1.isFailure ? 1 : 0) }
+    }
+
     mutating func record(_ api: APIEvent, now: Date = .now) {
         guard let kind = ActivityEvent.Kind(rawValue: api.type) else { return }
         let action = api.action.split(separator: ":").first.map(String.init) ?? api.action
