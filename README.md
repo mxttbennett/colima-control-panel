@@ -32,12 +32,31 @@ Move the app to `/Applications` to keep it. Builds use an ad hoc signature, so m
 
 ## Use
 
-- Start, stop, and restart Colima from the sidebar.
-- Browse containers by Compose project. Select a container to see its health, ports, environment, logs, and resource graphs.
-- Inspect images, volumes, and networks, and remove or prune them with confirmation.
-- Press **⌘K** for the command palette, `/` to filter, and use arrow keys to move through containers.
-- Set `COLIMA_PROFILE=work` when launching CCP to use a profile other than `default`.
-- Enable **Keep CCP running with Colima** in Settings to have CCP start Colima when it opens, open when Colima starts externally, and stop Colima when CCP quits. This option is off by default.
+- Start, stop, and restart Colima from the sidebar. When more than one profile exists, a profile menu above the controls switches between them. `COLIMA_PROFILE=work` still picks the profile at launch.
+- Browse containers by Compose project. Click a project header to collapse it. Each header has Start, Restart, Stop and Remove for the whole project, and a folder menu to reveal the project folder in Finder or open it in Terminal. Containers that belong to no project get the same buttons.
+- Sort containers by name, CPU, memory or uptime from the toolbar. Rows show memory and CPU beside a live graph.
+- Select a container to see its health, exit code, restart count, ports, mounts, networks, labels and environment. Filter the environment, reveal secret values, or copy it as `KEY=value` lines. Drag the panel's left edge to resize it, and double-click the edge to reset the width.
+- Read logs in the Logs tab. Levels are colored, links are clickable, and the filter highlights matches with a count and Next and Previous buttons. Options let you wrap lines, hide timestamps, show matches in context, and save the log to a file.
+- Open a shell in Terminal from the Shell button or the context menu.
+- Inspect images, volumes, and networks, sort the tables, and remove or prune them with confirmation. Pull an image from the Images toolbar.
+- The System view shows disk use by category and how much each prune would reclaim.
+- Get a notification when a container exits with an error or turns unhealthy while the app is in the background. Turn it off in Settings.
+- The menu bar popover lists running containers. Hover a row to restart or stop it, or use Stop All.
+
+### Keyboard
+
+| Keys | Action |
+| --- | --- |
+| ⌘K | Command palette: views, Colima, containers, projects, pull, prune, profile, sort |
+| `/` | Filter the current list |
+| ⌘1 to ⌘5 | Containers, Volumes, Images, Networks, System |
+| ⌘I, ⌘L | Show the selected container's info or logs |
+| ⌘R, ⇧⌘R, ⌘. | Restart, start, or stop the selection |
+| ⌘⌫ | Remove the selection, with confirmation |
+| Return | Open logs for the selected container |
+| ⌘G, ⇧⌘G | Next and previous log match |
+
+Enable **Keep CCP running with Colima** in Settings to have CCP start Colima when it opens, open when Colima starts externally, and stop Colima when CCP quits. This option is off by default. Settings also sets the log buffer size, the tab a container opens on, and how often graphs refresh.
 
 ## How it works
 
