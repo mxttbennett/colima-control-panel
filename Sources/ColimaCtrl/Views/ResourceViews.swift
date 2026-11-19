@@ -88,6 +88,7 @@ struct ImagesView: View {
     @State private var sortOrder = [KeyPathComparator(\ImageRow.size, order: .reverse)]
     @State private var prune: PruneKind?
     @State private var removal: ImageRow?
+    @State private var showPull = false
 
     var body: some View {
         let rows = store.images.filter { ui.filter.isEmpty || $0.title.localizedCaseInsensitiveContains(ui.filter) }.sorted(using: sortOrder)
@@ -100,7 +101,9 @@ struct ImagesView: View {
             TableColumn("") { image in Button("Remove", systemImage: "trash") { removal = image }.labelStyle(.iconOnly).buttonStyle(.borderless).foregroundStyle(.red) }.width(36)
         }
         .scrollContentBackground(.hidden)
+        .sheet(isPresented: $showPull) { PullImageSheet() }
         .toolbar {
+            ToolbarItem { Button("Pull Image", systemImage: "arrow.down.circle") { showPull = true }.help("Pull an image from a registry") }
             ToolbarItem {
                 Menu("Prune", systemImage: "trash") {
                     Button("Dangling images") { prune = .imagesDangling }
@@ -282,5 +285,50 @@ private struct Summary: View {
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 150, alignment: .topLeading)
         .contentCard(cornerRadius: 18)
+    }
+}
+
+private struct PullImageSheet: View {
+    @Environment(FleetStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
+    @State private var reference = ""
+    @State private var progress: PullProgress?
+    @State private var failure: String?
+    @State private var task: Task<Void, Never>?
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Pull image").font(.title3.weight(.semibold))
+            TextField("nginx:alpine or registry.example.com/team/app:1.2", text: $reference)
+                .textFieldStyle(.roundedBorder).focused($focused).disabled(task != nil).onSubmit(start)
+            if task != nil, let progress {
+                ProgressView(value: progress.fraction) { Text(progress.status).font(.caption).foregroundStyle(.secondary) }
+            }
+            if let failure { Text(failure).font(.caption).foregroundStyle(.red).textSelection(.enabled) }
+            HStack {
+                Spacer()
+                Button("Cancel") { task?.cancel(); dismiss() }.keyboardShortcut(.cancelAction)
+                Button("Pull", action: start).keyboardShortcut(.defaultAction).disabled(!ImageReference(reference).isValid || task != nil)
+            }
+        }
+        .padding(20).frame(width: 460)
+        .onAppear { focused = true }
+        .onDisappear { task?.cancel() }
+    }
+
+    private func start() {
+        let image = ImageReference(reference)
+        guard image.isValid, task == nil else { return }
+        failure = nil
+        task = Task {
+            do {
+                try await store.pull(image: image) { progress = $0 }
+                dismiss()
+            } catch {
+                if !Task.isCancelled { failure = error.localizedDescription }
+                task = nil
+            }
+        }
     }
 }

@@ -50,9 +50,16 @@ public struct DockerClient: Sendable {
             continuation.onTermination = { _ in box.interrupt() }
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
+                    var failure: (status: Int, body: Data)?
                     try Self.run(socketPath: socketPath, method: method, path: path, body: nil, receiveTimeout: nil, box: box) { head, chunk in
-                        if let chunk, (200..<300).contains(head.status) { continuation.yield(chunk) }
+                        guard let chunk else { return }
+                        if (200..<300).contains(head.status) {
+                            continuation.yield(chunk)
+                        } else {
+                            failure = (head.status, (failure?.body ?? Data()) + chunk)
+                        }
                     }
+                    if let failure { throw DockerError.http(status: failure.status, message: Self.message(from: failure.body)) }
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: box.wasInterrupted ? nil : error)
