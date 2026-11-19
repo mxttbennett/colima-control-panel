@@ -25,10 +25,16 @@ struct InfoTab: View {
                     if !inspect.ports.isEmpty {
                         Card("Ports") {
                             ForEach(inspect.ports) { port in
+                                let known = Int(port.container.split(separator: "/").first ?? "").flatMap { KnownPort.lookup(containerPort: $0) }
                                 HStack {
                                     Text(port.container).foregroundStyle(.secondary)
+                                    if let known { Text(known.name).font(.caption).foregroundStyle(.tertiary) }
                                     Spacer()
-                                    Link(destination: URL(string: "http://localhost:\(port.host)")!) { Text(verbatim: "localhost:\(port.host)") }.font(.system(size: 12, design: .monospaced))
+                                    if known?.opensInBrowser ?? true {
+                                        Link(destination: URL(string: "http://localhost:\(port.host)")!) { Text(verbatim: "localhost:\(port.host)") }.font(.system(size: 12, design: .monospaced))
+                                    } else {
+                                        Text(verbatim: "localhost:\(port.host)").font(.system(size: 12, design: .monospaced))
+                                    }
                                     CopyButton(text: "localhost:\(port.host)")
                                 }
                             }

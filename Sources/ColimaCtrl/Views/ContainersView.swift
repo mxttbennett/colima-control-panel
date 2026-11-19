@@ -210,8 +210,12 @@ struct ContainerMenu: View {
         Button("Show Info") { ui.show(row.id) }
         Button("Show Logs") { ui.show(row.id, tab: .logs) }
         if row.isRunning { Button("Open Shell in Terminal") { openContainerShell(row, store: store) } }
-        ForEach(row.ports, id: \.self) { port in
-            Button("Open localhost:\(String(port)) in Browser") { NSWorkspace.shared.open(URL(string: "http://localhost:\(port)")!) }
+        ForEach(row.portMappings, id: \.self) { mapping in
+            if mapping.opensInBrowser {
+                Button("Open localhost:\(String(mapping.host)) in Browser") { NSWorkspace.shared.open(URL(string: "http://localhost:\(mapping.host)")!) }
+            } else {
+                Button("Copy localhost:\(String(mapping.host)) (\(mapping.service?.name ?? "port"))") { Clipboard.copy("localhost:\(mapping.host)") }
+            }
         }
         Divider()
         Button("Copy Name") { Clipboard.copy(row.name) }
@@ -272,7 +276,7 @@ private struct ContainerRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 8) {
                     Text(row.title).lineLimit(1)
-                    ForEach(row.ports, id: \.self) { PortLink(port: $0) }
+                    ForEach(row.portMappings, id: \.self) { PortLink(mapping: $0) }
                 }
                 Group {
                     if let pending { Text(pending.label) } else { Subtitle(row: row) }
@@ -303,11 +307,32 @@ private struct Subtitle: View {
 }
 
 struct PortLink: View {
-    let port: Int
+    let mapping: PortMapping
+    @State private var copied = false
+
+    private var detail: String {
+        let service = mapping.service.map { "\($0.name) · " } ?? ""
+        return "\(service)localhost:\(mapping.host) → container port \(mapping.container)/\(mapping.proto)"
+    }
 
     var body: some View {
-        Link(destination: URL(string: "http://localhost:\(port)")!) { Text(verbatim: ":\(port)") }
-            .font(.system(size: 12, design: .monospaced))
+        Group {
+            if mapping.opensInBrowser {
+                Link(destination: URL(string: "http://localhost:\(mapping.host)")!) { Text(verbatim: ":\(mapping.host)") }
+                    .help("Open in the browser. \(detail)")
+            } else {
+                Button {
+                    Clipboard.copy("localhost:\(mapping.host)")
+                    copied = true
+                    Task { try? await Task.sleep(for: .seconds(1)); copied = false }
+                } label: {
+                    Text(verbatim: copied ? "copied" : ":\(mapping.host)").foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Not a web page. Click to copy localhost:\(mapping.host). \(detail)")
+            }
+        }
+        .font(.system(size: 12, design: .monospaced))
     }
 }
 

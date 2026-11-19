@@ -30,6 +30,7 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
     public let service: String?
     public let projectDirectory: String?
     public let ports: [Int]
+    public let portMappings: [PortMapping]
     public let networks: [String]
     public let created: Date
     public var startedAt: Date?
@@ -58,6 +59,14 @@ public struct ContainerRow: Identifiable, Equatable, Sendable {
 }
 
 extension ContainerRow {
+    private static func mappings(_ ports: [APIContainer.Port]) -> [PortMapping] {
+        let all = ports.compactMap { port -> PortMapping? in
+            guard let host = port.publicPort, let container = port.privatePort else { return nil }
+            return PortMapping(host: host, container: container, proto: port.type ?? "tcp")
+        }
+        return Array(Set(all)).sorted { ($0.host, $0.container) < ($1.host, $1.container) }
+    }
+
     init(_ api: APIContainer, startedAt: Date?) {
         let labels = api.labels ?? [:]
         let health = ["healthy", "unhealthy", "health: starting"].first { api.status.contains("(\($0))") }
@@ -74,6 +83,7 @@ extension ContainerRow {
             service: labels["com.docker.compose.service"],
             projectDirectory: labels["com.docker.compose.project.working_dir"],
             ports: Array(Set((api.ports ?? []).compactMap(\.publicPort))).sorted(),
+            portMappings: Self.mappings(api.ports ?? []),
             networks: (api.networkSettings?.networks.map { Array($0.keys) } ?? []).sorted(),
             created: Date(timeIntervalSince1970: TimeInterval(api.created)),
             startedAt: api.state == "running" ? startedAt : nil
