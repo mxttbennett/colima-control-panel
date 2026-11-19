@@ -27,6 +27,7 @@ struct ColimaCtrlApp: App {
         store.alertHandler = { notifier.post($0) }
         AppDelegate.store = store
         AppDelegate.prefs = prefs
+        AppDelegate.ui = ui
         store.start()
         if prefs.keepCCPWithColima {
             do { try ColimaWatcherService.register() }
