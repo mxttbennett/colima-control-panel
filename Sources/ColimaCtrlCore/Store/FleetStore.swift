@@ -25,8 +25,9 @@ public final class FleetStore {
 
     public let stats = StatsHistory()
     public let selfMetrics = SelfMetrics()
-    public let vm: ColimaVM
-    public let client: DockerClient
+    public private(set) var vm: ColimaVM
+    public private(set) var client: DockerClient
+    public private(set) var profile: String
 
     public var runningCount: Int { containers.reduce(0) { $0 + ($1.isRunning ? 1 : 0) } }
     public var health: FleetHealth { FleetHealth(containers) }
@@ -44,6 +45,36 @@ public final class FleetStore {
     public init(client: DockerClient = DockerClient(socketPath: DockerClient.defaultSocketPath()), vm: ColimaVM = ColimaVM()) {
         self.client = client
         self.vm = vm
+        self.profile = ColimaProfile.current()
+    }
+
+    /// Drops everything tied to the old profile and reconnects to the new profile's Docker socket.
+    public func switchProfile(to newProfile: String) {
+        guard newProfile != profile else { return }
+        liveness?.cancel()
+        liveness = nil
+        session?.cancel()
+        session = nil
+        statsTask?.cancel()
+        statsTask = nil
+        profile = newProfile
+        UserDefaults.standard.set(newProfile, forKey: "colimaProfile")
+        client = DockerClient(socketPath: DockerClient.defaultSocketPath(profile: newProfile))
+        vm = ColimaVM(profile: newProfile)
+        connection = .connecting
+        hasLoaded = false
+        containers = []
+        images = []
+        volumes = []
+        networks = []
+        disk = nil
+        info = nil
+        pending = [:]
+        startedAt = [:]
+        lastSamples = [:]
+        inspectCache = [:]
+        stats.reset()
+        start()
     }
 
     // MARK: Lifecycle

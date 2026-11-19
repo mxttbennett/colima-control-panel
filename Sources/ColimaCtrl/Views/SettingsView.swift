@@ -100,6 +100,7 @@ private struct ColimaTab: View {
     @Environment(\.openWindow) private var openWindow
     @State private var draft = ColimaResources(cpus: 2, memory: 4, disk: 100)
     @State private var note: String?
+    @State private var profiles = ColimaProfile.available()
 
     private var baseline: ColimaResources { setup.current ?? setup.host.recommended }
     private var changed: Bool { draft != baseline }
@@ -108,6 +109,11 @@ private struct ColimaTab: View {
         Form {
             SwiftUI.Section("Installation") {
                 InstallationStatus()
+                if profiles.count > 1 {
+                    Picker("Profile", selection: Binding(get: { store.profile }, set: { switchColimaProfile($0, store: store, setup: setup, ui: ui) })) {
+                        ForEach(profiles, id: \.self) { Text($0).tag($0) }
+                    }
+                }
                 HStack {
                     if setup.configURL.path.isEmpty == false {
                         Text(setup.configURL.path).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
@@ -146,6 +152,7 @@ private struct ColimaTab: View {
         }
         .formStyle(.grouped)
         .task(id: setup.current) { draft = baseline }
+        .onAppear { profiles = ColimaProfile.available() }
     }
 
     private func apply(restart: Bool) {

@@ -25,7 +25,7 @@ public final class ColimaSetup {
     public private(set) var error: String?
 
     public let host = HostSpecs.current
-    public let profile: String
+    public private(set) var profile: String
 
     public var configURL: URL { ColimaConfigFile.url(profile: profile) }
     public var isInstalled: Bool {
@@ -34,7 +34,14 @@ public final class ColimaSetup {
     }
 
     public init(profile: String? = nil) {
-        self.profile = profile ?? ProcessInfo.processInfo.environment["COLIMA_PROFILE"] ?? UserDefaults.standard.string(forKey: "colimaProfile") ?? "default"
+        self.profile = profile ?? ColimaProfile.current()
+    }
+
+    public func switchProfile(to newProfile: String) {
+        guard newProfile != profile else { return }
+        profile = newProfile
+        current = nil
+        Task { await refresh() }
     }
 
     public func refresh() async {
