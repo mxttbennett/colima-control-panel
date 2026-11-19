@@ -188,6 +188,8 @@ private struct AboutTab: View {
                 Link("Colima", destination: URL(string: "https://github.com/abiosoft/colima")!)
             }
             Divider().padding(.vertical, 6)
+            UpdateCheckView(version: version)
+            Divider().padding(.vertical, 6)
             Button("Reset setup") {
                 prefs.setupCompleted = false
                 ui.showSetup = true
