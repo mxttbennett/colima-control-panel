@@ -16,8 +16,31 @@ struct PaneHost<Content: View>: View {
     @ViewBuilder let content: Content
     @State private var mounted: PaneTarget?
 
-    private let width: CGFloat = 400
+    @AppStorage("paneWidth") private var storedWidth: Double = 400
+    @State private var dragStartWidth: Double?
+
+    private var width: CGFloat { CGFloat(storedWidth) }
+    private let widthRange: ClosedRange<Double> = 320...1000
     private let keepMounted: Duration = .seconds(3)
+
+    private var resizeHandle: some View {
+        Color.clear
+            .frame(width: 8)
+            .contentShape(Rectangle())
+            .onHover { inside in
+                if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                    .onChanged { drag in
+                        let start = dragStartWidth ?? storedWidth
+                        dragStartWidth = start
+                        storedWidth = min(max(start - drag.translation.width, widthRange.lowerBound), widthRange.upperBound)
+                    }
+                    .onEnded { _ in dragStartWidth = nil }
+            )
+            .offset(x: -4)
+    }
 
     var body: some View {
         let target = ui.paneSelection.map { PaneTarget(section: ui.section, id: $0) }.flatMap { exists($0) ? $0 : nil }
@@ -30,6 +53,7 @@ struct PaneHost<Content: View>: View {
                     .frame(maxHeight: .infinity)
                     .background(Color(nsColor: .windowBackgroundColor))
                     .overlay(alignment: .leading) { Divider() }
+                    .overlay(alignment: .leading) { resizeHandle }
                     .overlay(alignment: .top) { Rectangle().fill(mounted.section.color).frame(height: 3) }
                     .offset(x: open && mounted == target ? 0 : width + 1)
                     .allowsHitTesting(open && mounted == target)

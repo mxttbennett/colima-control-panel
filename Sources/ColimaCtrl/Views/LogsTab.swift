@@ -58,7 +58,7 @@ private struct LogList: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 1) {
                     ForEach(visible) { line in
-                        Text("\(Text(Self.time(line.timestamp)).foregroundStyle(.tertiary)) \(Text(line.text).foregroundStyle(line.isError ? Color.red : Color.primary))")
+                        Text("\(Text(Self.time(line.timestamp)).foregroundStyle(.tertiary)) \(Text(Self.linked(line.text)).foregroundStyle(line.isError ? Color.red : Color.primary))")
                             .font(.system(size: 11.5, design: .monospaced))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .id(line.id)
@@ -91,6 +91,21 @@ private struct LogList: View {
             .animation(.snappy, value: follow)
         }
         .overlay { if let failure = model.failure { Text(failure).foregroundStyle(.red).padding() } }
+    }
+
+    private static let linkDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+
+    private static func linked(_ text: String) -> AttributedString {
+        var result = AttributedString(text)
+        guard text.contains("://") || text.contains("www.") else { return result }
+        let range = NSRange(text.startIndex..., in: text)
+        for match in linkDetector?.matches(in: text, range: range) ?? [] {
+            guard let url = match.url, let span = Range(match.range, in: text),
+                  let lower = AttributedString.Index(span.lowerBound, within: result),
+                  let upper = AttributedString.Index(span.upperBound, within: result) else { continue }
+            result[lower..<upper].link = url
+        }
+        return result
     }
 
     /// "2026-10-25T21:32:20.349132781Z" → "21:32:20.349"
